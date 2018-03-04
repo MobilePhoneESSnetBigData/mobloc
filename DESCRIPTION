@@ -1,0 +1,26 @@
+Package: mobloc
+Type: Package
+Title: Mobile phone location algorithms and tools
+Version: 0.1.0
+Authors@R: person("Martijn", "Tennekes", email="mtennekes@gmail.com", role=c("aut", "cre"))
+Description: CDR and signalling data contain mobile phone events logged at specific cells (antennae). This package provides algorithms and tools to translate antennae properties to gespatial distributions. Depending on the availability of the antenna properties, such as coordinates, direction, and height, different algorithms can be used.
+License: GPL-3 and EUPL
+LazyData: true
+Date: 2018-03-02
+Depends:
+    R (>= 3.3),
+    methods
+Imports:
+    sp,
+    sf (>= 0.6-0),
+    tmap (>= 1.10),
+    tmaptools (>= 1.1),
+    shiny,
+    shinyjs,
+    dplyr,
+    parallel,
+    doParallel,
+    foreach
+URL: https://github.com/mtennekes/tmaptools
+BugReports: https://github.com/mtennekes/tmaptools/issues
+RoxygenNote: 6.0.1

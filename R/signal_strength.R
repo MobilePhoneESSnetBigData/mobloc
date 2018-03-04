@@ -1,0 +1,193 @@
+# library(geosphere)
+# distGeo(c(5.970648, 50.895076), c(5.968393, 50.893516))
+# measure_distance <- 235
+# measure_db <- -100
+#
+# db0 <-  10*log10(measure_distance^2) + measure_db (~50)
+# zie ook https://powerfulsignal.com/cell-signal-strength/
+# distance2dB <- function(r) {
+#
+# }
+# https://www.cisco.com/c/en/us/support/docs/wireless-mobility/wireless-lan-wlan/82068-omni-vs-direct.html
+# https://community.arubanetworks.com/t5/tkb/articleprintpage/tkb-id/ControllerBasedWLANs/article-id/521
+# https://en.wikipedia.org/wiki/E-plane_and_H-plane
+
+
+r2d <- function(x) x * 180 / pi
+d2r <- function(x) x / 180 * pi
+
+COS <- function(x) cos(d2r(x))
+SIN <- function(x) sin(d2r(x))
+TAN <- function(x) tan(d2r(x))
+
+ACOS <- function(x) r2d(acos(x))
+ASIN <- function(x) r2d(asin(x))
+ATAN <- function(x) r2d(atan(x))
+ATAN2 <- function(y, x) r2d(atan2(y, x))
+
+
+
+distance2dB <- function(r, db0 = -50) {
+    #-75 - 10 * log10(r/1)
+    db0 - 20 * log10(r/1)
+}
+
+normalize_angle <- function(a) {
+  a <- abs(a) %% 360
+  a[a>180] <- 360 - a[a>180]
+  a
+}
+#
+# el_dBloss <- function(a, db_back = -30) {
+#   a <- normalize_angle(a)
+#   (dbeta(a/pi, 1,4) - 4) * (-db_back/4)
+# }
+
+norm_dBloss <- function(a, db_back = -30, sd = 90, beam_width = NULL) {
+  if (!is.null(beam_width)) sd <- find_sd(beam_width = beam_width, db_back = db_back)
+  a <- normalize_angle(a)
+  inflate <- -db_back / (dnorm(0, 0, sd) - dnorm(180, 0, sd))
+  (dnorm(a, mean = 0, sd = sd) - dnorm(0, 0, sd)) * inflate
+}
+get_min3db <- function(sd, db_back) {
+  df <- data.frame(a = seq(0, 180, length.out = 720))
+  df$dbLoss <- norm_dBloss(df$a, db_back = db_back, sd = sd)
+  df$a[which.min(abs(-3 - df$dbLoss))]
+}
+
+create_mapping <- function(db_back) {
+  idf <- data.frame(sd = seq(180/1000, 180, by = 180/1000))
+  idf$deg <- sapply(idf$sd, get_min3db, db_back = db_back)
+
+  df <- data.frame(deg = 1:180)
+
+  df$sd <- sapply(df$deg, function(dg) {
+    idf$sd[which.min(abs(idf$deg - dg))]
+  })
+  df
+}
+
+find_sd <- function(beam_width, db_back = NULL, mapping = NULL) {
+  if (is.null(mapping)) {
+    stopifnot(!is.null(db_back))
+    mapping <- create_mapping(db_back)
+  }
+  mapping$sd[which.min(abs(mapping$deg - beam_width/2))]
+}
+
+attach_mapping <- function(param) {
+  param$delta_mapping <- create_mapping(param$delta_dB_back)
+  param$epsilon_mapping <- create_mapping(param$epsilon_dB_back)
+  param
+}
+
+
+# angle2dBloss <- function(a, min3dB=65/180*pi, pmin3dB=.95) {
+#
+#     sd_x <- qnorm(.5 + pmin3dB / 2)
+#
+#     sd <- (min3dB / 2) / sd_x
+#
+#     dens_max <- dnorm(0, 0, sd)
+#     dens_3db <- dnorm((min3dB/2), 0, sd)
+#
+#     inflate <- 3 / (dens_max - dens_3db)
+#
+#     (dnorm(a, 0, sd) - dens_max) * inflate
+# }
+
+db2p <- function(db, db_mid, db_width = 5) {
+    scale <- (db - db_mid) / db_width
+    1 / (1 + exp(1)^(-scale))
+}
+
+# bs <- -100:100
+# es <- project_to_e_plane(bs, 40, 40/180*pi)
+# plot(bs, es)
+
+project_to_e_plane <- function(b, c, beta) {
+  if (length(c)!=length(b)) c <- rep(c, length.out = length(b))
+  if (length(beta)!=length(b)) beta <- rep(beta, length.out = length(b))
+
+  d <- sqrt(b^2+c^2)
+  lambda <- ATAN2(c, abs(b))
+  d <- sqrt(b^2 + c^2)
+
+  cases <- ifelse(b > 0, # in front of antenna?
+                  ifelse(beta < lambda, 1, 2), # below elevation plane?
+                  ifelse(lambda + beta < 90, 3, 4)) # projected point in front of antenna (=rare case)
+
+  e <- rep(0, length.out = length(b))
+
+  e[cases == 1] <- COS(lambda[cases==1] - beta[cases==1]) * d[cases==1]
+  e[cases == 2] <- COS(beta[cases == 2] - lambda[cases == 2]) * d[cases == 2]
+  e[cases == 3] <- -COS(lambda[cases==3] + beta[cases==3]) * d[cases==3]
+  e[cases == 4] <- COS(180 - lambda[cases == 4] - beta[cases == 4]) * d[cases == 4]
+  attr(e, "cases") <- cases
+  e
+}
+
+
+
+
+signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, co, param, enable = c("d", "h", "v")) {
+    #browser()
+
+  # cat(param$delta_min3dB, "\n")
+  # cat(param$epsilon_min3dB, "\n")
+
+    #plot(co$x, co$y, pch=21)
+    #points(cx,cy, col="red", pch=16)
+
+    r <- sqrt((co$x - cx)^2 + (co$y - cy)^2 + (co$z - cz)^2)
+    rxy <- sqrt((co$x - cx)^2 + (co$y - cy)^2)
+    #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
+
+
+    gamma_epsilon <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
+    epsilon <- (gamma_epsilon + tilt) %% 360
+    epsilon[epsilon > 180] <- epsilon[epsilon > 180] - 360
+    epsilon[epsilon < -180] <- epsilon[epsilon < -180] + 360
+
+
+    # calculate horizontal angle w.r.t. main direction
+    theta_delta <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
+    theta_delta[theta_delta < 0] <- theta_delta[theta_delta < 0] + 360
+    delta <- (theta_delta - direction) %% 360
+    delta[delta > 180] <- delta[delta > 180] - 360
+    delta[delta < -180] <- delta[delta < -180] + 360
+
+    # project delta to elevation plane -> delta2
+    a <- SIN(delta) * rxy
+    b <- COS(delta) * rxy
+
+    e <- project_to_e_plane(b, cz - co$z, -tilt)
+    delta2 <- ATAN2(a, e)
+
+
+
+    if ("d" %in% enable) {
+        db <- distance2dB(r, ifelse(small, param$db0_small, param$db0_tower))
+    } else{
+        db <- rep(param$db_mid + param$db_width, length(r))
+    }
+
+    if (!"delta_mapping" %in% names(param)) param <- attach_mapping(param)
+    if ("h" %in% enable && !small) {
+      sd <- find_sd(beam_width = beam_h, db_back = param$delta_dB_back, mapping = param$delta_mapping) #param$delta_min3dB
+      db <- db + norm_dBloss(delta2, db_back = param$delta_dB_back, sd = sd)
+        #db <- db + angle2dBloss(delta, beam_h, param$delta_pmin3dB) # param$delta_min3dB
+    }
+
+    if ("v" %in% enable && !small) {
+      sd <- find_sd(beam_width = beam_v, db_back = param$epsilon_dB_back, mapping = param$epsilon_mapping) #param$epsilon_min3dB
+      db <- db + norm_dBloss(epsilon, db_back = param$epsilon_dB_back, sd = sd)
+      #db <- db + el_dBloss(epsilon)
+      #db <- db + angle2dBloss(epsilon, beam_v, param$epsilon_pmin3dB) # param$delta_min3dB
+    }
+
+    lh <- db2p(db, db_mid = param$db_mid, db_width = param$db_width)
+
+    #list(lh = lh, dists = r, db = delta2) # plot projected angles
+    list(lh = lh, dists = r, db = db)
+}
