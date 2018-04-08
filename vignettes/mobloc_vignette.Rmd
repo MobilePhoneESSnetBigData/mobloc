@@ -1,0 +1,110 @@
+---
+title: "Introduction to mobloc, an R package for mobile location algorithms and tools"
+author: "Martijn Tennekes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Introduction
+
+This package contains a set of tools to approximate the location of mobile phone devices, given the connected cell. A cell is an antenna that is usually build inside a cell tower or on rooftops. Such cells are typically directional and have a good coverage within 120 degrees radius. There are also small cells which are omnidirectional, but have a smaller range. These cells are often contained inside buildings, or used in dense urban environments.
+
+The *cellplan* contains the metadata of the cells. Variables include position (latitide/longitude), height, (horizontal) tilt, direction, horizontal beam width, vertical beam width, and the type of cell. These variables are used in `mobloc` to approxiamate the location of mobile phone devices.
+
+```{r}
+#library(mobloc)
+library(devtools)
+load_all()
+```
+
+## Setup location model parameters
+
+
+The following code chunk is used to explore the model parameters interactively. In the first line, the default model parameters are loaded. In the second line, the interactive graphical user interface is started.
+
+```{r}
+param_default <- location_model_parameters()
+setup_location_model(param_default)
+```
+
+The top left box shows the settings of a cell which should be contained in the cellplan, namely, the height, the horizontal tilt, and whether it is a small cell (i.e. omnidirectional). If these variables are not available, not all tools in the `mobloc` package can be used.
+
+The top right plot shows the top view of the signal strength of the cell. If *small cell* is unticked, than the radiation direction is east.
+
+The next input boxes on the leftside of the screen configure the cells. These variables are often contained in the cellplan. If not, the default parameters can be used. The first variable is dBm at source (tower). This variable represents the signal strength near the cell. Since cells contained in cell towers and on rooftop are often much stronger than small cells, they have different default settings (-45dBm for normal cells, and -60dBm for small cells).
+
+The next two input boxes contain the -3dB angles and dB back values for both the horizontal and vertical planes. The radiation area of a cell can be seen as a three dimensional bulb. In the main direction (e.g. the direction in which the cell radiates) there is no loss in signal strength, irrespective of the distance. However, at a certain offset, there is signal loss. The -3dB angle is the angle at which the signal is halved. These angles (both for the horizontal and vertical plane) are usually contained in the cellplan. The dB back points are signal loss ratios between the front and the back of the cell. The two plots the the right bottom of the screen illustrate the radiation pattern in the horizontal/azimuth plane the the vertical/elevation plane. The black contour lines indicate the signal loss as a function of the offset angle. The red points are the -3dB points.
+
+The output type sets the type of radiation plot that is shown in the top right. dBm means the absolute signal strength value, and the likelihood the likelihood of connection, given the abolute signal strength values. 
+
+The transformation from absolute signal strength values to the likeloohd values is achieved by applying a logistic function, which is parameterized by dB mid and dB width. The reason to apply such a transformation is that the probability of connection not only depends on the signal strength, but also on load balancing. For load balancing, the tails of the distribution are less important, e.g. whether a signal is very good (say -80dBm) or superb (say -70 dBm) is less important than the availability of that cell.
+
+
+
+
+
+
+
+
+
+
+
+Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+
+- Never uses retina figures
+- Has a smaller default figure size
+- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))

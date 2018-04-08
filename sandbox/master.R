@@ -8,8 +8,8 @@ param_default <- location_model_parameters()
 
 setup_location_model(param_default)
 
-radiation_plot("norm_dBloss", db_back = -30)
-radiation_plot("norm_dBloss", type = "e", db_back = -30, beam_width = 65)
+radiation_plot(beam_width = 65, db_back = -30)
+radiation_plot(type = "e", db_back = -30, beam_width = 9)
 
 # ZL <- list(name = "ZL",
 #            description = "Zuid-Limburg",

@@ -84,8 +84,8 @@ setup_location_model <- function(param, plot.height=800) {
 
                 g2 <- likelihood_plot(db_mid = input$dbmid, db_width = input$dbwidth)
 
-                g3 <- radiation_plot(norm_dBloss, type = "a", db_back = input$hback, beam_width = input$h3dB)
-                g4 <- radiation_plot(norm_dBloss, type = "e", db_back = input$vback, beam_width = input$v3dB)
+                g3 <- radiation_plot(type = "a", db_back = input$hback, beam_width = input$h3dB)
+                g4 <- radiation_plot(type = "e", db_back = input$vback, beam_width = input$v3dB)
 
                 grid.arrange(g1, g2, g3, g4)
             })
