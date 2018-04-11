@@ -35,3 +35,5 @@ NULL
 #' @name ZL_land
 #' @docType data
 NULL
+
+.MOBLOC_CACHE <- new.env(FALSE, parent=globalenv())

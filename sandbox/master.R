@@ -20,10 +20,7 @@ radiation_plot(type = "e", db_back = -30, beam_width = 9)
 #            dir = "output/ZL")
 
 library(sf)
-ZL_bbox <- structure(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700),
-                     crs = st_crs(28992), class = "bbox")
-
-
+ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 ZL_raster <- create_raster(ZL_bbox)
 
 

@@ -1,4 +1,4 @@
-calculate_probabilities <- function(shps, rs, param, parallel) {
+calculate_probabilities <- function(shps, rs, param) {
     fnames <- ls(2)
 
     x <- foreach(p = shps, r = rs, .packages = c("sf", "raster"), .export = fnames, .combine = "c") %dopar% {

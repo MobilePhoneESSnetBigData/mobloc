@@ -36,7 +36,7 @@ shiny_cells <- function(cp, cp_poly, raster, prob, param) {
         server = function(input, output) {
 
             observe({
-                if (!input$threed) rgl::rgl.quit()
+                if (!input$threed) rgl::rgl.clear()
             })
 
 

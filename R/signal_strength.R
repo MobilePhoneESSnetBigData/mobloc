@@ -76,8 +76,8 @@ find_sd <- function(beam_width, db_back = NULL, mapping = NULL) {
 }
 
 attach_mapping <- function(param) {
-  param$delta_mapping <- create_mapping(param$delta_dB_back)
-  param$epsilon_mapping <- create_mapping(param$epsilon_dB_back)
+  param$azim_mapping <- create_mapping(param$azim_dB_back)
+  param$elev_mapping <- create_mapping(param$elev_dB_back)
   param
 }
 
@@ -133,8 +133,8 @@ project_to_e_plane <- function(b, c, beta) {
 signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, co, param, enable = c("d", "h", "v")) {
     #browser()
 
-  # cat(param$delta_min3dB, "\n")
-  # cat(param$epsilon_min3dB, "\n")
+  # cat(param$azim_min3dB, "\n")
+  # cat(param$elev_min3dB, "\n")
 
     #plot(co$x, co$y, pch=21)
     #points(cx,cy, col="red", pch=16)
@@ -144,25 +144,25 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
 
-    gamma_epsilon <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
-    epsilon <- (gamma_epsilon + tilt) %% 360
-    epsilon[epsilon > 180] <- epsilon[epsilon > 180] - 360
-    epsilon[epsilon < -180] <- epsilon[epsilon < -180] + 360
+    gamma_elev <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
+    elev <- (gamma_elev + tilt) %% 360
+    elev[elev > 180] <- elev[elev > 180] - 360
+    elev[elev < -180] <- elev[elev < -180] + 360
 
 
     # calculate horizontal angle w.r.t. main direction
-    theta_delta <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
-    theta_delta[theta_delta < 0] <- theta_delta[theta_delta < 0] + 360
-    delta <- (theta_delta - direction) %% 360
-    delta[delta > 180] <- delta[delta > 180] - 360
-    delta[delta < -180] <- delta[delta < -180] + 360
+    theta_azim <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
+    theta_azim[theta_azim < 0] <- theta_azim[theta_azim < 0] + 360
+    azim <- (theta_azim - direction) %% 360
+    azim[azim > 180] <- azim[azim > 180] - 360
+    azim[azim < -180] <- azim[azim < -180] + 360
 
-    # project delta to elevation plane -> delta2
-    a <- SIN(delta) * rxy
-    b <- COS(delta) * rxy
+    # project azim to elevation plane -> azim2
+    a <- SIN(azim) * rxy
+    b <- COS(azim) * rxy
 
     e <- project_to_e_plane(b, cz - co$z, -tilt)
-    delta2 <- ATAN2(a, e)
+    azim2 <- ATAN2(a, e)
 
 
 
@@ -172,22 +172,22 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
         db <- rep(param$db_mid + param$db_width, length(r))
     }
 
-    if (!"delta_mapping" %in% names(param)) param <- attach_mapping(param)
+    if (!"azim_mapping" %in% names(param)) param <- attach_mapping(param)
     if ("h" %in% enable && !small) {
-      sd <- find_sd(beam_width = beam_h, db_back = param$delta_dB_back, mapping = param$delta_mapping) #param$delta_min3dB
-      db <- db + norm_dBloss(delta2, db_back = param$delta_dB_back, sd = sd)
-        #db <- db + angle2dBloss(delta, beam_h, param$delta_pmin3dB) # param$delta_min3dB
+      sd <- find_sd(beam_width = beam_h, db_back = param$azim_dB_back, mapping = param$azim_mapping) #param$azim_min3dB
+      db <- db + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
+        #db <- db + angle2dBloss(azim, beam_h, param$azim_pmin3dB) # param$azim_min3dB
     }
 
     if ("v" %in% enable && !small) {
-      sd <- find_sd(beam_width = beam_v, db_back = param$epsilon_dB_back, mapping = param$epsilon_mapping) #param$epsilon_min3dB
-      db <- db + norm_dBloss(epsilon, db_back = param$epsilon_dB_back, sd = sd)
-      #db <- db + el_dBloss(epsilon)
-      #db <- db + angle2dBloss(epsilon, beam_v, param$epsilon_pmin3dB) # param$delta_min3dB
+      sd <- find_sd(beam_width = beam_v, db_back = param$elev_dB_back, mapping = param$elev_mapping) #param$elev_min3dB
+      db <- db + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
+      #db <- db + el_dBloss(elev)
+      #db <- db + angle2dBloss(elev, beam_v, param$elev_pmin3dB) # param$azim_min3dB
     }
 
     lh <- db2p(db, db_mid = param$db_mid, db_width = param$db_width)
 
-    #list(lh = lh, dists = r, db = delta2) # plot projected angles
+    #list(lh = lh, dists = r, db = azim2) # plot projected angles
     list(lh = lh, dists = r, db = db)
 }

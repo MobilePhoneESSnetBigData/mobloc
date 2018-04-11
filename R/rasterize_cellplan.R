@@ -23,13 +23,13 @@ rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     cp_poly$small <- cp$small
     # cp_poly <- cbind(cp_poly, cp %>% select(height, a, tilt3, indoor)) currently not working...
 
-    if (parallel) suppressWarnings(start_cluster())
+    suppressWarnings(start_cluster())
 
     qres <- quandrantify(cp_poly, r)
 
     param <- attach_mapping(param)
 
-    ppr <- calculate_probabilities(qres$shps, qres$rs, param, parallel)
+    ppr <- calculate_probabilities(qres$shps, qres$rs, param)
     ## 67 min, 4core i5 16GB, swap-5GB
     ## 37 min, 16 cores Xeon E5, 38 GB
 

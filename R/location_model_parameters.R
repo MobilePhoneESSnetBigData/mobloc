@@ -6,10 +6,10 @@
 #' @rdname location_model_parameters
 #' @param db0_tower signal strength in dBm near a large cell (placed in a cell tower or rooftop site)
 #' @param db0_small signal strength in dBm near a small cell (omnidirectional)
-#' @param delta_min3dB default horizontal beam width. At \code{delta_min3dB/2}, the signal strength is halved (so -3dBM)
-#' @param delta_dB_back difference in signal strength between front and back
-#' @param epsilon_min3dB default vertical beam width. At \code{epsilon_min3dB/2}, the signal strength is halved (so -3dBM)
-#' @param epsilon_dB_back difference in signal strength between front and back
+#' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
+#' @param azim_dB_back difference in signal strength between front and back
+#' @param elev_min3dB default vertical beam width. At \code{elev_min3dB/2}, the signal strength is halved (so -3dBM)
+#' @param elev_dB_back difference in signal strength between front and back
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
 #' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"plectrum"}, \code{"Voronoi"}.
@@ -22,10 +22,10 @@
 location_model_parameters <- function(
     db0_tower = -45,
     db0_small = -60,
-    delta_min3dB = 65,
-    delta_dB_back = -30,
-    epsilon_min3dB = 9,
-    epsilon_dB_back = -30,
+    azim_min3dB = 65,
+    azim_dB_back = -30,
+    elev_min3dB = 9,
+    elev_dB_back = -30,
     db_mid = -92.5,
     db_width = 5,
     poly_shape = "plectrum",

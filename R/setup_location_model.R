@@ -12,6 +12,8 @@ setup_location_model <- function(param, plot.height=800) {
 
     co <- as.data.frame(expand.grid(x=seq(-1000, 2000, by = 20), y=seq(-1000, 1000, by = 20), z=0))
 
+    assign("param", param, envir = .MOBLOC_CACHE)
+
     app <- shinyApp(
         ui = fluidPage(
             #shinyjs::useShinyjs(),
@@ -31,18 +33,18 @@ setup_location_model <- function(param, plot.height=800) {
                                                        sliderInput("db0_small", "dB at source (small)", -70, -30, value = param$db0_small, step = 5))),
                                   conditionalPanel("!input.small",
                                                    wellPanel(
-                                                       sliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$delta_min3dB, step = 1),
-                                                       #sliderInput("hf", "Dens. in hor. -3dB range", .05, .99, value = param$delta_pmin3dB, step = .01))
+                                                       sliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$azim_min3dB, step = 1),
+                                                       #sliderInput("hf", "Dens. in hor. -3dB range", .05, .99, value = param$azim_pmin3dB, step = .01))
                                                        sliderInput("hback", "Hozizontal dB back", -40, -10, value = -30, step = 5))
                                   )
                            ),
                            column(3,
                                   conditionalPanel("!input.small",
                                                    wellPanel(
-                                                       sliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$epsilon_min3dB, step = 1),
+                                                       sliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$elev_min3dB, step = 1),
                                                        sliderInput("vback", "Vertical dB back", -40, -10, value = -30, step = 5))),
 
-                                  #sliderInput("vf", "Dens. in vert. -dB range", .05, .99, value = param$epsilon_pmin3dB, step = .01))),
+                                  #sliderInput("vf", "Dens. in vert. -dB range", .05, .99, value = param$elev_pmin3dB, step = .01))),
                                   wellPanel(
                                       radioButtons("type", "Output type", choices = c("dB", "likelihood"), selected = "dB"),
                                       checkboxGroupInput("enable", "Enable", choices = c("distance" =  "d", "horizontal beam" = "h", "vertical beam" = "v"), selected = c("d", "h", "v"))),
@@ -68,13 +70,15 @@ setup_location_model <- function(param, plot.height=800) {
             output$heatmap <- renderPlot({
                 param <- list(db0_tower = input$db0_tower,
                               db0_small = input$db0_small,
-                              delta_min3dB = input$h3dB,
-                              delta_dB_back = input$hback,
-                              epsilon_min3dB = input$v3dB,
-                              epsilon_dB_back = input$vback,
+                              azim_min3dB = input$h3dB,
+                              azim_dB_back = input$hback,
+                              elev_min3dB = input$v3dB,
+                              elev_dB_back = input$vback,
                               db_mid = input$dbmid,
                               db_width = input$dbwidth)
-
+                paramFull <- get("param", envir = .MOBLOC_CACHE)
+                paramFull[names(param)] <- param
+                assign("param", paramFull, envir = .MOBLOC_CACHE)
                 heatmap_ground(co, param, input)
             })
 
@@ -89,9 +93,10 @@ setup_location_model <- function(param, plot.height=800) {
 
                 grid.arrange(g1, g2, g3, g4)
             })
-
+            onStop(function() {
+                stopApp(invisible(get("param", envir = .MOBLOC_CACHE)))
+            })
         }
     )
-
     runApp(app)
 }
