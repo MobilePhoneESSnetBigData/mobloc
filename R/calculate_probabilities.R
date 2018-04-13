@@ -1,8 +1,9 @@
-calculate_probabilities <- function(shps, rs, param) {
+calculate_probabilities <- function(shps, rs, param, parallel) {
+    `%fun%` <- if (parallel) `%dopar%` else `%do%`
+
     fnames <- ls(2)
 
-    x <- foreach(p = shps, r = rs, .packages = c("sf", "raster"), .export = fnames, .combine = "c") %dopar% {
-        cat("x")
+    x <- foreach(p = shps, r = rs, .packages = c("sf", "raster"), .export = fnames, .combine = "c") %fun% {
         #devtools::load_all()
         #source("scripts/src/signal_strength.R", local = TRUE)
         co <- as.data.frame(coordinates(r))
@@ -88,9 +89,9 @@ calculate_probabilities <- function(shps, rs, param) {
     df <- df %>%
         group_by(pid) %>%
         mutate(pr = pr / sum(pr),
-               lh = p / sum(p)) %>%
+               s = p / sum(p)) %>%
         ungroup()
 
 
-    df %>% select(pid=pid, rid=rid, p=pr, lh = lh, dist=dist, db = db)
+    df %>% select(pid=pid, rid=rid, p=pr, s = s, dist=dist, db = db)
 }

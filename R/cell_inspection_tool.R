@@ -12,7 +12,7 @@
 #' @import leaflet
 #' @import rgl
 #' @export
-shiny_cells <- function(cp, cp_poly, raster, prob, param) {
+viz_location_prob <- function(cp, cp_poly, raster, prob, param) {
     tmm <- tmap_mode("view")
 
     n <- nrow(cp)

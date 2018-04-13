@@ -52,20 +52,28 @@ start_cluster <- function(nodes = NA) {
     invisible()
 }
 
-current_cluster <- function() {
+current_cluster <- function(verbose = TRUE) {
     current_nodes <- nrow(showConnections())
     cluster_defined <- exists(".cl", envir = .GlobalEnv)
 
     if (!cluster_defined && current_nodes != 0) {
-        warning("Unknown cluster found. Use stopCluster to stop it.")
-        return(invisible())
-    }
-
-    if (cluster_defined) {
-        message("Cluster with ", current_nodes, " nodes found.")
+        if (verbose) warning("Unknown cluster found. Use stopCluster to stop it.")
+        return(invisible(current_nodes))
+    } else if (cluster_defined) {
+        if (verbose) message("Cluster with ", current_nodes, " nodes found.")
+        return(invisible(current_nodes))
     } else {
-        message("No cluster defined.")
+        if (verbose) message("No cluster defined.")
+        return(invisible(0L))
     }
-    invisible()
 }
 
+check_parallel <- function() {
+    nc <- current_cluster(verbose = FALSE)
+    if (nc==0) {
+        message("Function running with a single tread. Define a cluster with start_cluster to run this function parallelized")
+    } else {
+        message("Function running with ", nc, " parallel treads")
+    }
+    (nc != 0)
+}

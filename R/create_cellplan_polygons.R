@@ -26,7 +26,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
 
         cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h, small)
 
-        suppressWarnings(start_cluster())
+        #suppressWarnings(start_cluster())
 
         m <- do.call(mapply, c(list(FUN=create_poly, SIMPLIFY = FALSE, MoreArgs = list(poly_shape = param$poly_shape)), cp))
         cp_poly <- st_sf(geometry = do.call(st_sfc, c(m, list(crs = crs))))
@@ -75,7 +75,7 @@ create_poly <- function(Cell_name = NULL, x, y, rng, direction, beam_h, small = 
                                  y, y + COS(a) * rng, y), ncol=2)))
     } else {
         plot.new()
-        # plectrum
+        # oval
         xs <- c(x, x + SIN(directionL) * rng, x + SIN((directionR+directionL)/2) * rng, x + SIN(directionR) * rng)
         ys <- c(y, y + COS(directionL) * rng, y + COS((directionR+directionL)/2) * rng, y + COS(directionR) * rng)
 

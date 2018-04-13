@@ -12,7 +12,7 @@
 #' @param elev_dB_back difference in signal strength between front and back
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
-#' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"plectrum"}, \code{"Voronoi"}.
+#' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.
 #' @param max_range maximum range of large cells
 #' @param max_range_small maximum range of small cells
 #' @param area_expension when \code{poly_shape} is \code{"pie"} or \code{"plectrum"}, the size is determined by the corresponding Voronoi size and multiplied by \code{area_expension} to allow overlap.
@@ -28,7 +28,7 @@ location_model_parameters <- function(
     elev_dB_back = -30,
     db_mid = -92.5,
     db_width = 5,
-    poly_shape = "plectrum",
+    poly_shape = "oval",
     max_range = 10000,
     max_range_small = 100,
     area_expension = 4,

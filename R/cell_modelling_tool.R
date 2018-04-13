@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
 #' @export
-setup_location_model <- function(param, plot.height=800) {
+cell_modelling_tool <- function(param, plot.height=800) {
 
     co <- as.data.frame(expand.grid(x=seq(-1000, 2000, by = 20), y=seq(-1000, 1000, by = 20), z=0))
 
@@ -18,7 +18,7 @@ setup_location_model <- function(param, plot.height=800) {
         ui = fluidPage(
             #shinyjs::useShinyjs(),
             shiny::div(style = "font-size:75%;line-height:20px",
-                       titlePanel("Cell Modelling Tool"),
+                       titlePanel("Setup location model"),
                        fluidRow(
                            column(3,
                                   wellPanel(
