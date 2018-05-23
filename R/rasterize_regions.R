@@ -1,4 +1,5 @@
 rasterize_region <- function(shp, r100, file) {
+    r <- p <- NULL
     #shp <- readRDS("shapes/gm.rds")
     #r100 <- create_100m(NL2$bbox)
     r100 <- raster::setValues(r100, 1L:length(r100))
@@ -6,7 +7,7 @@ rasterize_region <- function(shp, r100, file) {
     qres <- quandrantify(shp, r100)
 
     x <- foreach(p = qres$shps, r = qres$rs, .packages = c("sf", "raster"), .combine = "rbind") %dopar% {
-        co <- as.data.frame(coordinates(r))
+        co <- as.data.frame(sp::coordinates(r))
 
         co$id <- r[]
         r2 <- st_as_sf(co, coords = c("x", "y"), crs = st_crs(p))

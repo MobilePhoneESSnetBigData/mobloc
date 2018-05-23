@@ -1,6 +1,6 @@
 stop_cluster <- function() {
     current_nodes <- nrow(showConnections())
-    cluster_defined <- exists(".cl", envir = .GlobalEnv)
+    cluster_defined <- !is.null(get(".cl", envir = .MOBLOC_CACHE))
 
     if (!cluster_defined) {
         if (current_nodes != 0) {
@@ -9,9 +9,9 @@ stop_cluster <- function() {
             message("No cluster defined.")
         }
     } else {
-        .cl <- get(".cl", envir=.GlobalEnv)
+        .cl <- get(".cl", envir=.MOBLOC_CACHE)
         stopCluster(.cl)
-        rm(".cl", envir = .GlobalEnv)
+        rm(".cl", envir = .MOBLOC_CACHE)
         message("Cluster with ", current_nodes, " nodes stopped.")
     }
     invisible()
@@ -27,7 +27,7 @@ stop_cluster <- function() {
 #' @import foreach
 start_cluster <- function(nodes = NA) {
     current_nodes <- nrow(showConnections())
-    cluster_defined <- exists(".cl", envir = .GlobalEnv)
+    cluster_defined <- !is.null(get(".cl", envir = .MOBLOC_CACHE))
 
     if (!cluster_defined && current_nodes != 0) {
         warning("Unknown cluster found. Use stopCluster to stop it.")
@@ -47,14 +47,14 @@ start_cluster <- function(nodes = NA) {
 
     .cl <- makeCluster(nodes)
     registerDoParallel(.cl)
-    assign(".cl", .cl, envir = .GlobalEnv)
+    assign(".cl", .cl, envir = .MOBLOC_CACHE)
     message("Cluster with ", nodes, " nodes created.")
     invisible()
 }
 
 current_cluster <- function(verbose = TRUE) {
     current_nodes <- nrow(showConnections())
-    cluster_defined <- exists(".cl", envir = .GlobalEnv)
+    cluster_defined <- !is.null(get(".cl", envir = .MOBLOC_CACHE))
 
     if (!cluster_defined && current_nodes != 0) {
         if (verbose) warning("Unknown cluster found. Use stopCluster to stop it.")
@@ -71,7 +71,7 @@ current_cluster <- function(verbose = TRUE) {
 check_parallel <- function() {
     nc <- current_cluster(verbose = FALSE)
     if (nc==0) {
-        message("Function running with a single tread. Define a cluster with start_cluster to run this function parallelized")
+        message("Function running with single threaded. Define a parallel backend to run it in parallel. This can be done with start_cluster")
     } else {
         message("Function running with ", nc, " parallel treads")
     }

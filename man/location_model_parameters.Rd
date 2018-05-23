@@ -6,10 +6,10 @@
 \title{Set and update location model parameters}
 \usage{
 location_model_parameters(db0_tower = -45, db0_small = -60,
-  delta_min3dB = 65, delta_dB_back = -30, epsilon_min3dB = 9,
-  epsilon_dB_back = -30, db_mid = -92.5, db_width = 5,
-  poly_shape = "plectrum", max_range = 10000, max_range_small = 100,
-  area_expension = 4, max_overlapping_cells = 20)
+  azim_min3dB = 65, azim_dB_back = -30, elev_min3dB = 9,
+  elev_dB_back = -30, db_mid = -92.5, db_width = 5, poly_shape = "oval",
+  max_range = 10000, max_range_small = 100, area_expension = 4,
+  max_overlapping_cells = 20)
 
 update_model_parameters(param, ...)
 }
@@ -18,19 +18,19 @@ update_model_parameters(param, ...)
 
 \item{db0_small}{signal strength in dBm near a small cell (omnidirectional)}
 
-\item{delta_min3dB}{default horizontal beam width. At \code{delta_min3dB/2}, the signal strength is halved (so -3dBM)}
+\item{azim_min3dB}{default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)}
 
-\item{delta_dB_back}{difference in signal strength between front and back}
+\item{azim_dB_back}{difference in signal strength between front and back}
 
-\item{epsilon_min3dB}{default vertical beam width. At \code{epsilon_min3dB/2}, the signal strength is halved (so -3dBM)}
+\item{elev_min3dB}{default vertical beam width. At \code{elev_min3dB/2}, the signal strength is halved (so -3dBM)}
 
-\item{epsilon_dB_back}{difference in signal strength between front and back}
+\item{elev_dB_back}{difference in signal strength between front and back}
 
 \item{db_mid}{middle point in the logistic function to map signal strength to probability}
 
 \item{db_width}{width of the logistic function to map signal strength to probability}
 
-\item{poly_shape}{shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"plectrum"}, \code{"Voronoi"}.}
+\item{poly_shape}{shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.}
 
 \item{max_range}{maximum range of large cells}
 

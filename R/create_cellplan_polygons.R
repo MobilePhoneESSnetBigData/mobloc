@@ -10,6 +10,8 @@
 #' @export
 #' @return cellplan polygons
 create_cellplan_polygons <- function(cp, land, bbox, param) {
+    Cell_name <- x <- y <- direction <- beam_h <- small <- NULL
+
     crs <- st_crs(cp)
     if (param$poly_shape == "Voronoi") {
         cp_poly <- create_voronoi(cp, land, bbox)

@@ -7,8 +7,10 @@
 #' @param raster raster with indices
 #' @param elevation raster with elevation data
 #' @param param list
+#' @importFrom stats dnorm
 #' @export
 rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
+    dist <- db <- Cell_name <- rid <- s <- NULL
 
     r <- brick(raster, elevation)
 

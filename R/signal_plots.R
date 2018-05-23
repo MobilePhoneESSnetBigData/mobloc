@@ -1,4 +1,5 @@
 heatmap_ground <- function(co, param, input) {
+    lh <- x <- y <- db <- NULL
   if (length(input$enable) || input$small) {
     enable <- if (input$small) "d" else input$enable
     co2 <- cbind(co, signal_strength(0,0,input$height, direction = 90, tilt = input$tilt, beam_h = input$h3dB, beam_v =  input$v3dB, small = input$small, co = co, param = param, enable = enable))
@@ -45,6 +46,7 @@ heatmap_ground <- function(co, param, input) {
 #' @param base_size base size of the plot
 #' @export
 distance_plot <- function(db0, base_size = 11) {
+    distance <- dBm <- NULL
   df <- data.frame(distance = seq(10, 3000, by=10))
   df$dBm <- distance2dB(df$distance, db0)
   ggplot(df, aes(x=distance, y= dBm)) + geom_line() + theme_bw(base_size = base_size)
@@ -55,6 +57,7 @@ distance_plot <- function(db0, base_size = 11) {
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
 likelihood_plot <- function(db_mid, db_width, base_size = 11) {
+    dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
   df$likelihood <- db2p(df$dBm, db_mid, db_width)
   ggplot(df, aes(x=dBm, y=likelihood)) + geom_line() + scale_y_continuous("Relative signal strength") + theme_bw(base_size = base_size)
@@ -66,6 +69,7 @@ likelihood_plot <- function(db_mid, db_width, base_size = 11) {
 #' @param beam_width beam width
 #' @param db_back difference in signal strength between front and back
 radiation_plot <- function(type = "a", beam_width, db_back = -30, base_size = 11) {
+    deg <- dbLoss <- x <- y <- NULL
   start <- ifelse(type=="a", 0, pi/2)
   title <- ifelse(type=="a", "Azimuth Plane Pattern", "Elevation Plane Pattern")
   df <- data.frame(deg = seq(0, 360, length.out = 360))

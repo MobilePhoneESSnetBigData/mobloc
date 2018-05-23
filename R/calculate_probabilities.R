@@ -1,12 +1,14 @@
 calculate_probabilities <- function(shps, rs, param, parallel) {
+    r <- rid <- prior <- pn <- pr <- pid <- s <- dist <- db <- Cell_name <- x <- y <- direction <- NULL
+
     `%fun%` <- if (parallel) `%dopar%` else `%do%`
 
     fnames <- ls(2)
 
-    x <- foreach(p = shps, r = rs, .packages = c("sf", "raster"), .export = fnames, .combine = "c") %fun% {
+    x <- foreach(p = shps, r = rs, .packages = c("sp", "sf", "raster"), .export = fnames, .combine = "c") %fun% {
         #devtools::load_all()
         #source("scripts/src/signal_strength.R", local = TRUE)
-        co <- as.data.frame(coordinates(r))
+        co <- as.data.frame(sp::coordinates(r))
 
         co$id <- r[][,1]
         co$z <- r[][,2]

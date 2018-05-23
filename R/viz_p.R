@@ -1,17 +1,17 @@
-viz_cells <- function(prj) {
-    cp <- readRDS(file.path(prj$dir, "cp.rds"))
-    cp_poly <- readRDS(file.path(prj$dir, "cp_poly.rds"))
-
-    bbx <- prj$bbox
-    crs <- st_crs(prj$crs)$proj4string
-    sp_rect <- bb_sp(matrix(bbx, ncol=2), projection = crs)
-
-    tmm <- tmap_mode("view")
-
-    print(qtm(cp_poly, fill=NULL) + qtm(cp) + qtm(sp_rect, fill=NULL))
-
-    suprobessMessages(tmap_mode(tmm))
-}
+# viz_cells <- function(prj) {
+#     cp <- readRDS(file.path(prj$dir, "cp.rds"))
+#     cp_poly <- readRDS(file.path(prj$dir, "cp_poly.rds"))
+#
+#     bbx <- prj$bbox
+#     crs <- st_crs(prj$crs)$proj4string
+#     sp_rect <- bb_sp(matrix(bbx, ncol=2), projection = crs)
+#
+#     tmm <- tmap_mode("view")
+#
+#     print(qtm(cp_poly, fill=NULL) + qtm(cp) + qtm(sp_rect, fill=NULL))
+#
+#     suprobessMessages(tmap_mode(tmm))
+# }
 
 #
 # art_mast_prob <- function(prj) {
@@ -59,6 +59,8 @@ viz_cells <- function(prj) {
 
 
 viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid = NA, var = c("p", "db", "none")) {
+    Cell_name <- beam_h <- dBm <- db <- dbLoss <- deg <- direction <- dist <- distance <- likelihood <- r <- rid <- s <- small <- x <- y <- NULL
+
     #     show.raster <- file.exists(file.path(prj$dir, "prob.rds"))
     #
     #     if (show.raster) prob <- readRDS(file.path(prj$dir, "prob.rds"))
@@ -103,21 +105,21 @@ viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid 
             prob2 <- prob2 %>%
                 summarise(p=sum(p)) %>%
                 ungroup()
-            values(r)[prob2$rid] <- prob2$p * 1000   #log(df2$p * 10000)
+            raster::values(r)[prob2$rid] <- prob2$p * 1000   #log(df2$p * 10000)
             title <- "probability (in 1/1000)"
         } else {
             prob2 <- prob2 %>%
                 summarise(db=max(db)) %>%
                 ungroup()
-            values(r)[prob2$rid] <- prob2$db * 1000   #log(df2$p * 10000)
+            raster::values(r)[prob2$rid] <- prob2$db * 1000   #log(df2$p * 10000)
             title <- "dBm"
         }
-        r <- trim(r)
-        if ("3d" %in% type) {
-            require(rasterVis)
-            rgl::rgl.clear()
-            plot3D(r)
-        }
+        r <- raster::trim(r)
+        # if ("3d" %in% type) {
+        #     require(rasterVis)
+        #     rgl::rgl.clear()
+        #     rasterVis::plot3D(r)
+        # }
     # }
 
 

@@ -10,9 +10,9 @@
 #' @import tmap
 #' @import shiny
 #' @import leaflet
-#' @import rgl
+#' @importFrom graphics plot.new xspline
 #' @export
-viz_location_prob <- function(cp, cp_poly, raster, prob, param) {
+cell_inspection_tool <- function(cp, cp_poly, raster, prob, param) {
     tmm <- tmap_mode("view")
 
     n <- nrow(cp)
@@ -27,22 +27,22 @@ viz_location_prob <- function(cp, cp_poly, raster, prob, param) {
                 sidebarPanel(
                     radioButtons("var", "Variable", c("Probability" = "p",
                                                       "Signal strength (dB)" = "db"), selected = "p"),
-                    checkboxGroupInput("sel", "Selected cells", cells, selected = "c1"),
-                    checkboxInput("threed", "3d plot", value = FALSE)),
+                    #checkboxInput("threed", "3d plot", value = FALSE),
+                    checkboxGroupInput("sel", "Selected cells", cells, selected = "c1")),
                 mainPanel(
                     leafletOutput("map", height=1000)
                 ))
         ),
         server = function(input, output) {
 
-            observe({
-                if (!input$threed) rgl::rgl.clear()
-            })
+            # observe({
+            #     if (!input$threed) rgl::rgl.clear()
+            # })
 
 
             output$map <- renderLeaflet({
-                type <- if (input$threed) c("map", "3d") else "map"
-                tm <- viz_p(cp, cp_poly, raster, prob, param, type = type, var = input$var, cellid = match(input$sel, cells))
+                #type <- if (input$threed) c("map", "3d") else "map"
+                tm <- viz_p(cp, cp_poly, raster, prob, param, type = "map", var = input$var, cellid = match(input$sel, cells))
                 tmap_leaflet(tm)
             })
         }
