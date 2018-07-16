@@ -8,7 +8,12 @@ create_voronoi <- function(cp, land, bbox) {
 
     cp2 <- st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
 
-    box <- st_as_sf(tmaptools::bb_sp(matrix(bbox, ncol=2), projection = st_crs(cp)$proj4string))
+    if (packageVersion("tmaptools") >= "2.0") {
+        box <- tmaptools::bb_poly(bbox, projection = st_crs(cp)$proj4string)
+    } else {
+        box <- st_as_sf(tmaptools::bb_sp(matrix(bbox, ncol=2), projection = st_crs(cp)$proj4string))
+    }
+
 
     v <- st_sf(geometry=st_cast(st_voronoi(st_union(cp2), box$geometry)))
     vint <- unlist(st_intersects(cp2, v))

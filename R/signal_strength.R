@@ -143,47 +143,40 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
     rxy <- sqrt((co$x - cx)^2 + (co$y - cy)^2)
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
-
-    gamma_elev <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
-    elev <- (gamma_elev + tilt) %% 360
-    elev[elev > 180] <- elev[elev > 180] - 360
-    elev[elev < -180] <- elev[elev < -180] + 360
-
-
-    # calculate horizontal angle w.r.t. main direction
-    theta_azim <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
-    theta_azim[theta_azim < 0] <- theta_azim[theta_azim < 0] + 360
-    azim <- (theta_azim - direction) %% 360
-    azim[azim > 180] <- azim[azim > 180] - 360
-    azim[azim < -180] <- azim[azim < -180] + 360
-
-    # project azim to elevation plane -> azim2
-    a <- SIN(azim) * rxy
-    b <- COS(azim) * rxy
-
-    e <- project_to_e_plane(b, cz - co$z, -tilt)
-    azim2 <- ATAN2(a, e)
-
-
-
     if ("d" %in% enable) {
         db <- distance2dB(r, ifelse(small, param$db0_small, param$db0_tower))
     } else{
         db <- rep(param$db_mid + param$db_width, length(r))
     }
 
-    if (!"azim_mapping" %in% names(param)) param <- attach_mapping(param)
-    if ("h" %in% enable && !small) {
-      sd <- find_sd(beam_width = beam_h, db_back = param$azim_dB_back, mapping = param$azim_mapping) #param$azim_min3dB
-      db <- db + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
-        #db <- db + angle2dBloss(azim, beam_h, param$azim_pmin3dB) # param$azim_min3dB
+    if ("h" %in% enable && !small && !any(is.na(direction)) && !any(is.na(beam_h))) {
+        if (!"azim_mapping" %in% names(param)) param <- attach_mapping(param)
+        # calculate horizontal angle w.r.t. main direction
+        theta_azim <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
+        theta_azim[theta_azim < 0] <- theta_azim[theta_azim < 0] + 360
+        azim <- (theta_azim - direction) %% 360
+        azim[azim > 180] <- azim[azim > 180] - 360
+        azim[azim < -180] <- azim[azim < -180] + 360
+
+        # project azim to elevation plane -> azim2
+        a <- SIN(azim) * rxy
+        b <- COS(azim) * rxy
+
+        e <- project_to_e_plane(b, cz - co$z, -tilt)
+        azim2 <- ATAN2(a, e)
+
+        sd <- find_sd(beam_width = beam_h, db_back = param$azim_dB_back, mapping = param$azim_mapping) #param$azim_min3dB
+        db <- db + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
     }
 
-    if ("v" %in% enable && !small) {
-      sd <- find_sd(beam_width = beam_v, db_back = param$elev_dB_back, mapping = param$elev_mapping) #param$elev_min3dB
-      db <- db + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
-      #db <- db + el_dBloss(elev)
-      #db <- db + angle2dBloss(elev, beam_v, param$elev_pmin3dB) # param$azim_min3dB
+    if ("v" %in% enable && !small && !any(is.na(tilt))) {
+        gamma_elev <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
+        elev <- (gamma_elev + tilt) %% 360
+        elev[elev > 180] <- elev[elev > 180] - 360
+        elev[elev < -180] <- elev[elev < -180] + 360
+
+        sd <- find_sd(beam_width = beam_v, db_back = param$elev_dB_back, mapping = param$elev_mapping) #param$elev_min3dB
+        db <- db + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
     }
 
     lh <- db2p(db, db_mid = param$db_mid, db_width = param$db_width)

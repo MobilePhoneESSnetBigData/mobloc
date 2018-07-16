@@ -68,6 +68,7 @@ likelihood_plot <- function(db_mid, db_width, base_size = 11) {
 #' @param type \code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane
 #' @param beam_width beam width
 #' @param db_back difference in signal strength between front and back
+#' @export
 radiation_plot <- function(type = "a", beam_width, db_back = -30, base_size = 11) {
     deg <- dbLoss <- x <- y <- NULL
   start <- ifelse(type=="a", 0, pi/2)
