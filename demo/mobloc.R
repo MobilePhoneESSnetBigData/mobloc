@@ -3,6 +3,7 @@
 library(mobloc)
 library(tmap)
 library(sf)
+library(dplyr)
 
 param_default <- location_model_parameters()
 str(param_default)
@@ -15,6 +16,18 @@ radiation_plot(type = "e", db_back = -30, beam_width = 9)
 data("ZL_cellplan", "ZL_land", "ZL_elevation")
 
 head(ZL_cellplan)
+
+
+ZL_cellplan2 <- check_cellplan(ZL_cellplan, param_current)
+
+
+
+
+
+
+
+
+
 
 tmap_mode("view")
 qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)

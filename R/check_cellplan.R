@@ -1,0 +1,74 @@
+#' Check cellplan
+#'
+#' Function to the check cellplan, i.e. the format and whether are all required variables present.
+#'
+#' @param cp cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., `st_geometry_type(cp)` should return `POINT`s). The variables (of which only the first is required) are used:
+#' \itemize{
+#' \item \code{z} or \code{height} (required). Both indicate the height of the antenna, but \code{z} is including and \code{height} is excluding the elevation. If only \code{height} is present, also the argument \code{elevation} is required.
+#' \item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional antennas.
+#' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
+#' \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
+#' \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
+#' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. Only used when \code{range} is missing.
+#' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
+#' }
+#' Required variables:
+#' @import sf
+#' @import sp
+check_cellplan <- function(cp, param, elevation=NULL) {
+    if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points", call. = FALSE)
+
+    nms <- names(cp)
+
+    coor <- st_coordinates(cp)
+
+    if (!"x" %in% nms) cp$x <- unname(coor[,1])
+    if (!"y" %in% nms) cp$y <- unname(coor[,2])
+
+    if (!any(c("height", "z") %in% nms)) {
+        if ("small" %in% nms) {
+            warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
+            cp$height <- ifelse(cp$small, param$height_small, param$height)
+        } else {
+            warning("Neither 'height' nor 'z' were found. Since 'small' is also missing, the height of each antennas is set to ", param$height)
+            cp$height <- param$height
+        }
+    }
+
+    if (!"z" %in% names(cp)) {
+        if (missing(elevation)) stop("Variable 'z' is missing. Please add this variable or specify the argument 'elevation' (since z = height + elevation).", call. = FALSE)
+
+        cpsp <- as(cp, "Spatial")
+        #cpsp <- set_projection(cpsp, current.projection = st_crs(crs)$proj4string)
+        cp$elevation <- as.vector(extract(elevation, cpsp))
+
+
+    }
+
+    if (!"direction" %in% nms) {
+        warning("The variable 'direction' is missing. All antennas are assumed to be omni-directional.", call. = FALSE)
+        cp$direction <- NA
+    } else {
+        if (max(cp$direction, na.rm = TRUE) < 2 * pi) warning("Probably, direction are in radials. Please provide them in degrees")
+    }
+
+    if (!"range" %in% nms) {
+        if ("small" %in% nms) {
+            warning("'range' is missing. Since 'small' is also missing, the range of all antennas are set to the parameter max_range, which is ", param$max_range, ".", call. = FALSE)
+            cp$range <- param$max_range
+        } else {
+            warning("'range' is missing. Therefore, the range of 'small' antennas are set to the parameter max_range_small (", param$max_range, ") and the range of other antennas to max_range (", param$max_range_small, ").", call. = FALSE)
+            cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
+        }
+    }
+
+    if (!all(c("direction", "tilt", "beam_h", "beam_v") %in% nms)) {
+        warning("Variables 'direction', 'tilt', 'beam_h', and/or 'beam_v' are missing. Therefore, directional component of the signal strenth model will not be used.", call. = FALSE)
+        cp$direction <- NA
+        cp$tilt <- NA
+        cp$beam_h <- NA
+        cp$beam_v <- NA
+    }
+
+    cp
+}

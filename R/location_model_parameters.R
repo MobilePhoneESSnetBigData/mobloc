@@ -31,6 +31,11 @@ location_model_parameters <- function(
     poly_shape = "oval",
     max_range = 10000,
     max_range_small = 100,
+    height = 30,
+    height_small = 8,
+    tilt = 5,
+    beam_v = 9,
+    beam_h = 65,
     area_expension = 4,
     max_overlapping_cells = 20) {
 

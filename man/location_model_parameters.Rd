@@ -7,9 +7,9 @@
 \usage{
 location_model_parameters(db0_tower = -45, db0_small = -60,
   azim_min3dB = 65, azim_dB_back = -30, elev_min3dB = 9,
-  elev_dB_back = -30, db_mid = -92.5, db_width = 5, poly_shape = "oval",
-  max_range = 10000, max_range_small = 100, area_expension = 4,
-  max_overlapping_cells = 20)
+  elev_dB_back = -30, db_mid = -92.5, db_width = 5,
+  poly_shape = "oval", max_range = 10000, max_range_small = 100,
+  area_expension = 4, max_overlapping_cells = 20)
 
 update_model_parameters(param, ...)
 }
