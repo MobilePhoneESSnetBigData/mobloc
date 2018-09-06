@@ -21,12 +21,12 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         vor <- create_voronoi(cp, land, bbox)
 
         vor_area <- as.numeric(st_area(vor))
-        rng <- ifelse(cp$small, param$max_range_small, param$max_range)
+        #rng <- ifelse(cp$small, param$max_range_small, param$max_range)
 
-        cp$rng <- pmin(sqrt(vor_area/pi) * param$area_expension, rng)
+        cp$rng <- pmin(sqrt(vor_area/pi) * param$area_expension, cp$range)
         st_geometry(cp) <- NULL
 
-        cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h, small)
+        cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
 
         #suppressWarnings(start_cluster())
 
@@ -41,12 +41,12 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
     cp_poly
 }
 
-create_poly <- function(Cell_name = NULL, x, y, rng, direction, beam_h, small = FALSE, poly_shape = "pie", line_points_per_circle = 360) {
+create_poly <- function(Cell_name = NULL, x, y, rng, direction, beam_h, poly_shape = "pie", line_points_per_circle = 360) {
 
     directionL <- direction - beam_h
     directionR <- direction + beam_h
 
-    if (small || is.na(direction)) { # circle
+    if (is.na(direction)) { # circle
         a <- seq(0, 360, length.out=line_points_per_circle)
         a[line_points_per_circle] <- 0 # to make sure the polygon is closed
         st_polygon(list(matrix(c(x + SIN(a) * rng,

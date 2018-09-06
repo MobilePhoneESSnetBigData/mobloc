@@ -40,8 +40,7 @@ check_cellplan <- function(cp, param, elevation=NULL) {
 
         cpsp <- as(cp, "Spatial")
         #cpsp <- set_projection(cpsp, current.projection = st_crs(crs)$proj4string)
-        cp$elevation <- as.vector(extract(elevation, cpsp))
-
+        cp$z <- as.vector(extract(elevation, cpsp))
 
     }
 
@@ -54,11 +53,11 @@ check_cellplan <- function(cp, param, elevation=NULL) {
 
     if (!"range" %in% nms) {
         if ("small" %in% nms) {
+            warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").", call. = FALSE)
+            cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
+        } else {
             warning("'range' is missing. Since 'small' is also missing, the range of all antennas are set to the parameter max_range, which is ", param$max_range, ".", call. = FALSE)
             cp$range <- param$max_range
-        } else {
-            warning("'range' is missing. Therefore, the range of 'small' antennas are set to the parameter max_range_small (", param$max_range, ") and the range of other antennas to max_range (", param$max_range_small, ").", call. = FALSE)
-            cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
         }
     }
 
@@ -70,5 +69,6 @@ check_cellplan <- function(cp, param, elevation=NULL) {
         cp$beam_v <- NA
     }
 
+    attr(cp, "cellplan_checked") <- TRUE
     cp
 }

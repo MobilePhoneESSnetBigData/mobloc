@@ -1,6 +1,5 @@
 create_voronoi <- function(cp, land, bbox) {
 
-
     cp$x2 <- cp$x + ifelse(cp$small | is.na(cp$direction), 0, (SIN(cp$direction) * 100))
     cp$y2 <- cp$y + ifelse(cp$small | is.na(cp$direction), 0, (COS(cp$direction) * 100))
 

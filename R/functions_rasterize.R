@@ -2,17 +2,21 @@
 #'
 #' Create empty raster from a bounding box with a specified projection.
 #'
-#' @param bbx bounding box (see \code{\link[sf:st_bbox]{st_bbox}}), where the projection (\code{crs}) must be specified
+#' @param x either a bounding box (see \code{\link[sf:st_bbox]{st_bbox}}) where the projection (\code{crs}) must be specified, or a raster object (where the elevation object is supposed to be used)
 #' @param cell.size cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)
 #' @return raster layer
 #' @import sf
 #' @importFrom raster raster setValues brick extent crop
 #' @export
-create_raster <- function(bbx, cell.size = 100) {
-    nr <- (bbx[4] - bbx[2]) / cell.size
-    nc <- (bbx[3] - bbx[1]) / cell.size
+create_raster <- function(x, cell.size = 100) {
+    if (inherits(x, "bbox")) {
+        nc <- (x[3] - x[1]) / cell.size
+        nr <- (bbx[4] - bbx[2]) / cell.size
 
-    r <- raster(nrows=nr, ncols=nc, xmn=bbx[1], xmx=bbx[3], ymn=bbx[2], ymx=bbx[4], crs=attr(bbx, "crs")$proj4string)
+        r <- raster(nrows=nr, ncols=nc, xmn=x[1], xmx=x[3], ymn=x[2], ymx=x[4], crs=attr(bbx, "crs")$proj4string)
+    } else if (inherits(x, "Raster")) {
+        r <- raster(x)
+    } else stop("x has a wrong format: it should either be a raster object or an sf bbox", call. = FALSE)
     setValues(r, 1L:length(r))
 }
 
