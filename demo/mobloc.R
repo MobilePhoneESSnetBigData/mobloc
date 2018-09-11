@@ -8,6 +8,7 @@ library(dplyr)
 param <- location_model_parameters()
 str(param)
 
+
 param <- cell_modelling_tool(param)
 
 radiation_plot(beam_width = 65, db_back = -30)
@@ -25,7 +26,7 @@ ZL_cellplan <- check_cellplan(ZL_cellplan, param)
 
 
 tmap_mode("view")
-qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan2)
+qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 
 
 library(tmaptools)
@@ -42,9 +43,7 @@ qtm(ZL_voronoi) + qtm(ZL_cellplan)
 
 ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
 
-# workaround for bug in CRAN 2.0 (fixed in github/mtennekes/tmap)
 qtm(ZL_poly) + qtm(ZL_cellplan)
-
 
 ZL_raster <- create_raster(ZL_elevation)
 ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)

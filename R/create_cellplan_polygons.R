@@ -1,6 +1,6 @@
 #' Create cellplan polygons
 #'
-#' Create cellplan polygons
+#' Create cellplan polygons. The type of polygons that are created are specified by \code{param$poly_shape}. One option is \code{"Voronoi"} which creates a Voronoi tesselation. Otherwise, a circle is created for omnidirectional antennas, and an \code{"oval"} or \code{"pie"} for directional antennas. The range and horizontal beam width are taken into account. The range is the mimimum of \code{param$range} and \code{param$area_expension} times the square root of a/$pi$ where a is the area size of the corresponding Voronoi polygon.
 #' @param cp cellplan
 #' @param land land
 #' @param bbox bounding box
