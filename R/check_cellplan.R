@@ -67,7 +67,29 @@ check_cellplan <- function(cp, param, elevation=NULL) {
         cp$tilt <- NA
         cp$beam_h <- NA
         cp$beam_v <- NA
+    } else {
+        na_tilt <- is.na(cp$tilt) & !is.na(cp$direction)
+        if (any(na_tilt)) {
+            warning("Tilt of ", sum(na_tilt), " directional antennas is missing. They are imputed with ", param$tilt)
+            cp$tilt[na_tilt] <- param$tilt
+        }
+
+        na_beam_v <- is.na(cp$beam_v) & !is.na(cp$direction)
+        if (any(na_beam_v)) {
+            warning("beam_v of ", sum(na_beam_v), " directional antennas is missing. They are imputed with ", param$beam_v)
+            cp$beam_v[na_beam_v] <- param$beam_v
+        }
+
+        na_beam_h <- is.na(cp$beam_h) & !is.na(cp$direction)
+        if (any(na_beam_h)) {
+            warning("beam_h of ", sum(na_beam_h), " directional antennas is missing. They are imputed with ", param$beam_h)
+            cp$beam_h[na_beam_h] <- param$beam_h
+        }
+
     }
+
+
+
 
     attr(cp, "cellplan_checked") <- TRUE
     cp
