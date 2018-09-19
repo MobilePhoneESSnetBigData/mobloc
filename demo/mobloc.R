@@ -34,7 +34,12 @@ str(bb(ZL_elevation))
 
 #ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 
-ZL_bbox <- tmaptools::bb(ZL_elevation)
+if (packageVersion("tmaptools") >= "2.0") {
+    ZL_bbox <- tmaptools::bb(ZL_elevation)
+} else {
+    ZL_bbox <- structure(as.vector(tmaptools::bb(ZL_elevation)), class = "bbox", crs = st_crs(ZL_land))
+}
+
 
 param_voronoi <- update_model_parameters(param, poly_shape = "Voronoi")
 ZL_voronoi <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param_voronoi)

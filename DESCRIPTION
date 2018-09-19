@@ -14,7 +14,7 @@ Imports:
     stats,
     graphics,
     sp,
-    sf (>= 0.6-0),
+    sf (>= 0.5-4),
     tmap (>= 1.10),
     tmaptools (>= 1.1),
     shiny,
