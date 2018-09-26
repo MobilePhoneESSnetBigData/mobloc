@@ -41,13 +41,13 @@ if (packageVersion("tmaptools") >= "2.0") {
 }
 
 
-param_voronoi <- update_model_parameters(param, poly_shape = "Voronoi")
-ZL_voronoi <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param_voronoi)
+
+res <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
+
+ZL_poly <- res$poly
+ZL_voronoi <- res$voronoi
 
 qtm(ZL_voronoi) + qtm(ZL_cellplan)
-
-ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
-
 qtm(ZL_poly) + qtm(ZL_cellplan)
 
 ZL_raster <- create_raster(ZL_elevation)

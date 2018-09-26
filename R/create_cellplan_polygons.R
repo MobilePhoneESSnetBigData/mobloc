@@ -17,55 +17,114 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         cp_poly <- create_voronoi(cp, land, bbox)
         #cp_poly <- crop_to_land(cp_poly, land)
     } else {
-
+        # extract the ranges from the Voronoi tesselation, but lowerbound it by max_range_small
         vor <- create_voronoi(cp, land, bbox)
 
-        vor_area <- as.numeric(st_area(vor))
-        #rng <- ifelse(cp$small, param$max_range_small, param$max_range)
+        if (nrow(vor) != nrow(cp)) warning("Number of voronoi polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
 
-        cp$rng <- pmin(sqrt(vor_area/pi) * param$area_expension, cp$range)
-        st_geometry(cp) <- NULL
+        vor_area <- as.numeric(st_area(vor))
+        cp$rng <- pmax(param$max_range_small, pmin(sqrt(vor_area/pi) * param$area_expension, cp$range))
+        #cp$rng <- cp$range * runif(nrow(cp), .3, 1)
 
         cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
 
-        #suppressWarnings(start_cluster())
+        res <- create_shape(cp, type = param$poly_shape)
 
-        m <- do.call(mapply, c(list(FUN=create_poly, SIMPLIFY = FALSE, MoreArgs = list(poly_shape = param$poly_shape)), cp))
+        cp$cls <- res$cls
+        shapes <- c(list(create_circle()), res$shapes)
+
+
+        shp <- st_sf(do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
+        shp$id <- c("circle", paste("beam_h =", res$beams))
+
+        png(file.path(TPDIR, "polygons_basic_shapes.png"), width = 1000, height = 800)
+        tmod <- tmap_mode("plot")
+        print(tm_shape(shp) +
+            tm_polygons() +
+            tm_facets(by = "id", free.coords = FALSE, drop.units = TRUE) +
+            tm_layout(scale = 2) +
+            tm_grid())
+        dev.off()
+        tmap_mode(tmod)
+
+        rot <- function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
+
+        clust <- current_cluster(verbose = FALSE)
+
+        if (clust == 0) {
+            warning("No cluster defined. Please define a cluster to run faster")
+            m <- mapply(function(cl, x, y, rng, direction) {
+                if (is.na(direction)) direction <- 0
+                shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
+            }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
+        } else {
+            m <- mcmapply(function(cl, x, y, rng, direction) {
+                if (is.na(direction)) direction <- 0
+                shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
+            }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
+        }
+
+        #m <- do.call(mapply, c(list(FUN=create_poly, SIMPLIFY = FALSE, MoreArgs = list(poly_shape = param$poly_shape, ovals = ovals)), cp))
         cp_poly <- st_sf(geometry = do.call(st_sfc, c(m, list(crs = crs))))
 #browser()
         cp_poly <- crop_to_land(cp_poly, land)
     }
 
+    if (nrow(cp) != nrow(cp_poly)) warning("Number of polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
 
-
-    cp_poly
+    list(poly = cp_poly, vor = vor)
 }
 
-create_poly <- function(Cell_name = NULL, x, y, rng, direction, beam_h, poly_shape = "pie", line_points_per_circle = 360) {
+create_shape <- function(cp, type = c("oval", "pie"), line_points_per_circle = 360) {
+    cp_ovals <- cp %>% filter(!is.na(direction))
+    ids <- which(!is.na(cp$direction))
 
-    directionL <- direction - beam_h
-    directionR <- direction + beam_h
+    beams <- sort(unique(cp_ovals$beam_h))
 
-    if (is.na(direction)) { # circle
-        a <- seq(0, 360, length.out=line_points_per_circle)
-        a[line_points_per_circle] <- 0 # to make sure the polygon is closed
-        st_polygon(list(matrix(c(x + SIN(a) * rng,
-                                 y + COS(a) * rng), ncol=2)))
-    } else if (poly_shape == "pie") {
-        a <- seq(directionL, directionR, length.out =  (directionR-directionL) / 360 * line_points_per_circle)
-        st_polygon(list(matrix(c(x, x + SIN(a) * rng, x,
-                                 y, y + COS(a) * rng, y), ncol=2)))
-    } else { # oval
-        plot.new()
-
-        xs <- c(x, x + SIN(directionL) * rng, x + SIN((directionR+directionL)/2) * rng, x + SIN(directionR) * rng)
-        ys <- c(y, y + COS(directionL) * rng, y + COS((directionR+directionL)/2) * rng, y + COS(directionR) * rng)
-
-        coords <- xspline(x=xs, y=ys, shape = c(-1, -1, -1), draw = FALSE, open = FALSE)
-        coords <- do.call(cbind, coords)
-
-        coords <- rbind(coords, coords[1,])
-
-        st_polygon(list(coords))
+    if (length(beams) > 10) {
+        km <- kmeans(cp_ovals$beam_h, centers = 2)
+        cls <- km$cluster
+        beams <- km$centers
+    } else {
+        cls <- match(cp_ovals$beam_h, beams)
     }
+
+    shapes <- lapply(beams, function(b) {
+        directionL <- -b
+        directionR <- b
+
+        x <- 0
+        y <- 0
+        rng <- 1
+
+        if (type == "oval") {
+            plot.new()
+
+            xs <- c(x, x + SIN(directionL) * rng * .75, x + SIN(0) * rng, x + SIN(directionR) * rng * .75)
+            ys <- c(y, y + COS(directionL) * rng * .75, y + COS(0) * rng, y + COS(directionR) * rng * .75)
+
+            coords <- xspline(x=xs, y=ys, shape = c(-1, -1, -1), draw = FALSE, open = FALSE)
+            coords <- do.call(cbind, coords)
+
+            coords <- rbind(coords, coords[1,])
+
+            st_polygon(list(coords))
+        } else { # pie
+            a <- seq(directionL, directionR, length.out =  (directionR-directionL) / 360 * line_points_per_circle)
+            st_polygon(list(matrix(c(x, x + SIN(a) * rng, x,
+                                     y, y + COS(a) * rng, y), ncol=2)))
+        }
+    })
+
+    cls2 <- 0L
+    cls2[ids] <- cls
+
+    return(list(shapes = shapes, cls = cls2, beams = beams))
+}
+
+create_circle <- function(line_points_per_circle = 360) {
+    a <- seq(0, 360, length.out=line_points_per_circle)
+    a[line_points_per_circle] <- 0 # to make sure the polygon is closed
+    st_polygon(list(matrix(c(SIN(a),
+                             COS(a)), ncol=2)))
 }

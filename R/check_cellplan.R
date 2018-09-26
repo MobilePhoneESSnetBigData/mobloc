@@ -61,6 +61,36 @@ check_cellplan <- function(cp, param, elevation=NULL) {
         }
     }
 
+
+    if (!"db0" %in% nms) {
+        if ("small" %in% nms) {
+            warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").", call. = FALSE)
+            cp$db0 <- ifelse(cp$small, param$db0_small, param$db0_tower)
+        } else {
+            warning("'db0' is missing. Since 'small' is also missing, the db0 of all antennas are set to the parameter db0_tower, which is ", param$db0_tower, ".", call. = FALSE)
+            cp$db0 <- param$db0_tower
+        }
+    }
+
+
+
+
+    if ("small" %in% nms) {
+        if (any(!is.na(cp$direction[cp$small])) ||
+            any(!is.na(cp$tilt[cp$small])) ||
+            any(!is.na(cp$beam_h[cp$small])) ||
+            any(!is.na(cp$beam_v[cp$small]))) {
+
+            warning("some small cells have non-missing values for direction, tilt, beam_h and beam_v. They are set to NA, since small cells are modeled as omnidirectional", call. = FALSE)
+            cp$direction[cp$small] <- NA
+            cp$tilt[cp$small] <- NA
+            cp$beam_h[cp$small] <- NA
+            cp$beam_v[cp$small] <- NA
+        }
+    }
+
+
+
     if (!all(c("direction", "tilt", "beam_h", "beam_v") %in% nms)) {
         warning("Variables 'direction', 'tilt', 'beam_h', and/or 'beam_v' are missing. Therefore, directional component of the signal strenth model will not be used.", call. = FALSE)
         cp$direction <- NA
