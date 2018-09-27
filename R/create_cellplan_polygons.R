@@ -40,15 +40,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         shp <- st_sf(do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
         shp$id <- c("circle", paste("beam_h =", res$beams))
 
-        png(file.path(TPDIR, "polygons_basic_shapes.png"), width = 1000, height = 800)
-        tmod <- tmap_mode("plot")
-        print(tm_shape(shp) +
-            tm_polygons() +
-            tm_facets(by = "id", free.coords = FALSE, drop.units = TRUE) +
-            tm_layout(scale = 2) +
-            tm_grid())
-        dev.off()
-        tmap_mode(tmod)
+
 
         rot <- function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
 
@@ -75,7 +67,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
 
     if (nrow(cp) != nrow(cp_poly)) warning("Number of polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
 
-    list(poly = cp_poly, vor = vor)
+    list(poly = cp_poly, vor = vor, shp = shp)
 }
 
 create_shape <- function(cp, type = c("oval", "pie"), line_points_per_circle = 360) {
