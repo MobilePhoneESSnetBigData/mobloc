@@ -15,7 +15,9 @@
 #' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.
 #' @param max_range maximum range of large cells
 #' @param max_range_small maximum range of small cells
-#' @param area_expension when \code{poly_shape} is \code{"pie"} or \code{"plectrum"}, the size is determined by the corresponding Voronoi size and multiplied by \code{area_expension} to allow overlap.
+#' @param min_range minimum range of large cells
+#' @param min_range_small minimum range of small cells
+#' @param area_expension when \code{poly_shape} is \code{"pie"} or \code{"oval"}, the sizes of the polygons set to the area size of the corresponding Voronoi are multiplied by \code{area_expension}. These sizes are subsequently adjusted such that the range is bounded by \code{min_range} and \code{max_range} for normal cells and \code{min_range_small} and \code{max_range_small} for small cells. The purpose of \code{area_expension} is to allow overlap. This number (which should be greater than 1) contols the amout of overlap. The default value 1.5.
 #' @param max_overlapping_cells maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected
 #' @return parameter list
 #' @export
@@ -31,6 +33,8 @@ location_model_parameters <- function(
     poly_shape = "oval",
     max_range = 10000,
     max_range_small = 100,
+    min_range = 400,
+    min_range_small = 100,
     height = 30,
     height_small = 8,
     tilt = 5,

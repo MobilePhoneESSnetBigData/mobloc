@@ -1,3 +1,10 @@
+#' Stop cluster
+#'
+#' Stop a cluster that is started with start cluster
+#'
+#' @import parallel
+#' @import doParallel
+#' @import foreach
 stop_cluster <- function() {
     current_nodes <- nrow(showConnections())
     cluster_defined <- !is.null(get(".cl", envir = .MOBLOC_CACHE))
@@ -17,9 +24,9 @@ stop_cluster <- function() {
     invisible()
 }
 
-#' Setup cluster with desired number of cores.
+#' Start cluster with desired number of cores.
 #'
-#' Setup a cluster, only if not already defined.
+#' Start a cluster, only if not already defined.
 #'
 #' @param nodes Number of nodes that are used in this cluster. If missing the number of codes is used.
 #' @import parallel
@@ -52,6 +59,15 @@ start_cluster <- function(nodes = NA) {
     invisible()
 }
 
+#' Returns number of cors in the current cluster
+#'
+#' Returns number of cors in the current cluster
+#'
+#' @param verbose should warnings be given?
+#' @import parallel
+#' @import doParallel
+#' @import foreach
+#' @return number of cores
 current_cluster <- function(verbose = TRUE) {
     current_nodes <- nrow(showConnections())
     cluster_defined <- !is.null(get(".cl", envir = .MOBLOC_CACHE))

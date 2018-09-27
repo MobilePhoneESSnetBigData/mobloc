@@ -4,10 +4,10 @@
 \alias{create_raster}
 \title{Create empty raster}
 \usage{
-create_raster(bbx, cell.size = 100)
+create_raster(x, cell.size = 100)
 }
 \arguments{
-\item{bbx}{bounding box (see \code{\link[sf:st_bbox]{st_bbox}}), where the projection (\code{crs}) must be specified}
+\item{x}{either a bounding box (see \code{\link[sf:st_bbox]{st_bbox}}) where the projection (\code{crs}) must be specified, or a raster object (where the elevation object is supposed to be used)}
 
 \item{cell.size}{cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_cluster.R
 \name{start_cluster}
 \alias{start_cluster}
-\title{Setup cluster with desired number of cores.}
+\title{Start cluster with desired number of cores.}
 \usage{
 start_cluster(nodes = NA)
 }
@@ -10,5 +10,5 @@ start_cluster(nodes = NA)
 \item{nodes}{Number of nodes that are used in this cluster. If missing the number of codes is used.}
 }
 \description{
-Setup a cluster, only if not already defined.
+Start a cluster, only if not already defined.
 }

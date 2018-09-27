@@ -9,6 +9,8 @@ location_model_parameters(db0_tower = -45, db0_small = -60,
   azim_min3dB = 65, azim_dB_back = -30, elev_min3dB = 9,
   elev_dB_back = -30, db_mid = -92.5, db_width = 5,
   poly_shape = "oval", max_range = 10000, max_range_small = 100,
+  min_range = 400, min_range_small = 100, height = 30,
+  height_small = 8, tilt = 5, beam_v = 9, beam_h = 65,
   area_expension = 4, max_overlapping_cells = 20)
 
 update_model_parameters(param, ...)
@@ -36,7 +38,11 @@ update_model_parameters(param, ...)
 
 \item{max_range_small}{maximum range of small cells}
 
-\item{area_expension}{when \code{poly_shape} is \code{"pie"} or \code{"plectrum"}, the size is determined by the corresponding Voronoi size and multiplied by \code{area_expension} to allow overlap.}
+\item{min_range}{minimum range of large cells}
+
+\item{min_range_small}{minimum range of small cells}
+
+\item{area_expension}{when \code{poly_shape} is \code{"pie"} or \code{"oval"}, the sizes of the polygons set to the area size of the corresponding Voronoi are multiplied by \code{area_expension}. These sizes are subsequently adjusted such that the range is bounded by \code{min_range} and \code{max_range} for normal cells and \code{min_range_small} and \code{max_range_small} for small cells. The purpose of \code{area_expension} is to allow overlap. This number (which should be greater than 1) contols the amout of overlap. The default value 1.5.}
 
 \item{max_overlapping_cells}{maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected}
 

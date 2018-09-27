@@ -23,8 +23,11 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         if (nrow(vor) != nrow(cp)) warning("Number of voronoi polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
 
         vor_area <- as.numeric(st_area(vor))
-        cp$rng <- pmax(param$max_range_small, pmin(sqrt(vor_area/pi) * param$area_expension, cp$range))
-        #cp$rng <- cp$range * runif(nrow(cp), .3, 1)
+        vor_range <- sqrt(vor_area/pi) * param$area_expension
+
+        cp$rng <- ifelse(cp$small,
+                         pmax(pmin(vor_range, param$max_range_small), param$min_range_small),
+                         pmax(pmin(vor_range, param$max_range), param$min_range))
 
         cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
 
@@ -116,7 +119,7 @@ create_shape <- function(cp, type = c("oval", "pie"), line_points_per_circle = 3
         }
     })
 
-    cls2 <- 0L
+    cls2 <- rep(0L, nrow(cp))
     cls2[ids] <- cls
 
     return(list(shapes = shapes, cls = cls2, beams = beams))

@@ -9,7 +9,7 @@
 #' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 #' \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 #' \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
-#' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. Only used when \code{range} is missing.
+#' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'.
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
 #' Required variables:
@@ -25,15 +25,19 @@ check_cellplan <- function(cp, param, elevation=NULL) {
     if (!"x" %in% nms) cp$x <- unname(coor[,1])
     if (!"y" %in% nms) cp$y <- unname(coor[,2])
 
-    if (!any(c("height", "z") %in% nms)) {
-        if ("small" %in% nms) {
-            warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
-            cp$height <- ifelse(cp$small, param$height_small, param$height)
-        } else {
-            warning("Neither 'height' nor 'z' were found. Since 'small' is also missing, the height of each antennas is set to ", param$height)
-            cp$height <- param$height
-        }
+    if ("small" %in% names(cp)) {
+        if (is.numeric(cp$small)) cp$small <- as.logical(cp$small)
+        warning("small is missing. Therefore, all antennas are assumed to be normal", call. = FALSE)
+    } else {
+        cp$small <- FALSE
     }
+
+
+    if (!any(c("height", "z") %in% nms)) {
+        warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
+        cp$height <- ifelse(cp$small, param$height_small, param$height)
+    }
+
 
     if (!"z" %in% names(cp)) {
         if (missing(elevation)) stop("Variable 'z' is missing. Please add this variable or specify the argument 'elevation' (since z = height + elevation).", call. = FALSE)
@@ -52,41 +56,29 @@ check_cellplan <- function(cp, param, elevation=NULL) {
     }
 
     if (!"range" %in% nms) {
-        if ("small" %in% nms) {
-            warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").", call. = FALSE)
-            cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
-        } else {
-            warning("'range' is missing. Since 'small' is also missing, the range of all antennas are set to the parameter max_range, which is ", param$max_range, ".", call. = FALSE)
-            cp$range <- param$max_range
-        }
+        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").", call. = FALSE)
+        cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
     }
 
 
     if (!"db0" %in% nms) {
-        if ("small" %in% nms) {
-            warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").", call. = FALSE)
-            cp$db0 <- ifelse(cp$small, param$db0_small, param$db0_tower)
-        } else {
-            warning("'db0' is missing. Since 'small' is also missing, the db0 of all antennas are set to the parameter db0_tower, which is ", param$db0_tower, ".", call. = FALSE)
-            cp$db0 <- param$db0_tower
-        }
+        warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").", call. = FALSE)
+        cp$db0 <- ifelse(cp$small, param$db0_small, param$db0_tower)
     }
 
 
 
 
-    if ("small" %in% nms) {
-        if (any(!is.na(cp$direction[cp$small])) ||
-            any(!is.na(cp$tilt[cp$small])) ||
-            any(!is.na(cp$beam_h[cp$small])) ||
-            any(!is.na(cp$beam_v[cp$small]))) {
+    if (any(!is.na(cp$direction[cp$small])) ||
+        any(!is.na(cp$tilt[cp$small])) ||
+        any(!is.na(cp$beam_h[cp$small])) ||
+        any(!is.na(cp$beam_v[cp$small]))) {
 
-            warning("some small cells have non-missing values for direction, tilt, beam_h and beam_v. They are set to NA, since small cells are modeled as omnidirectional", call. = FALSE)
-            cp$direction[cp$small] <- NA
-            cp$tilt[cp$small] <- NA
-            cp$beam_h[cp$small] <- NA
-            cp$beam_v[cp$small] <- NA
-        }
+        warning("some small cells have non-missing values for direction, tilt, beam_h and beam_v. They are set to NA, since small cells are modeled as omnidirectional", call. = FALSE)
+        cp$direction[cp$small] <- NA
+        cp$tilt[cp$small] <- NA
+        cp$beam_h[cp$small] <- NA
+        cp$beam_v[cp$small] <- NA
     }
 
 
