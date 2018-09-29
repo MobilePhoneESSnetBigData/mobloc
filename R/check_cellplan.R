@@ -12,10 +12,11 @@
 #' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'.
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
-#' Required variables:
+#' @param land land polygon. If specifies, it checks if all antennas are contained inside it
+#' @param elevation see argument \code{cp}
 #' @import sf
 #' @import sp
-check_cellplan <- function(cp, param, elevation=NULL) {
+check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
     if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points", call. = FALSE)
 
     nms <- names(cp)
@@ -111,7 +112,15 @@ check_cellplan <- function(cp, param, elevation=NULL) {
     }
 
 
+    if (!missing(land)) {
+        it <- sapply(st_intersects(cp, land), length)
+        sel <- (it==1L)
 
+        if (any(!sel)) {
+            warning("some antennas are not inside land: ", paste(which(sel), collapse = ", "), "These are omitted.")
+        }
+        cp <- cp[sel, ]
+    }
 
     attr(cp, "cellplan_checked") <- TRUE
     cp

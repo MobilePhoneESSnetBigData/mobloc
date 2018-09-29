@@ -11,63 +11,76 @@
 #' @return cellplan polygons
 create_cellplan_polygons <- function(cp, land, bbox, param) {
     Cell_name <- x <- y <- direction <- beam_h <- small <- NULL
-
     crs <- st_crs(cp)
-    if (param$poly_shape == "Voronoi") {
-        cp_poly <- create_voronoi(cp, land, bbox)
-        #cp_poly <- crop_to_land(cp_poly, land)
-    } else {
-        # extract the ranges from the Voronoi tesselation, but lowerbound it by max_range_small
-        vor <- create_voronoi(cp, land, bbox)
 
-        if (nrow(vor) != nrow(cp)) warning("Number of voronoi polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
+    # extract the ranges from the Voronoi tesselation, but lowerbound it by max_range_small
+    vor <- create_voronoi(cp, land, bbox)
 
-        vor_area <- as.numeric(st_area(vor))
-        vor_range <- sqrt(vor_area/pi) * param$area_expension
-
-        cp$rng <- ifelse(cp$small,
-                         pmax(pmin(vor_range, param$max_range_small), param$min_range_small),
-                         pmax(pmin(vor_range, param$max_range), param$min_range))
-
-        cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
-
-        res <- create_shape(cp, type = param$poly_shape)
-
-        cp$cls <- res$cls
-        shapes <- c(list(create_circle()), res$shapes)
-
-
-        shp <- st_sf(do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
-        shp$id <- c("circle", paste("beam_h =", res$beams))
-
-
-
-        rot <- function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
-
-        clust <- current_cluster(verbose = FALSE)
-
-        if (clust == 0) {
-            warning("No cluster defined. Please define a cluster to run faster")
-            m <- mapply(function(cl, x, y, rng, direction) {
-                if (is.na(direction)) direction <- 0
-                shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
-            }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
-        } else {
-            m <- mcmapply(function(cl, x, y, rng, direction) {
-                if (is.na(direction)) direction <- 0
-                shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
-            }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
-        }
-
-        #m <- do.call(mapply, c(list(FUN=create_poly, SIMPLIFY = FALSE, MoreArgs = list(poly_shape = param$poly_shape, ovals = ovals)), cp))
-        cp_poly <- st_sf(geometry = do.call(st_sfc, c(m, list(crs = crs))))
-#browser()
-        cp_poly <- crop_to_land(cp_poly, land)
+    # wrong Voronoi number
+    if (nrow(vor) != nrow(cp)) {
+        warning("Number of voronoi polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
+        return(list(poly = NULL, vor = vor, shp = shp))
     }
 
-    if (nrow(cp) != nrow(cp_poly)) warning("Number of polygons is not equal to the number of antennas. Please check the cellplan.", call. = FALSE)
+    # return Voronoi
+    if (param$poly_shape == "Voronoi") return(list(poly = NULL, vor = vor, shp = NULL))
+
+
+    # use Voronoi polygons to determine range
+    vor_area <- as.numeric(st_area(vor))
+    vor_range <- sqrt(vor_area/pi) * param$area_expension
+    cp$rng <- ifelse(cp$small,
+                     pmax(pmin(vor_range, param$max_range_small), param$min_range_small),
+                     pmax(pmin(vor_range, param$max_range), param$min_range))
+
+    # subset cp
+    cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
+
+    # create basic shapes
+    res <- create_shape(cp, type = param$poly_shape)
+    cp$cls <- res$cls
+    shapes <- c(list(create_circle()), res$shapes)
+    shp <- st_sf(do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
+    shp$id <- c("circle", paste("beam_h =", res$beams))
+
+    # check basic shape area sizes
+    shp_areas <- as.numeric(st_area(shp))
+    if (any(is.na(shp_areas) | is.nan(shp_areas) | shp_areas == 0)) {
+        warning("Unable to create basic shapes. Please check them (argument 'shp')")
+        return(list(poly = NULL, vor = vor, shp = shp))
+    }
+
+    rot <- function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
+    clust <- current_cluster(verbose = FALSE)
+
+    if (clust == 0) {
+        warning("No cluster defined. Please define a cluster to run faster")
+        m <- mapply(function(cl, x, y, rng, direction) {
+            if (is.na(direction)) direction <- 0
+            shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
+        }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
+    } else {
+        m <- mcmapply(function(cl, x, y, rng, direction) {
+            if (is.na(direction)) direction <- 0
+            shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)
+        }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
+    }
+
+    cp_poly <- st_sf(geometry = do.call(st_sfc, c(m, list(crs = crs))))
+
+    # check transformed shapes
+    if (nrow(cp) != nrow(cp_poly)) {
+        warning("Number of polygons is not equal to the number of antennas. Probably, something went wrong with the rotating and resizing the shapes. Please check the basic polygon shapes (attribute 'shp'), and the the cellplan (especially variables rng and direction).", call. = FALSE)
+    }
+
+    cp_poly <- crop_to_land(cp_poly, land)
+
+    if (nrow(cp) != nrow(cp_poly)) {
+        warning("Some polygons could not be created, because probably, they are not intersecting with land. Did you run check_cellplan with the argument 'land' specified?", call. = FALSE)
+    }
 
     list(poly = cp_poly, vor = vor, shp = shp)
+
 }
 
 create_shape <- function(cp, type = c("oval", "pie"), line_points_per_circle = 360) {
