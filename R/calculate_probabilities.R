@@ -5,7 +5,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
 
     fnames <- ls(2)
 
-    x <- foreach(p = shps, r = rs, .packages = c("sp", "sf", "raster"), .export = fnames, .combine = "c") %fun% {
+    x <- foreach(p = shps, r = rs, .packages = c("sp", "sf", "raster", "mobloc"), .export = fnames, .combine = "c") %fun% {
         #devtools::load_all()
         #source("scripts/src/signal_strength.R", local = TRUE)
         co <- as.data.frame(sp::coordinates(r))
