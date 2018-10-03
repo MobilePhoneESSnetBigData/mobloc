@@ -1,4 +1,4 @@
-viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid = NA, var = c("p", "db", "none")) {
+viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid = NA, var = c("p", "s", "db", "none")) {
     Cell_name <- beam_h <- dBm <- db <- dbLoss <- deg <- direction <- dist <- distance <- likelihood <- r <- rid <- s <- small <- x <- y <- NULL
 
     #     show.raster <- file.exists(file.path(prj$dir, "prob.rds"))
@@ -47,6 +47,12 @@ viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid 
                 ungroup()
             raster::values(r)[prob2$rid] <- prob2$p * 1000   #log(df2$p * 10000)
             title <- "probability (in 1/1000)"
+        } else if (var=="s") {
+            prob2 <- prob2 %>%
+                summarise(s=sum(s)) %>%
+                ungroup()
+            raster::values(r)[prob2$rid] <- prob2$s * 1000   #log(df2$p * 10000)
+            title <- "relative signal strength (in 1/1000)"
         } else {
             prob2 <- prob2 %>%
                 summarise(db=max(db)) %>%
@@ -63,17 +69,22 @@ viz_p <- function(cp, cp_poly, raster, prob, param, type=c("map", "3d"), cellid 
     # }
 
 
+    varname <- switch(var,
+                      p = "Probability",
+                      s = "Relative signal strength",
+                      db = "Signal strength (dBm)",
+                      "var")
 
 
     if ("map" %in% type) {
         #tmm <- tmap_mode("view")
 
         tm <- tm_shape(cp_lines) +
-            tm_lines(lwd = "sel", col = "sel", scale = 2, palette = c("gray60", "red"), auto.palette.mapping = FALSE, legend.lwd.show = FALSE, legend.col.show = FALSE, popup.vars = TRUE, id = "id") +
+            tm_lines(lwd = "sel", col = "sel", scale = 4, palette = c("gray60", "red"), auto.palette.mapping = FALSE, legend.lwd.show = FALSE, legend.col.show = FALSE, popup.vars = TRUE, id = "id", group = "polygon borders") +
             tm_shape(cp) +
-            tm_dots(col = "sel", legend.show = FALSE, palette = c("gray60", "red"), style = "cat", popup.vars = TRUE, id = "id")
+            tm_dots(col = "sel", size = .1, legend.show = FALSE, palette = c("gray60", "red"), style = "cat", popup.vars = TRUE, id = "id", clustering = TRUE, group = "antenna locations")
 
-        tm <- tm + qtm(r, raster.title = title)
+        tm <- tm + qtm(r, raster.title = title, group = varname)
         #if (!is.null(sp_rect)) tm <- tm + qtm(sp_rect, fill=NULL)
         #print(tm)
         #suprobessMessages(tmap_mode(tmm))

@@ -1,21 +1,24 @@
 #' Check cellplan
 #'
-#' Function to the check cellplan, i.e. the format and whether are all required variables present.
+#' Function to the check cellplan. It checks the format and whether are all required variables present. When \code{land}, a mutlipolygon object that defines the region of interest, is specified, it checks whether all antennas are inside this region.
 #'
 #' @param cp cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., `st_geometry_type(cp)` should return `POINT`s). The variables (of which only the first is required) are used:
 #' \itemize{
-#' \item \code{z} or \code{height} (required). Both indicate the height of the antenna, but \code{z} is including and \code{height} is excluding the elevation. If only \code{height} is present, also the argument \code{elevation} is required.
+#' \item \code{height}. Height of the antenna. If omitted, the default value \code{height} from the parameter list \code{param} will be used.
+#' \item \code{z}. Required unless \code{elevation} is specified. Note that \code{z = elevation + height}. So if the arugment \code{elevation} is specified, \code{z} will automatically be derived.
 #' \item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional antennas.
 #' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 #' \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 #' \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
-#' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'.
+#' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
+#' @param param parameter list. See \code{\link{location_model_parameters}}.
 #' @param land land polygon. If specifies, it checks if all antennas are contained inside it
-#' @param elevation see argument \code{cp}
+#' @param elevation see argument \code{cp} (variable \code{z})
 #' @import sf
 #' @import sp
+#' @export
 check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
     if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points", call. = FALSE)
 

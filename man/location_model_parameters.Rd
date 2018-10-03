@@ -16,7 +16,7 @@ location_model_parameters(db0_tower = -45, db0_small = -60,
 update_model_parameters(param, ...)
 }
 \arguments{
-\item{db0_tower}{signal strength in dBm near a large cell (placed in a cell tower or rooftop site)}
+\item{db0_tower}{signal strength in dBm near a normal antennas (placed in a cell tower or rooftop site)}
 
 \item{db0_small}{signal strength in dBm near a small cell (omnidirectional)}
 
@@ -34,13 +34,23 @@ update_model_parameters(param, ...)
 
 \item{poly_shape}{shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.}
 
-\item{max_range}{maximum range of large cells}
+\item{max_range}{maximum range of normal antennas}
 
 \item{max_range_small}{maximum range of small cells}
 
-\item{min_range}{minimum range of large cells}
+\item{min_range}{minimum range of normal antennas}
 
 \item{min_range_small}{minimum range of small cells}
+
+\item{height}{default height of normal antennas}
+
+\item{height_small}{default height of small cells}
+
+\item{tilt}{default (horizontal) tilt. Only applicable for directional antennas}
+
+\item{beam_v}{default vertical beam width. Only applicable for directional antennas}
+
+\item{beam_h}{default horizontal beam width. Only applicable for directional antennas}
 
 \item{area_expension}{when \code{poly_shape} is \code{"pie"} or \code{"oval"}, the sizes of the polygons set to the area size of the corresponding Voronoi are multiplied by \code{area_expension}. These sizes are subsequently adjusted such that the range is bounded by \code{min_range} and \code{max_range} for normal cells and \code{min_range_small} and \code{max_range_small} for small cells. The purpose of \code{area_expension} is to allow overlap. This number (which should be greater than 1) contols the amout of overlap. The default value 1.5.}
 

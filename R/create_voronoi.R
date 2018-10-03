@@ -1,11 +1,7 @@
 create_voronoi <- function(cp, land, bbox) {
 
-    cp$x2 <- cp$x + ifelse(cp$small | is.na(cp$direction), 0, (SIN(cp$direction) * 100))
-    cp$y2 <- cp$y + ifelse(cp$small | is.na(cp$direction), 0, (COS(cp$direction) * 100))
 
-    cp2 <- st_set_geometry(cp, NULL)
-
-    cp2 <- st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
+    cp2 <- move_cp_to_direction(cp)
 
     if (packageVersion("tmaptools") >= "2.0") {
         box <- tmaptools::bb_poly(bbox, projection = st_crs(cp)$proj4string)
@@ -21,4 +17,13 @@ create_voronoi <- function(cp, land, bbox) {
 
     x <- st_intersection(x, box)
     crop_to_land(x, land)
+}
+
+move_cp_to_direction <- function(cp, distance = 100) {
+    cp$x2 <- cp$x + ifelse(cp$small | is.na(cp$direction), 0, (SIN(cp$direction) * distance))
+    cp$y2 <- cp$y + ifelse(cp$small | is.na(cp$direction), 0, (COS(cp$direction) * distance))
+
+    cp2 <- st_set_geometry(cp, NULL)
+
+    st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
 }

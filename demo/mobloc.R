@@ -8,8 +8,7 @@ library(dplyr)
 param <- location_model_parameters()
 str(param)
 
-
-param <- cell_modelling_tool(param)
+cell_modelling_tool(param)
 
 radiation_plot(beam_width = 65, db_back = -30)
 radiation_plot(type = "e", db_back = -30, beam_width = 9)
@@ -28,10 +27,6 @@ ZL_cellplan <- check_cellplan(ZL_cellplan, param)
 tmap_mode("view")
 qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 
-
-library(tmaptools)
-str(bb(ZL_elevation))
-
 #ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 
 if (packageVersion("tmaptools") >= "2.0") {
@@ -40,12 +35,10 @@ if (packageVersion("tmaptools") >= "2.0") {
     ZL_bbox <- structure(as.vector(tmaptools::bb(ZL_elevation)), class = "bbox", crs = st_crs(ZL_land))
 }
 
-
-
 res <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
 
 ZL_poly <- res$poly
-ZL_voronoi <- res$voronoi
+ZL_voronoi <- res$vor
 
 qtm(ZL_voronoi) + qtm(ZL_cellplan)
 qtm(ZL_poly) + qtm(ZL_cellplan)

@@ -4,7 +4,7 @@
 #'
 #' @name location_model_parameters
 #' @rdname location_model_parameters
-#' @param db0_tower signal strength in dBm near a large cell (placed in a cell tower or rooftop site)
+#' @param db0_tower signal strength in dBm near a normal antennas (placed in a cell tower or rooftop site)
 #' @param db0_small signal strength in dBm near a small cell (omnidirectional)
 #' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
 #' @param azim_dB_back difference in signal strength between front and back
@@ -13,10 +13,15 @@
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
 #' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.
-#' @param max_range maximum range of large cells
+#' @param max_range maximum range of normal antennas
 #' @param max_range_small maximum range of small cells
-#' @param min_range minimum range of large cells
+#' @param min_range minimum range of normal antennas
 #' @param min_range_small minimum range of small cells
+#' @param height default height of normal antennas
+#' @param height_small default height of small cells
+#' @param tilt default (horizontal) tilt. Only applicable for directional antennas
+#' @param beam_v default vertical beam width. Only applicable for directional antennas
+#' @param beam_h default horizontal beam width. Only applicable for directional antennas
 #' @param area_expension when \code{poly_shape} is \code{"pie"} or \code{"oval"}, the sizes of the polygons set to the area size of the corresponding Voronoi are multiplied by \code{area_expension}. These sizes are subsequently adjusted such that the range is bounded by \code{min_range} and \code{max_range} for normal cells and \code{min_range_small} and \code{max_range_small} for small cells. The purpose of \code{area_expension} is to allow overlap. This number (which should be greater than 1) contols the amout of overlap. The default value 1.5.
 #' @param max_overlapping_cells maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected
 #' @return parameter list

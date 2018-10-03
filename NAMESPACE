@@ -2,6 +2,7 @@
 
 export(cell_inspection_tool)
 export(cell_modelling_tool)
+export(check_cellplan)
 export(create_cellplan_polygons)
 export(create_raster)
 export(distance_plot)

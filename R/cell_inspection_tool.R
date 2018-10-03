@@ -17,6 +17,8 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param) {
 
     n <- nrow(cp)
 
+    cp <- move_cp_to_direction(cp, 20)
+
     cells <- paste0("c", 1L:n)
     names(cells) <- paste("Cell", 1L:n)
 
@@ -25,10 +27,12 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param) {
             titlePanel("Cell Inspection Tool"),
             sidebarLayout(
                 sidebarPanel(
-                    radioButtons("var", "Variable", c("Probability" = "p",
-                                                      "Signal strength (dB)" = "db"), selected = "p"),
+                    radioButtons("var", "Variable", c("Signal strength (dB)" = "db",
+                                                      "Relative signal strength" = "s",
+                                                      "Probability" = "p"), selected = "s"),
                     #checkboxInput("threed", "3d plot", value = FALSE),
-                    checkboxGroupInput("sel", "Selected cells", cells, selected = "c1")),
+                    selectInput("sel", "Selected cells", cells, selected = "c1")),
+                    #checkboxGroupInput("sel", "Selected cells", cells, selected = "c1")),
                 mainPanel(
                     leafletOutput("map", height=1000)
                 ))
