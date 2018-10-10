@@ -66,7 +66,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
     }
 
-    cp_poly <- st_sf(geometry = do.call(st_sfc, c(m, list(crs = crs))))
+    cp_poly <- st_sf(Cell_name = cp$Cell_name,  geometry = do.call(st_sfc, c(m, list(crs = crs))))
 
     # check transformed shapes
     if (nrow(cp) != nrow(cp_poly)) {

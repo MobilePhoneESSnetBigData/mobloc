@@ -16,7 +16,10 @@ create_voronoi <- function(cp, land, bbox) {
     x <- v[vint, ]
 
     x <- st_intersection(x, box)
-    crop_to_land(x, land)
+    y <- crop_to_land(x, land)
+
+    y$Cell_name <- cp$Cell_name
+    y
 }
 
 move_cp_to_direction <- function(cp, distance = 100) {
