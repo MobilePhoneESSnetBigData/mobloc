@@ -46,14 +46,5 @@ qtm(ZL_poly) + qtm(ZL_cellplan)
 ZL_raster <- create_raster(ZL_elevation)
 ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
 
-tm <- tm_shape(wijk) + tm_borders
+cell_inspection_tool(ZL_cellplan, ZL_poly, ZL_raster, ZL_prob, param_current, ZL_prior)
 
-cell_inspection_tool(ZL_cellplan, ZL_poly, ZL_raster, ZL_prob, param_current, ZL_prior, tm)
-
-
-head(ZL_prob)
-
-
-
-ZL_prob %>% filter(Cell_name == "80d4a") %>%
-    summarize(sum = sum(s))

@@ -30,3 +30,14 @@ move_cp_to_direction <- function(cp, distance = 100) {
 
     st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
 }
+
+create_connection_lines <- function(cp1, cp2) {
+    c1 <- st_coordinates(cp1)
+    c2 <- st_coordinates(cp2)
+
+    st_sf(geometry = do.call(st_sfc, lapply(1:nrow(c1), function(i) {
+        co <- rbind(c1[i,],
+                    c2[i,])
+        st_linestring(co)
+    })), Cell_name = cp1$Cell_name, crs = st_crs(cp1))
+}
