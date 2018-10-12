@@ -1,9 +1,12 @@
-viz_p <- function(cp, cp_poly, raster, title, trans) {
+viz_p <- function(cp, cp_poly, rst, title, trans) {
 
     cp2 <- move_cp_to_direction(cp, 20)
     cp_lines <- create_connection_lines(cp, cp2)
 
-print(cp_poly)
+    # cp2 <<- cp2
+    # cp_lines <<- cp_lines
+    # cp_poly <<- cp_poly
+    # rst <<- rst
 
     tm <- tm_shape(cp_lines) +
         tm_lines(group = "Antenna locations", id = "Cell_name") +
@@ -13,10 +16,8 @@ print(cp_poly)
         tm_lines(lwd = "sel", col = "sel", scale = 6, palette = c("gray60", "red"), style = "cat", legend.lwd.show = FALSE, legend.col.show = FALSE, popup.vars = TRUE, group = "Polygon borders") +
         tm_basemap("OpenStreetMap")
 
-    # tm <- tm_shape(cp_poly) +
-    #     tm_lines(id = "Cell_name")
 
-    tm <- tm + tm_shape(raster) + tm_raster(alpha = trans, title = title, group = title)
+    tm <- tm + tm_shape(rst) + tm_raster(alpha = trans, title = title, group = title)
 
     tm
 }

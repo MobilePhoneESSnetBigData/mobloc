@@ -24,7 +24,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
                 list(ids = numeric(), prior = numeric(), lh = numeric(), dists = numeric(), db=numeric())
             } else {
 
-                prior <- rep(1L, length(ri))
+                #prior <- rep(1L, length(ri))
                 ps_r <- signal_strength(cx = pinf[1],
                                         cy = pinf[2],
                                         cz = pinf[3],
@@ -36,27 +36,27 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
                                         co = co[ri, c("x", "y", "z")],
                                         param = param) # returns list(lh = lh, dists = r, db = db)
 
-                c(list(ids = r2$id[ri], prior = prior), ps_r)
+                c(list(ids = r2$id[ri]), ps_r)
             }
 
         }, pinfo, res, SIMPLIFY = FALSE)
 
         res2a <- lapply(res2, "[[", 1)
-        res2b <- lapply(res2, "[[", 2)
-        res2c <- lapply(res2, "[[", 3)
-        res2d <- lapply(res2, "[[", 4)
-        res2e <- lapply(res2, "[[", 5)
+        #res2b <- lapply(res2, "[[", 2)
+        res2c <- lapply(res2, "[[", 2)
+        res2d <- lapply(res2, "[[", 3)
+        res2e <- lapply(res2, "[[", 4)
 
-        list(pid = p$id, rid = res2a, prior = res2b, p = res2c, dist = res2d, db = res2e)
+        list(pid = p$id, rid = res2a, s = res2c, dist = res2d, db = res2e)
     }
 
     ## create data.frame
-    pids <- do.call(c, x[seq(1, length(x), by = 6)])
-    rids <- do.call(c, x[seq(2, length(x), by = 6)])
-    priors <- do.call(c, x[seq(3, length(x), by = 6)])
-    ps <- do.call(c, x[seq(4, length(x), by = 6)])
-    dists <- do.call(c, x[seq(5, length(x), by = 6)])
-    dbs <- do.call(c, x[seq(6, length(x), by = 6)])
+    pids <- do.call(c, x[seq(1, length(x), by = 5)])
+    rids <- do.call(c, x[seq(2, length(x), by = 5)])
+    #priors <- do.call(c, x[seq(3, length(x), by = 6)])
+    ss <- do.call(c, x[seq(3, length(x), by = 5)])
+    dists <- do.call(c, x[seq(4, length(x), by = 5)])
+    dbs <- do.call(c, x[seq(5, length(x), by = 5)])
 
 
     ## polygons without raster points
@@ -65,11 +65,11 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
 
     pids_v <- rep(pids[pids_sel], plns[pids_sel])
     rids_v <- unlist(rids[pids_sel])
-    priors_v <- unlist(priors[pids_sel])
-    ps_v <- unlist(ps[pids_sel])
+    #priors_v <- unlist(priors[pids_sel])
+    ss_v <- unlist(ss[pids_sel])
     dists_v <- unlist(dists[pids_sel])
     dbs_v <- unlist(dbs[pids_sel])
-    df <- data.frame(pid=pids_v, rid=rids_v, p=ps_v, prior=priors_v, dist=dists_v, db = dbs_v)
+    df <- data.frame(pid=pids_v, rid=rids_v, s=ss_v, dist=dists_v, db = dbs_v)
 
 
     # # normalize p (i.e. sum of p's is 1 per polygon)
@@ -81,19 +81,15 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
     # # reduce number of overlapping cells to max_overlap (by default 5) and divide the p's by the (truncated) number of overlapping cells
     df <- df %>%
         group_by(rid) %>%
-        #filter(order(p)<=param$max_overlap) %>%
-        #mutate(p = p/n()) %>%
-        mutate(pn = p / sum(p),
-               pr = prior * pn) %>%
-        filter(order(pr)<=param$max_overlapping_cells) %>%
+        filter(order(s)<=param$max_overlapping_cells) %>%
+        mutate(pag = s / sum(s)) %>%
         ungroup()
 
-    df <- df %>%
-        group_by(pid) %>%
-        mutate(pr = pr / sum(pr),
-               s = p / sum(p)) %>%
-        ungroup()
+    # df <- df %>%
+    #     group_by(pid) %>%
+    #     mutate(pr = pr / sum(pr),
+    #            s = p / sum(p)) %>%
+    #     ungroup()
 
-
-    df %>% select(pid=pid, rid=rid, p=pr, s = s, dist=dist, db = db)
+    df %>% select(pid=pid, rid=rid, pag=pag, s = s, dist=dist, db = db)
 }

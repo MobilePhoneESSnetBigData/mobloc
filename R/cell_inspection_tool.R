@@ -17,9 +17,28 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 
     n <- nrow(cp)
 
-    lu <- raster::getValues(prior)
+    # number of active grid cells (needed for normalization)
+    rv <- raster::getValues(raster)
+    rva <- unique(prob$rid)
+    nrva <- length(rva)
 
-    prob$lu <- lu[match(prob$rid, getValues(raster))]
+    # get and normalize land use prior
+    pr_lu <- raster::getValues(prior)
+    pr_lu[!(rv %in% rva)] <- 0
+    pr_lu <- pr_lu / sum(pr_lu)
+
+    # create uniform prior
+    pr_u <- 1/nrva
+
+    # get and normalize network prior
+    totals <- sum(prob$s)
+    prob <- prob %>%
+        group_by(rid) %>%
+        mutate(pr_s = sum(s) / totals) %>%
+        ungroup()
+
+    prob$pr_lu <- pr_lu[match(prob$rid, rv)]
+    prob$pr_u <- pr_u
 
     cells <- as.character(cp$Cell_name)
     #names(cells) <- paste("Cell", 1L:n)
@@ -32,12 +51,13 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                     radioButtons("var", "Variable", c("Signal strength - dB" = "db",
                                                       "Relative signal strength - s" = "s",
                                                       "Landuse" = "lu",
-                                                      "Likelihood - P(a|g)" = "p",
+                                                      "Likelihood - P(a|g)" = "pag",
+                                                      "Composite prior - P(g)" = "pg",
                                                       "Probability - P(g|a)" = "pga"), selected = "s"),
                     conditionalPanel(
-                        condition = "input.var == 'pga'",
-                        sliderInput("alpha", "Weight Land Use  - alpha", min = 0, max = 1, value = 0, step  = 0.05),
-                        sliderInput("beta", "Weight Network - beta", min = 0, max = 1, value = 0, step  = 0.05)),
+                        condition = "(input.var == 'pga') || (input.var == 'pg')",
+                        sliderInput("priormix", "Composite Prior (move slider below to change composition)", min = 0, max = 1, value = c(.1,.4), step  = 0.05),
+                        shiny::textOutput("priortext")),
                     sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
                     checkboxInput("showall", "Show all antennas", value = FALSE),
                     selectInput("sel", "Antenna", cells, selected = cells[1])),
@@ -47,15 +67,20 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                     leafletOutput("map", height=1000)
                 ))
         ),
-        server = function(input, output) {
+        server = function(input, output, session) {
 
             # observe({
             #     if (!input$threed) rgl::rgl.clear()
             # })
 
 
-            output$map <- renderLeaflet({
+            output$priortext <- renderText({
+                paste0(round(input$priormix[1] * 100), "% uniform, ",
+                       round((input$priormix[2] - input$priormix[1])  * 100), "% land use, ",
+                       round((1-input$priormix[2]) * 100), "% signal strength")
+            })
 
+            output$map <- renderLeaflet({
 
                 ## subset data
                 sel <- input$sel
@@ -82,17 +107,18 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 
 
                 ## create raster
-                rst <- create_p_raster(raster, probsel, type = input$var, alpha = input$alpha, beta = input$beta)
+                rst <- create_p_raster(raster, probsel, type = input$var, priormix = input$priormix)
 
                 title <- switch(input$var,
                                 db = "Signal strength in dBm",
                                 s = "Relative signal strength - s (in %)",
                                 lu = "Land use prior (in %)",
-                                p = "Likelihood - P(a|g) (in %)",
+                                pag = "Likelihood - P(a|g) (in %)",
+                                pg = "Composite prior - P(g) (in %)",
                                 pga = "Probability - P(g|a) (in %)")
 
 
-                visp <- viz_p(cp = cpsel, cp_poly = cp_polysel, raster = rst, title = title, trans = input$trans)
+                visp <- viz_p(cp = cpsel, cp_poly = cp_polysel, rst = rst, title = title, trans = input$trans)
 
                 if (!is.null(tm)) {
                     tmap_leaflet(visp)
@@ -104,10 +130,17 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 
             observeEvent(input$map_marker_click, { # update the location selectInput on map clicks
                 p <- input$map_marker_click
-                print(p)
-                NULL
-                #updateSelectInput(session, "gm",
-                #                  selected = p$id)
+
+                id <- which(sapply(cells, function(cl) {
+                    length(grep(cl, p$id, fixed = TRUE)) == 1
+                }))[1]
+
+
+                if (length(id)!=0) {
+                    updateSelectInput(session, "sel",
+                                      selected = cells[id])
+                }
+
             })
 
 
@@ -119,9 +152,9 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 }
 
 
-create_p_raster <- function(raster, ppr, type, alpha = 0, beta = 0) {
-    rindex <- getValues(raster)
-    r <- raster(raster)
+create_p_raster <- function(rst, ppr, type, priormix = c(1,1)) {
+    rindex <- raster::getValues(rst)
+    r <- raster::raster(rst)
 
     if (type == "db") {
         ppr <- ppr %>%
@@ -131,17 +164,22 @@ create_p_raster <- function(raster, ppr, type, alpha = 0, beta = 0) {
             mutate(x = s)
     } else if (type == "lu") {
         ppr <- ppr %>%
-            mutate(x = lu)
-    } else if (type == "p") {
+            mutate(x = pr_lu)
+    } else if (type == "pag") {
         ppr <- ppr %>%
-            mutate(x = p)
+            mutate(x = pag)
     } else {
+        ppr2 <<- ppr
         ppr <- ppr %>%
-            mutate(pgland = lu / sum(lu), # normalize prior for selected antenna
-                   pgunif = 1/ length(r)) %>%
-            mutate(pg2 = alpha * pgland + (1-alpha) * pgunif) %>%
-            mutate(pag = beta * s + (1-beta) * p) %>%
-            mutate(x = pag * pg2)
+            mutate(pg = pr_u * priormix[1] + pr_lu * (priormix[2] - priormix[1]) + pr_s * (1 - priormix[2]))
+
+        if (type == "pg") {
+            ppr <- ppr %>%
+                mutate(x = pg)
+        } else {
+            ppr <- ppr %>%
+                mutate(x = pag * pg)
+        }
     }
 
 

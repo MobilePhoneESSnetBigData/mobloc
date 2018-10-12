@@ -41,5 +41,5 @@ rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     # attach cell name
     ppr$Cell_name <- cp$Cell_name[ppr$pid]
 
-    ppr %>% select(Cell_name, rid, p, s, dist, db)
+    ppr %>% select(Cell_name, rid, pag, s, dist, db)
 }

@@ -52,15 +52,15 @@ distance_plot <- function(db0, base_size = 11) {
   ggplot(df, aes(x=distance, y= dBm)) + geom_line() + theme_bw(base_size = base_size)
 }
 
-#' @name likelihood_plot
+#' @name relative_signal_strength_plot
 #' @rdname plot_functions
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
-likelihood_plot <- function(db_mid, db_width, base_size = 11) {
+relative_signal_strength_plot <- function(db_mid, db_width, base_size = 11) {
     dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
-  df$likelihood <- db2p(df$dBm, db_mid, db_width)
-  ggplot(df, aes(x=dBm, y=likelihood)) + geom_line() + scale_y_continuous("Relative signal strength") + theme_bw(base_size = base_size)
+  df$rsig <- db2p(df$dBm, db_mid, db_width)
+  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Relative signal strength") + theme_bw(base_size = base_size)
 }
 
 #' @name radiation_plot

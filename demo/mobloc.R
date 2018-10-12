@@ -35,6 +35,8 @@ if (packageVersion("tmaptools") >= "2.0") {
     ZL_bbox <- structure(as.vector(tmaptools::bb(ZL_elevation)), class = "bbox", crs = st_crs(ZL_land))
 }
 
+start_cluster(3)
+
 res <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
 
 ZL_poly <- res$poly
@@ -45,6 +47,8 @@ qtm(ZL_poly) + qtm(ZL_cellplan)
 
 ZL_raster <- create_raster(ZL_elevation)
 ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
+
+stop_cluster()
 
 cell_inspection_tool(ZL_cellplan, ZL_poly, ZL_raster, ZL_prob, param_current, ZL_prior)
 

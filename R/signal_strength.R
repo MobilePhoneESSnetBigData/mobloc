@@ -96,7 +96,8 @@ attach_mapping <- function(param) {
 #     (dnorm(a, 0, sd) - dens_max) * inflate
 # }
 
-db2p <- function(db, db_mid, db_width = 5) {
+# transform dBm to relative signal strength (s)
+db2s <- function(db, db_mid, db_width = 5) {
     scale <- (db - db_mid) / db_width
     1 / (1 + exp(1)^(-scale))
 }
@@ -179,8 +180,8 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
         db <- db + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
     }
 
-    lh <- db2p(db, db_mid = param$db_mid, db_width = param$db_width)
+    s <- db2s(db, db_mid = param$db_mid, db_width = param$db_width)
 
     #list(lh = lh, dists = r, db = azim2) # plot projected angles
-    list(lh = lh, dists = r, db = db)
+    list(s = s, dists = r, db = db)
 }
