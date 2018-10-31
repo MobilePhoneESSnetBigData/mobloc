@@ -38,7 +38,7 @@ heatmap_ground <- function(co, param, input) {
 
 #' Signal strength plot functions
 #'
-#' Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{likelihood_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
+#' Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{relative_signal_strength_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
 #'
 #' @name distance_plot
 #' @rdname plot_functions
@@ -59,7 +59,7 @@ distance_plot <- function(db0, base_size = 11) {
 relative_signal_strength_plot <- function(db_mid, db_width, base_size = 11) {
     dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
-  df$rsig <- db2p(df$dBm, db_mid, db_width)
+  df$rsig <- db2s(df$dBm, db_mid, db_width)
   ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Relative signal strength") + theme_bw(base_size = base_size)
 }
 

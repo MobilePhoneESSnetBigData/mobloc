@@ -30,6 +30,7 @@ ATAN2 <- function(y, x) r2d(atan2(y, x))
 distance2dB <- function(r, db0 = -50) {
     #-75 - 10 * log10(r/1)
     db0 - 20 * log10(r/1)
+    #db0 - .05 * r
 }
 
 normalize_angle <- function(a) {

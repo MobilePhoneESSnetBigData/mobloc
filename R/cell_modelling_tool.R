@@ -86,7 +86,7 @@ cell_modelling_tool <- function(param, plot.height=800) {
             output$lines <- renderPlot({
                 g1 <- distance_plot(db0 = ifelse(input$small, input$db0_small, input$db0_tower))
 
-                g2 <- likelihood_plot(db_mid = input$dbmid, db_width = input$dbwidth)
+                g2 <- relative_signal_strength_plot(db_mid = input$dbmid, db_width = input$dbwidth)
 
                 g3 <- radiation_plot(type = "a", db_back = input$hback, beam_width = input$h3dB)
                 g4 <- radiation_plot(type = "e", db_back = input$vback, beam_width = input$v3dB)

@@ -35,3 +35,35 @@ ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_r
 
 shiny_cells(ZL_cellplan, ZL_poly, ZL_raster, ZL_prob, param_default)
 
+## links
+#https://www.idc-online.com/technical_references/pdfs/instrumentation/dataoptimization.pdf
+#https://www.engeniustech.com/explaining-free-space-path-loss/
+#https://eva.fing.edu.uy/pluginfile.php/176145/mod_resource/content/1/link%20budget%20lte.pdf
+
+
+# https://www.everythingrf.com/rf-calculators/free-space-path-loss-calculator
+FSPL <- function(d, f, Gt, Gr) {
+    clight <- 299792458
+    20 * log10(d) + 20 * log10(f) + 20 * log10((4*pi)/clight)
+}
+
+FSPL(10, 1800, 50, 50)
+FSPL(100, 1800, 50, 50)
+
+P2dBm <- function(P) {
+    10*log(P)
+}
+
+
+P2dBm(40)
+P2dBm(.25)
+
+
+
+dist <- seq(100, 1000, by = 100)
+fspl <- sapply(dist, function(d) FSPL(d, 1800, 50, 50))
+plot(dist, fspl)
+
+
+
+10*log (P/1 mW).
