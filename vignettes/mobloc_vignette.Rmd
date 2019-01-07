@@ -37,22 +37,23 @@ The methods used in this package are described in [1], which is recommended to r
 library(mobloc)
 ```
 
-## Setup location model parameters
+## Setup signal strength model parameters
 
-The first step to apply the approximate the geographic locations, is to determine the model parameters. The default parameters can be loaded with the function `location_model_parameters`. The result is a standard list:
+The first step to apply the approximate the geographic locations, is to determine the parameters for the signal strength model. The default parameters can be loaded with the function `location_model_parameters`. The result is a standard list:
 
 ```{r}
 param <- location_model_parameters()
-str(param)
 ```
 
-A short description of the parameters is provided in the table below. Some of these parameters are already discussed in [1]. The first set of eight parameters are used to model the signal strength. The second set of five parameters are used to determine the coverage area. The parameters will be explained in more detail when needed.
+A short description of the parameters is provided in the table below. Some of these parameters are already discussed in [1]. The first set of eight parameters are used to model the signal strength. The second set of parameters are used to determine the coverage area. The coverage area determines for which grid cells the signal strength is calculated.
+
+The parameters will be explained in more detail when needed.
 
 
 | Parameter     |  Description  (related to signal strength) |
 | ------------- |:-------------------------------------------------------------------------|
-| db0_tower      | Signal strength at 1 meter from cell ($S_0$ in [1]) for normal antennas |
-| db0_small      | Signal strength at 1 meter from cell ($S_0$ in [1]) for small cells  |
+| db0_tower      | Signal strength at 1 meter from antenna ($S_0$ in [1]) for normal antennas |
+| db0_small      | Signal strength at 1 meter from antenna ($S_0$ in [1]) for small cells  |
 | azim_min3dB      | Horizontal beam width $\gamma_j$ in [1]) |
 | azim_dB_back      | Signal strength at the back of the cell in the azimuth plane |
 | elev_min3dB      | Vertical beam width $\theta_j$ in [1]) |
@@ -62,33 +63,32 @@ A short description of the parameters is provided in the table below. Some of th
 
 | Parameter     |  Description  (related to coverage area) |
 | ------------- |:-------------------------------------------------------------------------|
-| poly_shape      | Baisc shape of the cell coverage area, one of `"pie"`, `"oval"`, `"Voronoi"`
+| poly_shape      | Baisc shape of the antenna coverage area, one of `"pie"`, `"oval"`, `"Voronoi"`
 | max_range      | Maximum range of normal antennas |
 | max_range_small      | Maximum range of small cells  |
 | min_range      | Minimum range of normal antennas |
 | min_range_small      | Minimum range of small cells  |
-| area_expension      | Expension factor of cell areas used to allow overlap |
-| max_overlapping_cells      | Maximum amount of cells that are overlapping each other |
+| area_expension      | Expension factor of coverage areas used to allow overlap |
+| max_overlapping_cells      | Maximum amount of antennas that have overlapping coverage areas |
 
 
 The `mobloc` package contains a tool in which the first set of eight parameters can be tuned. This tool is started as follows:
 
 ```{r eval = FALSE}
-param_current <- cell_modelling_tool(param_default)
+cell_modelling_tool(param)
 ```
 
 <img src="images/cell_modelling_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()">
 
-All parameter values that are set with the interactive tool are silently returned by `cell_modelling_tool`, and in this example assigned to `param_current`. The function `update_model_parameters` can also be used to change parameters.
+All parameter values that are set with the interactive tool are silently returned by `cell_modelling_tool`, which can be assigned to a variable. The function `update_model_parameters` can also be used to change parameters.
 
+The top left box shows the settings of an antenna which should be contained in the cellplan, namely, the height, the horizontal tilt ($\beta_j$ in [1]), and whether it is a small cell (i.e. omnidirectional). If these variables are not available, not all tools from the `mobloc` package can be used.
 
-The top left box shows the settings of a cell which should be contained in the cellplan, namely, the height, the horizontal tilt ($\beta_j$ in [1]), and whether it is a small cell (i.e. omnidirectional). If these variables are not available, not all tools from the `mobloc` package can be used.
+The top right plot shows the top view of the signal strength of the antenna If *small cell* is unticked, than the azimuth direction ($\alpha_j$ in [1]) is east.
 
-The top right plot shows the top view of the signal strength of the cell. If *small cell* is unticked, than the azimuth direction ($\alpha_j$ in [1]) is east.
+The next input boxes on the leftside of the screen configure the antennas These parameters are often contained in the cellplan. If not, the default parameters can be used. The first parameter is `db0_tower` or `do0_small` depending on whether the *small cell* checkbox is ticked. Notice that different default settings are used (-45dBm for normal antennas, and -60dBm for small cells), since antennas contained in cell towers and on rooftop are often much stronger than small cells. The top left plot below the heatmap shows the signal loss as a function of the distance (see equation (4) in [1]).
 
-The next input boxes on the leftside of the screen configure the cells. These parameters are often contained in the cellplan. If not, the default parameters can be used. The first parameter is `db0_tower` or `do0_small` depending on whether the *small cell* checkbox is ticked. Notice that different default settings are used (-45dBm for normal antennas, and -60dBm for small cells), since cells contained in cell towers and on rooftop are often much stronger than small cells. The top left plot below the heatmap shows the signal loss as a function of the distance (see equation (4) in [1]).
-
-The next two input boxes contain the -3dB angles and dB back values for both the horizontal (azimuth) and vertical (elevation) planes. The radiation area of a cell can be seen as a three dimensional bulb. In the main direction (e.g. the direction in which the cell radiates) there is no loss in signal strength, irrespective of the distance. However, at a certain offset, there is signal loss. The -3dB angle is the angle at which the signal is halved. These angles (both for the horizontal and vertical plane) are usually contained in the cellplan. The dB back points are signal loss ratios between the front and the back of the cell. The two plots the the right bottom of the screen illustrate the radiation pattern in the horizontal/azimuth plane the the vertical/elevation plane. The black contour lines indicate the signal loss as a function of the offset angle. The red points are the -3dB points. These radiation plots can also be generated directly in R:
+The next two input boxes contain the -3dB angles and dB back values for both the horizontal (azimuth) and vertical (elevation) planes. The radiation area of an antenna can be seen as a three dimensional bulb. In the main direction (e.g. the direction in which the antenna radiates) there is no loss in signal strength, irrespective of the distance. However, at a certain offset, there is signal loss. The -3dB angle is the angle at which the signal is halved. These angles (both for the horizontal and vertical plane) are usually contained in the cellplan. The dB back points are signal loss ratios between the front and the back of the antenna The two plots the the right bottom of the screen illustrate the radiation pattern in the horizontal/azimuth plane the the vertical/elevation plane. The black contour lines indicate the signal loss as a function of the offset angle. The red points are the -3dB points. These radiation plots can also be generated directly in R:
 
 ```{r eval=FALSE}
 radiation_plot(beam_width = 65, db_back = -30)
@@ -98,7 +98,7 @@ radiation_plot(type = "e", db_back = -30, beam_width = 9)
 
 The output type sets the type of radiation plot that is shown in the heatmap. dBm means the absolute signal strength value, and the likelihood the likelihood of connection, given the abolute signal strength values. 
 
-The transformation from absolute signal strength values to the likelood values is achieved by applying a logistic function, which is parameterized by `dm_mid` ($S^{mid}$ in [1]) and and `db_width` ($S^{width}$ in [1]). The reason to apply such a transformation is that the probability of connection not only depends on the signal strength, but also on load balancing. For load balancing, the tails of the distribution are less important, e.g. whether a signal is very good (say -80dBm) or superb (say -70 dBm) is less important than the availability of that cell. The transformation function is plotted in the top right chart below the heatmap. The transformation is defined in equations (6) and (7) of [1].
+The transformation from absolute signal strength values to the likelood values is achieved by applying a logistic function, which is parameterized by `dm_mid` ($S^{mid}$ in [1]) and and `db_width` ($S^{width}$ in [1]). The reason to apply such a transformation is that the probability of connection not only depends on the signal strength, but also on load balancing. For load balancing, the tails of the distribution are less important, e.g. whether a signal is very good (say -80dBm) or superb (say -70 dBm) is less important than the availability of that antenna. The transformation function is plotted in the top right chart below the heatmap. The transformation is defined in equations (6) and (7) of [1].
 
 ## Loading artificial cellplan data
 
@@ -110,7 +110,7 @@ data("ZL_cellplan", "ZL_land", "ZL_elevation")
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
 
-The object `ZL_cellplan` is an `sf` object (see packge `sf`) that contains all the geopgraphic locations of the cells and the metadata.
+The object `ZL_cellplan` is an `sf` object (see packge `sf`) that contains all the geopgraphic locations of the antennas and the metadata.
 
 ```{r}
 head(ZL_cellplan)
@@ -135,69 +135,62 @@ library(sf)
 ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 ```
 
-## Creating cell polygons
+## Creating antenna covera area polygons
 
 
-The first step is to create a polygon for each cell. Polygons are created with the function `create_cellplan_polygons`. We can create three types of polygons: `pie`, `oval` (pie with round edges), or `Voronoi`. The polygons defines the overall coverage area of a cell. However, the signal strength may vary within this coverage area. It is recommended to define the polygons are large as possible. However, the computation time increases a lot when the polygons are too large, especially when there is much overlap.
+The first step is to create a polygon for each cell. Polygons are created with the function `create_cellplan_polygons`. We can create three types of polygons: `pie`, `oval`, or `Voronoi`. The polygons defines the overall coverage area of a cell. However, the signal strength may vary within this coverage area. It is recommended to define the polygons are large as possible. However, the computation time increases a lot when the polygons are too large, especially when there is much overlap.
 
-First, let us illustrate a Voronoi tessalation. For this we create a new parameter list, where we only adjust the polygon shape.
-
-```{r eval=FALSE}
-param_voronoi <- update_model_parameters(param_current, poly_shape = "Voronoi")
-ZL_voronoi <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param_voronoi)
-```
-
-The `sf` object `ZL_voronoi` contains polygons for every cell. When cells are directional, the centroids for which the Voronoi polygons are generated, are shifted 100 meters in the direction of radiation. The major advantage of this adjustment to the Voronoi algorithm is achieved when there are multiple cells per site, typically 120 degrees apart. The result is that due to the shifted geographic locations, a Voronoi polygon is created for each cell.
-
-The result can be visualized and inspected as follows.
+In the following line of code, we create polygons that have a shape of an oval. The size is upper bounded by the parameters `max_range` and `max_range_small` for normal and small cells respectively. The sizes of the polygons are determined as follows. First, a Voronoi tesselation is generated. For types `pie` and `oval` the sizes of those Voronoi polygons times the parameter `area_expension` determine the sizes of the polygons. The result is that cells in urban areas have smaller coverage areas, but still overlap each other.
 
 ```{r eval=FALSE}
-qtm(ZL_voronoi) + qtm(ZL_cellplan)
+ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
 ```
+
+The result is a list of three objects: `poly`, which contains the chosen polygons, `vor` which contains Voronoi polygons, and `shp` which contains archetype polygons from which the polygons in `poly` are derived.
+
+
+```{r eval=FALSE}
+qtm(ZL_poly$poly) + qtm(ZL_poly$vor, fill = NULL, border = "red") + qtm(ZL_cellplan)
+```
+
+
+The first layer shows the polygons in gray. Note that these overlap. The red non-filled polygons are the Voronoi polygons. In order to take the direction of the antenna into account (recall that most normal antennas are directional), the controids for which the Voronoi polygons are generated, are shifted 100 meters in the direction of radiation. The major advantage of this adjustment to the Voronoi algorithm is achieved when there are multiple cells per site, typically 120 degrees apart. The result is that due to the shifted geographic locations, a Voronoi polygon is created for each cell.
+
 
 <img src="images/voronoi.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
-As discussed in [1], there are a couple of downsides to the Voronoi tesselation. The most important one is that in reality, cells overlap in order to make to mobile phone network robust and dynamic. When a cell tower is out of order, or when the capacity is reached, other nearby cells can take over the connections.
+As discussed in [1], there are a couple of downsides to the use the Voronoi polygons directly as coverage areas of the antennas. The most important one is that in reality, cells overlap in order to make to mobile phone network robust and dynamic. When a cell tower is out of order, or when the capacity is reached, other nearby cells can take over the connections.
 
-In the following line of code, we create polygons that have a shape of an oval. The size is upper bounded by the parameters `max_range` and `max_range_small` for normal and small cells respectively. The sizes of the polygons are determined as follows. Under the hood, a Voronoi tesselation is generated, just like we did before. The sizes of those Voronoi polygons times the parameter `area_expension` determine the sizes of the polygons. The result is that cells in urban areas have smaller coverage areas, but still overlap each other.
-
-```{r eval=FALSE}
-ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param_current)
-qtm(ZL_poly) + qtm(ZL_cellplan)
-```
 
 <img src="images/polygons.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
-Recall that each of these polygons only determines the coverage area of the corresponding cell, but not the signal strength. At this stage, the shape of the polygons is not very important, as long as it covers the area for which the signal strength is expected to by high.
+Recall that each of these polygons only determines the coverage area of the corresponding antenna, but not the signal strength. At this stage, the shape of the polygons is not very important, as long as it covers the area for which the signal strength is expected to be good enough for communication.
 
 ## Calculating relative signal strength probabilites
 
-In the final stage, the relative signal strength probabilities are calculated. See equation (1) in [1]. These are the probabilities of presence at a certain grid cell (say 100 by 100 metres) given the id of the logged cell. Recall that these probabilities depend on the relative signal strengths (see $s(i,j)$ in equation (6) in [1]) of the logged cell as well the cells that also have coverage at the corresponding location.
+In the final stage, the relative signal strength probabilities are calculated. See equation (1) in [1]. These are the probabilities of presence at a certain grid cell (say 100 by 100 metres) given the id of the logged antenna. Recall that these probabilities depend on the relative signal strengths (see $s(i,j)$ in equation (6) in [1]) of the logged antenna as well the antennas that also have coverage at the corresponding location.
 
-The function to calculate these relative signal strength probabilities, called `rasterize_cellplan`, supports parallel computing. The `mobloc` package contains a couple of functions to manage the parallel backend:
-
-```{r eval=FALSE}
-current_cluster()
-# No cluster defined.
-start_cluster(4)
-# Cluster with 4 nodes created.
-current_cluster()
-# Cluster with 4 nodes found.
-stop_cluster()
-# Cluster with 4 nodes stopped.
-```
+The function to calculate these relative signal strength probabilities, called `rasterize_cellplan`, supports parallel computing.
 
 The following code chunk will calculate the relative signal strength probabilities. It returns a `data.frame` which consists of the following variables: `Cell_name`, `rid` (raster cell id), `p` (probabilities), `s` (relative signal strength), `dist` the distance between the cell and the raster cell, and `db` the signal strength in dBm.
 
 ```{r eval=FALSE}
+# create a raster of 100 by 100 meter cells
 ZL_raster <- create_raster(ZL_bbox)
-ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param_current)
+
+# create a parallel cluster
+ncores <- parallel::detectCores()
+cl <- parallel::makeCluster(ncores)
+registerDoParallel(cl)
+
+# calculate probabilities
+ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
 ```
 
 The result can be visualized using `cell_inspection_tool`.
 
 ```{r eval=FALSE}
-cell_inspection_tool(ZL_cellplan, ZL_poly, ZL_raster, ZL_prob, param_current)
+cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_prob, param)
 ```
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">

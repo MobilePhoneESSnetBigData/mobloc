@@ -14,23 +14,25 @@ rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
 
     r <- brick(raster, elevation)
 
-    cp_poly$x <- cp$x
-    cp_poly$y <- cp$y
+    shp <- cp_poly$poly
 
-    cp_poly$z <- cp$z
-    cp_poly$direction <- cp$direction
-    cp_poly$tilt <- cp$tilt
-    cp_poly$beam_h <- cp$beam_h
-    cp_poly$beam_v <- cp$beam_v
-    cp_poly$small <- cp$small
-    # cp_poly <- cbind(cp_poly, cp %>% select(height, a, tilt3, indoor)) currently not working...
+    shp$x <- cp$x
+    shp$y <- cp$y
+
+    shp$z <- cp$z
+    shp$direction <- cp$direction
+    shp$tilt <- cp$tilt
+    shp$beam_h <- cp$beam_h
+    shp$beam_v <- cp$beam_v
+    shp$small <- cp$small
+    # shp <- cbind(shp, cp %>% select(height, a, tilt3, indoor)) currently not working...
 
     #suppressWarnings(start_cluster())
 
     parallel <- check_parallel()
 
 
-    qres <- quandrantify(cp_poly, r)
+    qres <- quandrantify(shp, r)
 
     param <- attach_mapping(param)
 

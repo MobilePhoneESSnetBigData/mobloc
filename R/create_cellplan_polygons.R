@@ -40,7 +40,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
     res <- create_shape(cp, type = param$poly_shape)
     cp$cls <- res$cls
     shapes <- c(list(create_circle()), res$shapes)
-    shp <- st_sf(do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
+    shp <- st_sf(geometry = do.call(st_sfc, c(shapes, list(crs = st_crs(land)))))
     shp$id <- c("circle", paste("beam_h =", res$beams))
 
     # check basic shape area sizes
@@ -51,10 +51,9 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
     }
 
     rot <- function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
-    clust <- current_cluster(verbose = FALSE)
+    parallel <- check_parallel()
 
-    if (clust == 0) {
-        warning("No cluster defined. Please define a cluster to run faster")
+    if (parallel) {
         m <- mapply(function(cl, x, y, rng, direction) {
             if (is.na(direction)) direction <- 0
             shapes[[cl+1L]] * rot(direction / 180 * pi) * rng + c(x, y)

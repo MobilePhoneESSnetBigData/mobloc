@@ -11,6 +11,7 @@ stop_cluster <- function() {
 
     if (!cluster_defined) {
         if (current_nodes != 0) {
+            stopImplicitCluster()
             warning("Unknown cluster found. Use stopCluster to stop it.")
         } else {
             message("No cluster defined.")
@@ -84,10 +85,10 @@ current_cluster <- function(verbose = TRUE) {
     }
 }
 
-check_parallel <- function() {
-    nc <- current_cluster(verbose = FALSE)
-    if (nc==0) {
-        message("Function running with single threaded. Define a parallel backend to run it in parallel. This can be done with start_cluster")
+check_parallel <- function(verbose = FALSE) {
+    nc <- nrow(showConnections())
+    if (verbose) if (nc==0) {
+        message("Function running single threaded. Define a parallel backend to run it in parallel. This can be done with parallel::makeCluster and doParallel::registerDoParallel")
     } else {
         message("Function running with ", nc, " parallel treads")
     }
