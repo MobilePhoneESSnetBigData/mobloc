@@ -10,7 +10,7 @@
 #' @importFrom stats dnorm
 #' @export
 rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
-    dist <- db <- Cell_name <- rid <- s <- NULL
+    dist <- dBm <- Cell_name <- rid <- s <- NULL
 
     r <- brick(raster, elevation)
 
@@ -43,5 +43,5 @@ rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     # attach cell name
     ppr$Cell_name <- cp$Cell_name[ppr$pid]
 
-    ppr %>% select(Cell_name, rid, pag, s, dist, db)
+    ppr %>% select(Cell_name, rid, dist, dBm, s, pag)
 }

@@ -7,8 +7,10 @@ output:
 self_contained: no
 vignette: >
   %\VignetteIndexEntry{tmap in a nutshell}
-  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -137,7 +139,6 @@ ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700)
 
 ## Creating antenna covera area polygons
 
-
 The first step is to create a polygon for each cell. Polygons are created with the function `create_cellplan_polygons`. We can create three types of polygons: `pie`, `oval`, or `Voronoi`. The polygons defines the overall coverage area of a cell. However, the signal strength may vary within this coverage area. It is recommended to define the polygons are large as possible. However, the computation time increases a lot when the polygons are too large, especially when there is much overlap.
 
 In the following line of code, we create polygons that have a shape of an oval. The size is upper bounded by the parameters `max_range` and `max_range_small` for normal and small cells respectively. The sizes of the polygons are determined as follows. First, a Voronoi tesselation is generated. For types `pie` and `oval` the sizes of those Voronoi polygons times the parameter `area_expension` determine the sizes of the polygons. The result is that cells in urban areas have smaller coverage areas, but still overlap each other.
@@ -181,11 +182,21 @@ ZL_raster <- create_raster(ZL_bbox)
 # create a parallel cluster
 ncores <- parallel::detectCores()
 cl <- parallel::makeCluster(ncores)
-registerDoParallel(cl)
+doParallel::registerDoParallel(cl)
 
 # calculate probabilities
 ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
 ```
+
+The result is a `data.frame` with the following columns: 
+
+* `Cell_name` The identification numbers or names of the antennas.
+* `rid` Raster cell id number. These are numbered according to the cells of specified raster object, in our example `ZL_raster`. The first number corresponds to the top left cell, and the sequence of numbers is row-wise.
+* `dist` Distance from the antenna location to the center of the grid cell.
+* `dBm` Signal strength in dBm.
+* `s` The relative signal strength. The signal strength (dBm) is 
+* `pag` The likelihood value. More speficically, it is the probability that an certain antenna is used given that the device is located in a certain the grid cell.
+
 
 The result can be visualized using `cell_inspection_tool`.
 
@@ -194,6 +205,10 @@ cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_prob, param)
 ```
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
+
+
+
+
 
 
 ## Reference

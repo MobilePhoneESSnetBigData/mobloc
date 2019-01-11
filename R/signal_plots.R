@@ -13,8 +13,8 @@ heatmap_ground <- function(co, param, input) {
       }
       gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = lh)) + geom_tile() + coord_fixed() + scale_fill_continuous("Probability")
     } else {
-      if (input$mask) co3 <- co2[co2$db >= input$maskrangedb[1] & co2$db <= input$maskrangedb[2], ]
-      co2$dbcat <- cut(co2$db, breaks = c(-Inf, seq(-130, -60, by = 10), Inf),
+      if (input$mask) co3 <- co2[co2$dBm >= input$maskrangedb[1] & co2$dBm <= input$maskrangedb[2], ]
+      co2$dbcat <- cut(co2$dBm, breaks = c(-Inf, seq(-130, -60, by = 10), Inf),
                        labels = c("-130 or less", "-130 to -120", "-120 to -110", "-110 to -100",
                                   "-100 to -90", "-90 to -80", "-80 to -70", "-70 to -60", "-60 or better"))
 
@@ -22,11 +22,11 @@ heatmap_ground <- function(co, param, input) {
 
 
       #gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = dbcat)) + geom_tile() + coord_fixed() + scale_fill_manual("dB", values = viridis(9, option = "C"))
-      co2$db[co2$db > -60] <- -60
-      co2$db[co2$db < -130] <- -130
+      co2$dBm[co2$dBm > -60] <- -60
+      co2$dBm[co2$dBm < -130] <- -130
 
 
-      gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = db)) + geom_tile() + coord_fixed() + scale_fill_gradient("dBm", limits = c(-130, -60))
+      gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = dBm)) + geom_tile() + coord_fixed() + scale_fill_gradient("dBm", limits = c(-130, -60))
     }
     if (input$mask) {
       gg <- gg + geom_tile(data = co3, fill = "red")

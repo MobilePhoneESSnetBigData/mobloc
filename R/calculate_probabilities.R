@@ -1,5 +1,5 @@
 calculate_probabilities <- function(shps, rs, param, parallel) {
-    r <- rid <- prior <- pn <- pr <- pid <- s <- dist <- db <- Cell_name <- x <- y <- direction <- NULL
+    r <- rid <- prior <- pn <- pr <- pid <- s <- dist <- dBm <- Cell_name <- x <- y <- direction <- NULL
 
     `%fun%` <- if (parallel) `%dopar%` else `%do%`
 
@@ -21,7 +21,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
         res2 <- mapply(function(pinf, ri) {
             # include nearest point later, and only in case no intersection points were found in all subrasters
             if (length(ri)==0) {
-                list(ids = numeric(), prior = numeric(), lh = numeric(), dists = numeric(), db=numeric())
+                list(ids = numeric(), prior = numeric(), lh = numeric(), dists = numeric(), dBm=numeric())
             } else {
 
                 #prior <- rep(1L, length(ri))
@@ -34,7 +34,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
                                         beam_v = pinf[7],
                                         small = pinf[8],
                                         co = co[ri, c("x", "y", "z")],
-                                        param = param) # returns list(lh = lh, dists = r, db = db)
+                                        param = param) # returns list(lh = lh, dists = r, dBm = dBm)
 
                 c(list(ids = r2$id[ri]), ps_r)
             }
@@ -47,7 +47,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
         res2d <- lapply(res2, "[[", 3)
         res2e <- lapply(res2, "[[", 4)
 
-        list(pid = p$id, rid = res2a, s = res2c, dist = res2d, db = res2e)
+        list(pid = p$id, rid = res2a, s = res2c, dist = res2d, dBm = res2e)
     }
 
     ## create data.frame
@@ -69,7 +69,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
     ss_v <- unlist(ss[pids_sel])
     dists_v <- unlist(dists[pids_sel])
     dbs_v <- unlist(dbs[pids_sel])
-    df <- data.frame(pid=pids_v, rid=rids_v, s=ss_v, dist=dists_v, db = dbs_v)
+    df <- data.frame(pid=pids_v, rid=rids_v, s=ss_v, dist=dists_v, dBm = dbs_v)
 
 
     # # normalize p (i.e. sum of p's is 1 per polygon)
@@ -91,5 +91,5 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
     #            s = p / sum(p)) %>%
     #     ungroup()
 
-    df %>% select(pid=pid, rid=rid, pag=pag, s = s, dist=dist, db = db)
+    df %>% select(pid=pid, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag)
 }

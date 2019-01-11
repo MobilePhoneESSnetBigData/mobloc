@@ -23,7 +23,11 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
     nrva <- length(rva)
 
     # get and normalize land use prior
-    pr_lu <- raster::getValues(prior)
+    if (missing(prior)) {
+        pr_lu <- rep(1, length(ZL_raster))
+    } else {
+        pr_lu <- raster::getValues(prior)
+    }
     pr_lu[!(rv %in% rva)] <- 0
     pr_lu <- pr_lu / sum(pr_lu)
 
@@ -48,11 +52,11 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
             titlePanel("Cell Inspection Tool"),
             sidebarLayout(
                 sidebarPanel(
-                    radioButtons("var", "Variable", c("Signal strength - dB" = "db",
+                    radioButtons("var", "Variable", c("Signal strength - dBm" = "dBm",
                                                       "Relative signal strength - s" = "s",
                                                       "Landuse" = "lu",
                                                       "Likelihood - P(a|g)" = "pag",
-                                                      "Composite prior - P(g)" = "pg",
+                                                      "Composite prior - P(g)" = "pg (see slider below)",
                                                       "Probability - P(g|a)" = "pga"), selected = "s"),
                     conditionalPanel(
                         condition = "(input.var == 'pga') || (input.var == 'pg')",
@@ -110,7 +114,7 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                 rst <- create_p_raster(raster, probsel, type = input$var, priormix = input$priormix)
 
                 title <- switch(input$var,
-                                db = "Signal strength in dBm",
+                                dBm = "Signal strength in dBm",
                                 s = "Relative signal strength - s (in %)",
                                 lu = "Land use prior (in %)",
                                 pag = "Likelihood - P(a|g) (in %)",
@@ -156,9 +160,9 @@ create_p_raster <- function(rst, ppr, type, priormix = c(1,1)) {
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
 
-    if (type == "db") {
+    if (type == "dBm") {
         ppr <- ppr %>%
-            mutate(x = db)
+            mutate(x = dBm)
     } else if (type == "s") {
         ppr <- ppr %>%
             mutate(x = s)
@@ -183,7 +187,7 @@ create_p_raster <- function(rst, ppr, type, priormix = c(1,1)) {
     }
 
 
-    if (type != "db") {
+    if (type != "dBm") {
         ppr <- ppr %>%
             mutate(x = x / sum(x) * 100)
     }
