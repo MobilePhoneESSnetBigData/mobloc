@@ -185,7 +185,7 @@ cl <- parallel::makeCluster(ncores)
 doParallel::registerDoParallel(cl)
 
 # calculate probabilities
-ZL_prob <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
+ZL_signal <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
 ```
 
 The result is a `data.frame` with the following columns: 
@@ -201,10 +201,14 @@ The result is a `data.frame` with the following columns:
 The result can be visualized using `cell_inspection_tool`.
 
 ```{r eval=FALSE}
-cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_prob, param)
+cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_signal, param)
 ```
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
+
+```{r eval=FALSE}
+ZL_comp_prior <- composite_prior(landuse = ZL_prior, signal = ZL_signal)
+```
 
 
 

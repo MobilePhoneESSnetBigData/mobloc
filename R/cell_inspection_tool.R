@@ -56,7 +56,7 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                                                       "Relative signal strength - s" = "s",
                                                       "Landuse" = "lu",
                                                       "Likelihood - P(a|g)" = "pag",
-                                                      "Composite prior - P(g)" = "pg (see slider below)",
+                                                      "Composite prior - P(g) (see slider below)" = "pg",
                                                       "Probability - P(g|a)" = "pga"), selected = "s"),
                     conditionalPanel(
                         condition = "(input.var == 'pga') || (input.var == 'pg')",
