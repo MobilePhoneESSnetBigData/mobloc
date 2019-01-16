@@ -9,7 +9,7 @@
 #' @param param list
 #' @importFrom stats dnorm
 #' @export
-rasterize_cellplan <- function(cp, cp_poly, raster, elevation, param) {
+analyse_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     dist <- dBm <- Cell_name <- rid <- s <- NULL
 
     r <- brick(raster, elevation)

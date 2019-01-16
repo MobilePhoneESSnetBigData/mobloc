@@ -1,6 +1,6 @@
-#' Check cellplan
+#' Validate cellplan
 #'
-#' Function to the check cellplan. It checks the format and whether are all required variables present. When \code{land}, a mutlipolygon object that defines the region of interest, is specified, it checks whether all antennas are inside this region.
+#' Function to the validate cellplan. If needed, the cellplan is made valid whenever possible. It checks the format and whether are all required variables present. When \code{land}, a mutlipolygon object that defines the region of interest, is specified, it checks whether all antennas are inside this region.
 #'
 #' @param cp cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., `st_geometry_type(cp)` should return `POINT`s). The variables (of which only the first is required) are used:
 #' \itemize{
@@ -16,11 +16,12 @@
 #' @param param parameter list. See \code{\link{location_model_parameters}}.
 #' @param land land polygon. If specifies, it checks if all antennas are contained inside it
 #' @param elevation see argument \code{cp} (variable \code{z})
+#' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})
 #' @import sf
 #' @import sp
 #' @export
-check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
-    if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points", call. = FALSE)
+validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) {
+    if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points")
 
     nms <- names(cp)
 
@@ -30,43 +31,52 @@ check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
     if (!"y" %in% nms) cp$y <- unname(coor[,2])
 
     if ("small" %in% names(cp)) {
+        if (!fix && !is.logical(cp$small)) stop("The variable 'small' should be a logical. Set fix = TRUE to fix this issue.")
         if (is.numeric(cp$small)) cp$small <- as.logical(cp$small)
-        warning("small is missing. Therefore, all antennas are assumed to be normal", call. = FALSE)
+        if (!is.logical(cp$small)) stop("The variable 'small' should be a logical")
     } else {
+        if (!fix) stop("The variable 'small' is missing. Set fix = TRUE to fix this issue.")
+        warning("The variable 'small' is missing. Therefore, all antennas are assumed to be normal")
         cp$small <- FALSE
     }
 
 
     if (!any(c("height", "z") %in% nms)) {
-        warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
-        cp$height <- ifelse(cp$small, param$height_small, param$height)
+        if (!fix) {
+            stop("Neither 'height' nor 'z' were found. Set fix = TRUE to fix this issue.")
+        } else {
+            warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
+            cp$height <- ifelse(cp$small, param$height_small, param$height)
+        }
     }
 
 
     if (!"z" %in% names(cp)) {
-        if (missing(elevation)) stop("Variable 'z' is missing. Please add this variable or specify the argument 'elevation' (since z = height + elevation).", call. = FALSE)
+        if (missing(elevation)) stop("Variable 'z' is missing. Please add this variable or specify the argument 'elevation' (since z = height + elevation).")
 
         cpsp <- as(cp, "Spatial")
-        #cpsp <- set_projection(cpsp, current.projection = st_crs(crs)$proj4string)
         cp$z <- as.vector(extract(elevation, cpsp))
 
     }
 
     if (!"direction" %in% nms) {
-        warning("The variable 'direction' is missing. All antennas are assumed to be omni-directional.", call. = FALSE)
+        if (!fix) stop("The variable 'direction' is missing. Set fix = TRUE to fix this issue.")
+        warning("The variable 'direction' is missing. All antennas are assumed to be omni-directional.")
         cp$direction <- NA
     } else {
-        if (max(cp$direction, na.rm = TRUE) < 2 * pi) warning("Probably, direction are in radials. Please provide them in degrees")
+        if (max(cp$direction, na.rm = TRUE) < 2 * pi) warning("Probably, direction are in radials. Please check manually, and if needed, provide them in degrees")
     }
 
     if (!"range" %in% nms) {
-        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").", call. = FALSE)
+        if (!fix) stop("The variable 'range' is missing. Set fix = TRUE to fix this issue.")
+        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").")
         cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
     }
 
 
     if (!"db0" %in% nms) {
-        warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").", call. = FALSE)
+        if (!fix) stop("The variable 'db0' is missing. Set fix = TRUE to fix this issue.")
+        warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").")
         cp$db0 <- ifelse(cp$small, param$db0_small, param$db0_tower)
     }
 
@@ -78,7 +88,9 @@ check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
         any(!is.na(cp$beam_h[cp$small])) ||
         any(!is.na(cp$beam_v[cp$small]))) {
 
-        warning("some small cells have non-missing values for direction, tilt, beam_h and beam_v. They are set to NA, since small cells are modeled as omnidirectional", call. = FALSE)
+        if (!fix) stop("The variable 'direction', 'tilt', 'beam_h' and/or 'beam_v' are missing for some antennas. Set fix = TRUE to fix this issue.")
+
+        warning("Some small cells have non-missing values for 'direction', 'tilt', 'beam_h' and/or 'beam_v'. They are set to NA, since small cells are modeled as omnidirectional")
         cp$direction[cp$small] <- NA
         cp$tilt[cp$small] <- NA
         cp$beam_h[cp$small] <- NA
@@ -88,7 +100,8 @@ check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
 
 
     if (!all(c("direction", "tilt", "beam_h", "beam_v") %in% nms)) {
-        warning("Variables 'direction', 'tilt', 'beam_h', and/or 'beam_v' are missing. Therefore, directional component of the signal strenth model will not be used.", call. = FALSE)
+        if (!fix) stop("The variables 'direction', 'tilt', 'beam_h' and/or 'beam_v' are missing. Set fix = TRUE to fix this issue.")
+        warning("Variables 'direction', 'tilt', 'beam_h', and/or 'beam_v' are missing. Therefore, directional component of the signal strenth model will not be used.")
         cp$direction <- NA
         cp$tilt <- NA
         cp$beam_h <- NA
@@ -96,18 +109,21 @@ check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
     } else {
         na_tilt <- is.na(cp$tilt) & !is.na(cp$direction)
         if (any(na_tilt)) {
+            if (!fix) stop("Tilt of ", sum(na_tilt), " directional antennas is missing. Set fix = TRUE to fix this issue.")
             warning("Tilt of ", sum(na_tilt), " directional antennas is missing. They are imputed with ", param$tilt)
             cp$tilt[na_tilt] <- param$tilt
         }
 
         na_beam_v <- is.na(cp$beam_v) & !is.na(cp$direction)
         if (any(na_beam_v)) {
+            if (!fix) stop("beam_v of ", sum(na_beam_v), " directional antennas is missing. Set fix = TRUE to fix this issue.")
             warning("beam_v of ", sum(na_beam_v), " directional antennas is missing. They are imputed with ", param$beam_v)
             cp$beam_v[na_beam_v] <- param$beam_v
         }
 
         na_beam_h <- is.na(cp$beam_h) & !is.na(cp$direction)
         if (any(na_beam_h)) {
+            if (!fix) stop("beam_h of ", sum(na_beam_h), " directional antennas is missing. Set fix = TRUE to fix this issue.")
             warning("beam_h of ", sum(na_beam_h), " directional antennas is missing. They are imputed with ", param$beam_h)
             cp$beam_h[na_beam_h] <- param$beam_h
         }
@@ -120,11 +136,25 @@ check_cellplan <- function(cp, param, land=NULL, elevation=NULL) {
         sel <- (it==1L)
 
         if (any(!sel)) {
+            if (!fix) stop("some antennas are not inside land: ", paste(which(sel), collapse = ", "), "Set fix = TRUE to fix this issue.")
             warning("some antennas are not inside land: ", paste(which(sel), collapse = ", "), "These are omitted.")
         }
         cp <- cp[sel, ]
     }
 
-    attr(cp, "cellplan_checked") <- TRUE
+    if (fix) {
+        message("The cellplan has been made valid")
+    } else{
+        message("The cellplan is valid")
+    }
+
+    attr(cp, "valid_cellplan") <- TRUE
     cp
 }
+
+
+is_cellplan_valid <- function(cp) {
+    identical(attr(cp, "valid_cellplan"), TRUE)
+}
+
+

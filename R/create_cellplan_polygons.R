@@ -10,6 +10,8 @@
 #' @export
 #' @return cellplan polygons
 create_cellplan_polygons <- function(cp, land, bbox, param) {
+    if (!is_cellplan_valid(cp)) stop("cp is not a validated cellplan. Please validate it with validate_cellplan.")
+
     Cell_name <- x <- y <- direction <- beam_h <- small <- NULL
     crs <- st_crs(cp)
 

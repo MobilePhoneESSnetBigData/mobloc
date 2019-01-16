@@ -2,13 +2,13 @@
 % Please edit documentation in R/signal_plots.R
 \name{distance_plot}
 \alias{distance_plot}
-\alias{likelihood_plot}
+\alias{relative_signal_strength_plot}
 \alias{radiation_plot}
 \title{Signal strength plot functions}
 \usage{
 distance_plot(db0, base_size = 11)
 
-likelihood_plot(db_mid, db_width, base_size = 11)
+relative_signal_strength_plot(db_mid, db_width, base_size = 11)
 
 radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 }
@@ -28,5 +28,5 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 \item{db_back}{difference in signal strength between front and back}
 }
 \description{
-Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{likelihood_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
+Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{relative_signal_strength_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
 }

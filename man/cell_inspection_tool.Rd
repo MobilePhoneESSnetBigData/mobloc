@@ -4,7 +4,8 @@
 \alias{cell_inspection_tool}
 \title{Visualize signal strengths and probabilities per raster cell}
 \usage{
-cell_inspection_tool(cp, cp_poly, raster, prob, param)
+cell_inspection_tool(cp, cp_poly, raster, prob, param, prior = NULL,
+  tm = NULL)
 }
 \arguments{
 \item{cp}{cellplan}

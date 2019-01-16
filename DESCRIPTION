@@ -34,4 +34,4 @@ Suggests:
 URL: https://github.com/MobilePhoneESSnetBigData/mobloc
 BugReports: https://github.com/MobilePhoneESSnetBigData/mobloc/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

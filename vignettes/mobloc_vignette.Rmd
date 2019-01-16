@@ -44,7 +44,7 @@ library(mobloc)
 The first step to apply the approximate the geographic locations, is to determine the parameters for the signal strength model. The default parameters can be loaded with the function `location_model_parameters`. The result is a standard list:
 
 ```{r}
-param <- location_model_parameters()
+ZL_param <- location_model_parameters()
 ```
 
 A short description of the parameters is provided in the table below. Some of these parameters are already discussed in [1]. The first set of eight parameters are used to model the signal strength. The second set of parameters are used to determine the coverage area. The coverage area determines for which grid cells the signal strength is calculated.
@@ -77,7 +77,7 @@ The parameters will be explained in more detail when needed.
 The `mobloc` package contains a tool in which the first set of eight parameters can be tuned. This tool is started as follows:
 
 ```{r eval = FALSE}
-cell_modelling_tool(param)
+cell_modelling_tool(ZL_param)
 ```
 
 <img src="images/cell_modelling_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()">
@@ -107,7 +107,7 @@ The transformation from absolute signal strength values to the likelood values i
 When the parameters have been set, the model can be applied to cellplan data. To illustrate the model, we included artificial data to this package. This data can be loaded as follows:
 
 ```{r}
-data("ZL_cellplan", "ZL_land", "ZL_elevation")
+data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_landuse")
 ```
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
@@ -130,6 +130,14 @@ qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 
 <img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
+The function `validate_cellplan` should be used to validate the cellplan. It checks if required variables are present. Variables that are not required as input, but needed for further analysis are imputed. For instance, if `tilt` is missing, it is imputed by the default value `ZL_param$tilt`. Also, 
+
+
+```{r}
+ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, land = ZL_land)
+```
+
+
 The corresponding bounding box of Zuid-Limburg is created as follows.
 
 ```{r}
@@ -144,7 +152,7 @@ The first step is to create a polygon for each cell. Polygons are created with t
 In the following line of code, we create polygons that have a shape of an oval. The size is upper bounded by the parameters `max_range` and `max_range_small` for normal and small cells respectively. The sizes of the polygons are determined as follows. First, a Voronoi tesselation is generated. For types `pie` and `oval` the sizes of those Voronoi polygons times the parameter `area_expension` determine the sizes of the polygons. The result is that cells in urban areas have smaller coverage areas, but still overlap each other.
 
 ```{r eval=FALSE}
-ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, param = param)
+ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, ZL_param)
 ```
 
 The result is a list of three objects: `poly`, which contains the chosen polygons, `vor` which contains Voronoi polygons, and `shp` which contains archetype polygons from which the polygons in `poly` are derived.
@@ -154,16 +162,15 @@ The result is a list of three objects: `poly`, which contains the chosen polygon
 qtm(ZL_poly$poly) + qtm(ZL_poly$vor, fill = NULL, border = "red") + qtm(ZL_cellplan)
 ```
 
+<img src="images/polygons.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
+
 
 The first layer shows the polygons in gray. Note that these overlap. The red non-filled polygons are the Voronoi polygons. In order to take the direction of the antenna into account (recall that most normal antennas are directional), the controids for which the Voronoi polygons are generated, are shifted 100 meters in the direction of radiation. The major advantage of this adjustment to the Voronoi algorithm is achieved when there are multiple cells per site, typically 120 degrees apart. The result is that due to the shifted geographic locations, a Voronoi polygon is created for each cell.
 
 
-<img src="images/voronoi.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
 As discussed in [1], there are a couple of downsides to the use the Voronoi polygons directly as coverage areas of the antennas. The most important one is that in reality, cells overlap in order to make to mobile phone network robust and dynamic. When a cell tower is out of order, or when the capacity is reached, other nearby cells can take over the connections.
 
-
-<img src="images/polygons.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
 Recall that each of these polygons only determines the coverage area of the corresponding antenna, but not the signal strength. At this stage, the shape of the polygons is not very important, as long as it covers the area for which the signal strength is expected to be good enough for communication.
 
@@ -171,7 +178,7 @@ Recall that each of these polygons only determines the coverage area of the corr
 
 In the final stage, the relative signal strength probabilities are calculated. See equation (1) in [1]. These are the probabilities of presence at a certain grid cell (say 100 by 100 metres) given the id of the logged antenna. Recall that these probabilities depend on the relative signal strengths (see $s(i,j)$ in equation (6) in [1]) of the logged antenna as well the antennas that also have coverage at the corresponding location.
 
-The function to calculate these relative signal strength probabilities, called `rasterize_cellplan`, supports parallel computing.
+The function to calculate these relative signal strength probabilities, called `analyse_cellplan`, supports parallel computing.
 
 The following code chunk will calculate the relative signal strength probabilities. It returns a `data.frame` which consists of the following variables: `Cell_name`, `rid` (raster cell id), `p` (probabilities), `s` (relative signal strength), `dist` the distance between the cell and the raster cell, and `db` the signal strength in dBm.
 
@@ -185,7 +192,7 @@ cl <- parallel::makeCluster(ncores)
 doParallel::registerDoParallel(cl)
 
 # calculate probabilities
-ZL_signal <- rasterize_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = param)
+ZL_analysis <- analyse_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
 ```
 
 The result is a `data.frame` with the following columns: 
@@ -201,13 +208,16 @@ The result is a `data.frame` with the following columns:
 The result can be visualized using `cell_inspection_tool`.
 
 ```{r eval=FALSE}
-cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_signal, param)
+cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_analysis, ZL_param)
 ```
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
 ```{r eval=FALSE}
-ZL_comp_prior <- composite_prior(landuse = ZL_prior, signal = ZL_signal)
+
+ZL_network_prior <- get_network_prior(ZL_analysis, ZL_raster)
+
+ZL_comp_prior <- composite_prior(ZL_landuse_prior, ZL_signal, composition = c(0.3, 0.5))
 ```
 
 
