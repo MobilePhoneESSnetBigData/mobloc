@@ -4,7 +4,7 @@
 #'
 #' @param cp cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., `st_geometry_type(cp)` should return `POINT`s). The variables (of which only the first is required) are used:
 #' \itemize{
-#' \item \code{height}. Height of the antenna. If omitted, the default value \code{height} from the parameter list \code{param} will be used.
+#' \item \code{height}. Height of the antenna. If omitted, it will be derived if \code{z} is available and \code{elevation} is specified and otherwise, the default value \code{height} from the parameter list \code{param} will be used.
 #' \item \code{z}. Required unless \code{elevation} is specified. Note that \code{z = elevation + height}. So if the arugment \code{elevation} is specified, \code{z} will automatically be derived.
 #' \item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional antennas.
 #' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
@@ -48,6 +48,14 @@ validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) 
             warning("Neither 'height' nor 'z' were found. Therefore, the height of small cell antennas is set to ", param$height_small, " and of other antennas to ", param$height)
             cp$height <- ifelse(cp$small, param$height_small, param$height)
         }
+    }
+
+    if (!missing(elevation)) {
+        if (missing(elevation)) stop("Variable 'z' is missing. Please add this variable or specify the argument 'elevation' (since z = height + elevation).")
+        cpsp <- as(cp, "Spatial")
+        cp$elev <- as.vector(extract(elevation, cpsp))
+    } else {
+        cp$elev <- 0
     }
 
 

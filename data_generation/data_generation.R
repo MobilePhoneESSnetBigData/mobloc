@@ -16,6 +16,40 @@ tmpdir <- tempdir()
 unzip(tmp, exdir = tmpdir)
 #buurt <- st_read(file.path(tmpdir, "buurt_2015.shp"))  ## GIVES OFFSET
 
+
+wijk <- st_read(file.path(tmpdir, "Uitvoer_shape/wijk_2018.shp"))
+wijk <- st_transform(wijk, crs = 28992)
+
+wijk <- wijk[wijk$WATER=="NEE", ]
+
+isf <- sapply(wijk, is.factor)
+for (nm in names(isf)[isf]) {
+    col <- wijk[[nm]]
+
+    wijk[[nm]] <- local({
+        if (is_num(levels(col))) {
+            col2 <-  as.numeric(as.character(col))
+            col2[col2 < -99999998] <- NA
+            col2int <- as.integer(col2)
+            if (all.equal(col2, col2int)) col2int else col2
+        } else {
+            col
+        }
+    })
+}
+wijk <- st_make_valid(wijk)
+
+gem <- st_read(file.path(tmpdir, "Uitvoer_shape/gem_2018.shp"))
+gem <- st_transform(gem, crs = 28992)
+ids <- which(st_coordinates(st_centroid(gem))[,2] < 340000)
+gem_ZL <- gem[ids, ]
+zl <- st_union(gem_ZL)
+
+
+wijk_ZL <- wijk %>%
+    filter(GM_CODE %in% gem_ZL$GM_CODE)
+
+
 buurt <- st_read(file.path(tmpdir, "Uitvoer_shape/buurt2018.shp"))
 buurt <- st_transform(buurt, crs = 28992)
 
@@ -36,23 +70,15 @@ for (nm in names(isf)[isf]) {
         }
     })
 }
-
-buurt <- buurt[buurt$WATER=="NEE", ]
-
 buurt <- st_make_valid(buurt)
-
-gem <- st_read(file.path(tmpdir, "Uitvoer_shape/gem_2018.shp"))
-gem <- st_transform(gem, crs = 28992)
-ids <- which(st_coordinates(st_centroid(gem))[,2] < 340000)
-gem_ZL <- gem[ids, ]
-zl <- st_union(gem_ZL)
-
 
 buurt_ZL <- buurt %>%
     filter(GM_CODE %in% gem_ZL$GM_CODE)
 
 
-####### ZL_land: buurt_ZL minus water
+
+
+####### ZL_land: wijk_ZL minus water
 library(osmdata)
 bbL <- bb(matrix(ZL_bbox, ncol=2), current.projection = st_crs(zl)$proj4string, projection = "longlat")
 q1 <- opq(bbL)
@@ -73,15 +99,36 @@ save(ZL_land, file = "../mobloc/data/ZL_land.rda", compress = "xz")
 
 
 set.seed(1234)
+wijk_ZL$pop <- round(wijk_ZL$AANT_INW / 6000)
+ZL_cellplan_normal <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$pop!=0], type = "regular")
+
+
+
+set.seed(1242)
 buurt_ZL$pop <- round(buurt_ZL$AANT_INW / 6000)
-ZL_cellplan2 <- st_sample(buurt_ZL[buurt_ZL$pop!=0,], buurt_ZL$pop[buurt_ZL$pop!=0], type = "regular")
+buurt_ZL$small_cell <- buurt_ZL$STED==1 & sample(0:1, size = nrow(buurt_ZL), replace = TRUE, prob = c(.5, .5))
 
-buurt_ZL$small_cell <- buurt_ZL$STED==1 & sample(0:1, size = nrow(buurt_ZL), replace = TRUE, prob = c(.25, .75))
+ZL_cellplan_small <- st_sample(buurt_ZL[buurt_ZL$small_cell,], rep(1, sum(buurt_ZL$small_cell)), type = "regular")
+qtm(ZL_cellplan_small)
 
-ZL_cellplan3 <- st_sample(buurt_ZL[buurt_ZL$small_cell,], rep(1, sum(buurt_ZL$small_cell)), type = "regular")
+
+
+
+ZL_cellplan_normal %>%
+      mutate(direction = round(runif(min = 0, max = 360)),
+             height = )
+
+
+wijk_ZL$dens <- wijk_ZL$AANT_INW / (as.numeric(st_area(wijk_ZL)) / 1e6)
+
+
+qtm(wijk_ZL, fill = "dens")
+
+wijk_ZL$small_cell <- round((wijk_ZL$dens / max(wijk_ZL$dens)) * (wijk_ZL$AANT_INW / max(wijk_ZL$AANT_INW)) * 5)
+
+ZL_cellplan3 <- st_sample(wijk_ZL[wijk_ZL$small_cell > 0, ], wijk_ZL$small_cell[wijk_ZL$small_cell > 0], type = "regular")
 
 ZL_c <- st_sf(small = c(rep(FALSE, length(ZL_cellplan2)), rep(TRUE, length(ZL_cellplan3))), geometry = c(ZL_cellplan2, ZL_cellplan3), crs = 28992)
-
 
 
 ZL_c$site <- paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_c, gem_ZL))], 1, 3)), round(runif(nrow(ZL_c), min = 100, max = 999)), sep = "_")
