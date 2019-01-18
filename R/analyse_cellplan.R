@@ -10,7 +10,7 @@
 #' @importFrom stats dnorm
 #' @export
 analyse_cellplan <- function(cp, cp_poly, raster, elevation, param) {
-    dist <- dBm <- Cell_name <- rid <- s <- NULL
+    dist <- dBm <- antenna <- rid <- s <- NULL
 
     r <- brick(raster, elevation)
 
@@ -41,7 +41,7 @@ analyse_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     ## 37 min, 16 cores Xeon E5, 38 GB
 
     # attach cell name
-    ppr$Cell_name <- cp$Cell_name[ppr$pid]
+    ppr$antenna <- cp$antenna[ppr$pid]
 
-    ppr %>% select(Cell_name, rid, dist, dBm, s, pag)
+    ppr %>% select(antenna, rid, dist, dBm, s, pag)
 }

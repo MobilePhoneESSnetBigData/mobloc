@@ -44,7 +44,7 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
     prob$pr_lu <- pr_lu[match(prob$rid, rv)]
     prob$pr_u <- pr_u
 
-    cells <- as.character(cp$Cell_name)
+    cells <- as.character(cp$antenna)
     #names(cells) <- paste("Cell", 1L:n)
 
     app <- shinyApp(
@@ -88,13 +88,13 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 
                 ## subset data
                 sel <- input$sel
-                probsel <- prob %>% filter(Cell_name %in% sel)
+                probsel <- prob %>% filter(antenna %in% sel)
                 rids <- unique(probsel$rid)
 
                 if (!input$showall) {
-                    sel2  <- prob %>% filter(rid %in% rids) %>% dplyr::select(Cell_name) %>% unlist() %>% as.character() %>%  unique()
-                    cpsel <- cp %>% filter(Cell_name %in% sel2)
-                    cp_polysel <- cp_poly %>% filter(Cell_name %in% sel2)
+                    sel2  <- prob %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
+                    cpsel <- cp %>% filter(antenna %in% sel2)
+                    cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
 
                 } else {
                     cpsel <- cp
@@ -104,10 +104,10 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                 cp_polysel$geometry <- st_cast(cp_polysel$geometry, "MULTILINESTRING", group_or_split = FALSE)
 
                 cpsel$sel <- 1L
-                cpsel$sel[cpsel$Cell_name %in% sel] <- 2L
+                cpsel$sel[cpsel$antenna %in% sel] <- 2L
 
                 cp_polysel$sel <- 1L
-                cp_polysel$sel[cp_polysel$Cell_name %in% sel] <- 2L
+                cp_polysel$sel[cp_polysel$antenna %in% sel] <- 2L
 
 
                 ## create raster

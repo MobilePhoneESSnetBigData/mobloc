@@ -12,7 +12,7 @@
 create_cellplan_polygons <- function(cp, land, bbox, param) {
     if (!is_cellplan_valid(cp)) stop("cp is not a validated cellplan. Please validate it with validate_cellplan.")
 
-    Cell_name <- x <- y <- direction <- beam_h <- small <- NULL
+    antenna <- x <- y <- direction <- beam_h <- small <- NULL
     crs <- st_crs(cp)
 
     # extract the ranges from the Voronoi tesselation, but lowerbound it by max_range_small
@@ -36,7 +36,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
                      pmax(pmin(vor_range, param$max_range), param$min_range))
 
     # subset cp
-    cp <- cp %>% dplyr::select(Cell_name, x, y, rng, direction, beam_h)
+    cp <- cp %>% dplyr::select(antenna, x, y, rng, direction, beam_h)
 
     # create basic shapes
     res <- create_shape(cp, type = param$poly_shape)
@@ -67,7 +67,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         }, cp$cls, cp$x, cp$y, cp$rng, cp$direction, SIMPLIFY = FALSE)
     }
 
-    cp_poly <- st_sf(Cell_name = cp$Cell_name,  geometry = do.call(st_sfc, c(m, list(crs = crs))))
+    cp_poly <- st_sf(antenna = cp$antenna,  geometry = do.call(st_sfc, c(m, list(crs = crs))))
 
     # check transformed shapes
     if (nrow(cp) != nrow(cp_poly)) {

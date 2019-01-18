@@ -18,7 +18,7 @@ create_voronoi <- function(cp, land, bbox) {
     x <- st_intersection(x, box)
     y <- crop_to_land(x, land)
 
-    y$Cell_name <- cp$Cell_name
+    y$antenna <- cp$antenna
     y
 }
 
@@ -39,5 +39,5 @@ create_connection_lines <- function(cp1, cp2) {
         co <- rbind(c1[i,],
                     c2[i,])
         st_linestring(co)
-    })), Cell_name = cp1$Cell_name, crs = st_crs(cp1))
+    })), antenna = cp1$antenna, crs = st_crs(cp1))
 }

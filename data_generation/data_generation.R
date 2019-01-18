@@ -97,12 +97,14 @@ ZL_land <- zl2
 save(ZL_land, file = "../mobloc/data/ZL_land.rda", compress = "xz")
 
 
+####### Generate normal antenna locations
 
 set.seed(1234)
 wijk_ZL$pop <- round(wijk_ZL$AANT_INW / 6000)
 ZL_cellplan_normal <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$pop!=0], type = "regular")
 
 
+####### Generate small cell locations
 
 set.seed(1242)
 buurt_ZL$pop <- round(buurt_ZL$AANT_INW / 6000)
@@ -113,73 +115,144 @@ qtm(ZL_cellplan_small)
 
 
 
+#######  Create antenna data
 
-ZL_cellplan_normal %>%
-      mutate(direction = round(runif(min = 0, max = 360)),
-             height = )
-
-
-wijk_ZL$dens <- wijk_ZL$AANT_INW / (as.numeric(st_area(wijk_ZL)) / 1e6)
-
-
-qtm(wijk_ZL, fill = "dens")
-
-wijk_ZL$small_cell <- round((wijk_ZL$dens / max(wijk_ZL$dens)) * (wijk_ZL$AANT_INW / max(wijk_ZL$AANT_INW)) * 5)
-
-ZL_cellplan3 <- st_sample(wijk_ZL[wijk_ZL$small_cell > 0, ], wijk_ZL$small_cell[wijk_ZL$small_cell > 0], type = "regular")
-
-ZL_c <- st_sf(small = c(rep(FALSE, length(ZL_cellplan2)), rep(TRUE, length(ZL_cellplan3))), geometry = c(ZL_cellplan2, ZL_cellplan3), crs = 28992)
-
-
-ZL_c$site <- paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_c, gem_ZL))], 1, 3)), round(runif(nrow(ZL_c), min = 100, max = 999)), sep = "_")
-
-
-
-
-cpl2$site <- as.integer(factor(paste(cpl2$x, cpl2$y, sep="_")))
-
-## take 90% of sites
-set.seed(1)
-site_sample <- sample(unique(cpl2$site), round(max(cpl2$site) * .9))
-cpl3 <- cpl2[cpl2$site %in% site_sample, ]
-
-## create cell-number (per site, so typically 1-3)
-cpl3$cell_nr <- 1L
-for (s in unique(cpl3$site)) {
-    k <- sum(cpl3$site == s)
-    cpl3$cell_nr[cpl3$site == s] <- 1L:k
+get_gamma_sample <- function(n, shape, rate, min, max, digits = 0) {
+    set.seed(round(rnorm(n + shape * rate))) # to make sure the same sample is generated
+    x <- rgamma(n, shape, rate)
+    x <- (x - min(x)) / diff(range(x))
+    round(x * (max - min) + min, digits = digits)
 }
 
-N <- nrow(cpl3) # number of cells
-n <- max(cpl3$site) # number of sites
+#######  Create height data
 
-## first digit: s (small cell) or d (directional, large), digit 2-5 site, last digit cell-id
-cpl3$Cell_name <- as.factor(paste0(ifelse(cpl3$indoor, "s", "d"), as.hexmode(sample(4096:65535, size = n))[cpl3$site], letters[cpl3$cell_nr]))
+if (FALSE) {
+    cp <- readRDS("cp.rds") # data distribution taken from a cellplan file cp.rds
+    summary(cp)
+    plot(sort(cp$height[!cp$small]))
+    quantile(cp$height[!cp$small], probs = seq(0, 1, by = 0.01))
 
-## add offset noise
-cpl3$offx <- pmax(-300, pmin(300, rnorm(n, mean = 0, sd = 50)[cpl3$site]))
-cpl3$offy <- pmax(-300, pmin(300, rnorm(n, mean = 0, sd = 50)[cpl3$site]))
-cpl3$offz <- pmax(-10, pmin(10, rnorm(n, mean = 0, sd = 5)[cpl3$site]))
-cpl3$offdir <- round(runif(n, min = -30, 30)[cpl3$site])
+    plot(sort(cp$height[cp$small]))
+    quantile(cp$height[cp$small], probs = seq(0, 1, by = 0.01))
+}
 
-cpl3$x <- cpl3$x + cpl3$offx
-cpl3$y <- cpl3$y + cpl3$offy
-cpl3$z <- cpl3$z + cpl3$offz
-cpl3$direction <- cpl3$direction + cpl3$offdir
+nn <- length(ZL_cellplan_normal)
+ns <- length(ZL_cellplan_small)
+
+sample_heights_n <- get_gamma_sample(nn, 5, .5, 10, 100, 2)
+quantile(sample_heights_n, probs = seq(0, 1, by = 0.01))
+plot(sort(sample_heights_n))
+
+sample_heights_s <- get_gamma_sample(ns, 2, .5, 1, 30, 2)
+quantile(sample_heights_s, probs = seq(0, 1, by = 0.01))
+plot(sort(sample_heights_s))
+
+#######  Create tilt data
+
+if (FALSE) {
+    plot(sort(cp$tilt[!cp$small]))
+    plot(cp$tilt, cp$height)
+}
+
+sample_tilt <- get_gamma_sample(nn, 2, .5, 1, 15, 0)
+quantile(sample_tilt, probs = seq(0, 1, by = 0.01))
+plot(sort(sample_tilt))
 
 
 
-qtm(x)
+
+######### create cp data, and set directions
+
+if (FALSE) {
+    temp1 <- cp %>%
+        st_set_geometry(NULL) %>%
+        mutate(site_id = substr(CELL.NE_ID, 1, nchar(CELL.NE_ID) - 2)) %>%
+        group_by(site_id) %>%
+        summarize(direction1 = sort(direction - min(direction))[2] - sort(direction - min(direction))[1],
+                  direction2 = sort(direction - min(direction))[3] - sort(direction - min(direction))[2]) %>%
+        select(site_id, direction1, direction2)
+
+    temp2 <- temp1 %>%
+        mutate(dir1 = pmin(direction1, direction2),
+               dir2 = pmax(direction1, direction2),
+               dir2 = pmin(dir2, 360 - dir2)) %>%
+        select(dir1, dir2)
+
+    table(temp2$dir1, temp2$dir2)
+}
+
+set.seed(1234)
+dir_not120 <- sample(c(T,F), nn, prob = c(.4, .6), replace = TRUE)
+dir_diff1 <- (rnorm(nn, mean = 100, sd = 10) %/% 5) * 5
+dir_diff2 <- (rnorm(nn, mean = 120, sd = 10) %/% 5) * 5
+
+dir_diff1[!dir_not120] <- 120
+dir_diff2[!dir_not120] <- 120
+
+ZL_cellplan_normal_sf <- st_sf(geometry = ZL_cellplan_normal,
+                            direction = (round(runif(nn, min = 0, max = 360)) %/% 5) * 5,
+                            height = sample_heights_n,
+                            tilt = sample_tilt,
+                            #beam_h = fixed_beam_h,
+                            #beam_v = sample_beam_v,
+                            site = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_normal, gem_ZL))], 1, 3)), round(runif(nn, min = 100, max = 999)), "N", sep = "_"),
+                            small = FALSE) %>%
+    mutate(antenna = paste0(site, 1))
+
+ZL_cellplan_normal_sf2 <- ZL_cellplan_normal_sf %>%
+    mutate(direction = direction + dir_diff1,
+           antenna = paste0(site, 2))
+
+ZL_cellplan_normal_sf3 <- ZL_cellplan_normal_sf %>%
+    mutate(direction = direction + dir_diff1 + dir_diff2,
+           antenna = paste0(site, 3))
+
+ZL_cellplan_normal_sf_v2 <- rbind(ZL_cellplan_normal_sf, ZL_cellplan_normal_sf2, ZL_cellplan_normal_sf3) %>%
+    mutate(direction = direction %% 360,
+           site = NULL)
+
+
+#######  Create beam data
+
+if (FALSE) {
+    plot(sort(cp$beam_h[!cp$small]))
+    plot(sort(cp$beam_v[!cp$small]))
+
+    plot(sort(cp$beam_v[!cp$small]), cp$height[!cp$small])
+
+}
+fixed_beam_h <- 65
+set.seed(1234)
+sample_beam_v <- sample(c(4, 7.5, 9, 14), nn * 3, prob = c(.1, .3, .5, .1), replace = TRUE)
+plot(sort(sample_beam_v))
+
+ZL_cellplan_normal_sf_v2 <- ZL_cellplan_normal_sf_v2 %>%
+    mutate(beam_h = fixed_beam_h,
+           beam_v = sample_beam_v)
+
+
+ZL_cellplan_small_sf <- st_sf(geometry = ZL_cellplan_small,
+                              direction = NA,
+                              height = sample_heights_s,
+                              tilt = NA,
+                              small = TRUE,
+                              antenna = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_small, gem_ZL))], 1, 3)), round(runif(ns, min = 100, max = 999)), "S1", sep = "_"),
+                              beam_h = NA,
+                              beam_v = NA)
+    mutate(
+
+    )
+
+
+ZL_cellplan2 <- rbind(ZL_cellplan_normal_sf_v2, ZL_cellplan_small_sf) %>%
+    select(antenna, small, height, direction, tilt, beam_h, beam_v) %>%
+    arrange(antenna)
+
+
+head(ZL_cellplan)
+head(ZL_cellplan2)
 
 
 
 
-qtm(NLD_muni, fill = "pop_est")
-
-
-
-region_ZL <- region %>%
-    filter(region$GM_CODE %in% paste0("GM", NLD_zl$code))
-
-qtm(region_ZL)
-
+save(ZL_cellplan, file = "../mobloc/data/ZL_cellplan.rda", compress = "xz")

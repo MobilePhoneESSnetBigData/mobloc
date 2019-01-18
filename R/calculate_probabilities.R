@@ -1,5 +1,5 @@
 calculate_probabilities <- function(shps, rs, param, parallel) {
-    r <- rid <- prior <- pn <- pr <- pid <- s <- dist <- dBm <- Cell_name <- x <- y <- direction <- NULL
+    r <- rid <- prior <- pn <- pr <- pid <- s <- dist <- dBm <- antenna <- x <- y <- direction <- NULL
 
     `%fun%` <- if (parallel) `%dopar%` else `%do%`
 
