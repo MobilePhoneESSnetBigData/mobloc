@@ -2,8 +2,8 @@
 #'
 #' Set and update location model parameters. The function \code{location_model_parameters} specifies model parameters, which can be updated with \code{update_model_parameters}
 #'
-#' @name location_model_parameters
-#' @rdname location_model_parameters
+#' @name propagation_parameters
+#' @rdname propagation_parameters
 #' @param db0_tower signal strength in dBm near a normal antennas (placed in a cell tower or rooftop site)
 #' @param db0_small signal strength in dBm near a small cell (omnidirectional)
 #' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
@@ -26,7 +26,7 @@
 #' @param max_overlapping_cells maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected
 #' @return parameter list
 #' @export
-location_model_parameters <- function(
+propagation_parameters <- function(
     db0_tower = -45,
     db0_small = -60,
     azim_min3dB = 65,

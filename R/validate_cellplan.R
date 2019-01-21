@@ -165,8 +165,8 @@ validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) 
         it <- sapply(st_intersects(cp, land), length)
         sel <- (it==1L)
         if (any(!sel)) {
-            if (!fix) stop("some antennas are not inside land: ", paste(which(sel), collapse = ", "), "Set fix = TRUE to fix this issue.")
-            warning("some antennas are not inside land: ", paste(which(sel), collapse = ", "), "These are omitted.")
+            if (!fix) stop("some antennas are not inside land: ", paste(which(!sel), collapse = ", "), "Set fix = TRUE to fix this issue.")
+            warning("some antennas are not inside land: ", paste(which(!sel), collapse = ", "), "These are omitted.")
         }
         cp <- cp[sel, ]
     }

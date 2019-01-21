@@ -244,15 +244,12 @@ ZL_cellplan_small_sf <- st_sf(geometry = ZL_cellplan_small,
     )
 
 
-ZL_cellplan2 <- rbind(ZL_cellplan_normal_sf_v2, ZL_cellplan_small_sf) %>%
+ZL_cellplan <- rbind(ZL_cellplan_normal_sf_v2, ZL_cellplan_small_sf) %>%
     select(antenna, small, height, direction, tilt, beam_h, beam_v) %>%
     arrange(antenna)
 
-
-head(ZL_cellplan)
-head(ZL_cellplan2)
-
-
-
+# filter antennas that are inside land
+it <- sapply(st_intersects(ZL_cellplan, ZL_land), length)
+ZL_cellplan <- ZL_cellplan[it==1, ]
 
 save(ZL_cellplan, file = "../mobloc/data/ZL_cellplan.rda", compress = "xz")

@@ -1,6 +1,6 @@
-#' Interactive cell modelling tool
+#' Interactive exploration tool for the propagation model
 #'
-#' Tool to model the perceived signal strength
+#' Tool to setup the propagation model parameters
 #'
 #' @param param list of parameters
 #' @param plot.height heigth of the plots in the tool (in pixels)
@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
 #' @export
-cell_modelling_tool <- function(param, plot.height=800) {
+explore_propagation_model <- function(param, plot.height=800) {
 
     co <- as.data.frame(expand.grid(x=seq(-1000, 2000, by = 20), y=seq(-1000, 1000, by = 20), z=0))
 

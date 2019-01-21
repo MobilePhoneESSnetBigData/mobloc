@@ -6,7 +6,7 @@
 #' @param cell.size cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)
 #' @return raster layer
 #' @import sf
-#' @importFrom raster raster setValues brick extent crop
+#' @importFrom raster raster setValues brick extent crop extract
 #' @export
 create_raster <- function(x, cell.size = 100) {
     if (inherits(x, "bbox")) {

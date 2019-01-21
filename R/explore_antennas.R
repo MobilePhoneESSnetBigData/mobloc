@@ -1,67 +1,57 @@
-#' Visualize signal strengths and probabilities per raster cell
+#' Explore the Visualize signal strengths and probabilities per raster cell
 #'
 #' Visualize signal strengths and probabilities per raster cell
 #'
 #' @param cp cellplan
 #' @param cp_poly cellplan polygons
 #' @param raster raster
-#' @param prob probabilities per raster cell
+#' @param propagation probabilities per raster cell
 #' @param param parameter list
 #' @import tmap
 #' @import shiny
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
 #' @export
-cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL, tm = NULL) {
+explore_antennas <- function(cp, cp_poly, raster, propagation, priorlist = NULL, param, tm = NULL) {
     tmm <- tmap_mode("view")
 
-    n <- nrow(cp)
+    pnames <- names(priorlist)
 
-    # number of active grid cells (needed for normalization)
-    rv <- raster::getValues(raster)
-    rva <- unique(prob$rid)
-    nrva <- length(rva)
+    nprior <- length(pnames)
+    choices_prior <- paste0("p", 1L:nprior)
+    names(choices_prior) <- paste0("Prior ", pnames)
+    names(pnames) <- choices_prior
 
-    # get and normalize land use prior
-    if (missing(prior)) {
-        pr_lu <- rep(1, length(ZL_raster))
-    } else {
-        pr_lu <- raster::getValues(prior)
-    }
-    pr_lu[!(rv %in% rva)] <- 0
-    pr_lu <- pr_lu / sum(pr_lu)
-
-    # create uniform prior
-    pr_u <- 1/nrva
-
-    # get and normalize network prior
-    totals <- sum(prob$s)
-    prob <- prob %>%
-        group_by(rid) %>%
-        mutate(pr_s = sum(s) / totals) %>%
-        ungroup()
-
-    prob$pr_lu <- pr_lu[match(prob$rid, rv)]
-    prob$pr_u <- pr_u
+    choices <- c("Signal strength - dBm" = "dBm",
+                 "Relative signal strength - s" = "s",
+                 choices_prior,
+                 "Likelihood - P(a|g)" = "pag",
+                 "Composite prior - P(g) (see slider below)" = "pg",
+                 "Probability - P(g|a)" = "pga")
 
     cells <- as.character(cp$antenna)
     #names(cells) <- paste("Cell", 1L:n)
+
+
+    sliders <- mapply(function(i, nm) {
+        if (i == choices_prior[length(choices_prior)]) {
+            shiny::htmlOutput("plast")
+        } else {
+            sliderInput(i, paste("Faction", nm), min = 0, max = 1, value = 1/nprior, step  = 0.01)
+        }
+
+    }, choices_prior, pnames, SIMPLIFY = FALSE)
 
     app <- shinyApp(
         ui = fluidPage(
             titlePanel("Cell Inspection Tool"),
             sidebarLayout(
                 sidebarPanel(
-                    radioButtons("var", "Variable", c("Signal strength - dBm" = "dBm",
-                                                      "Relative signal strength - s" = "s",
-                                                      "Landuse" = "lu",
-                                                      "Likelihood - P(a|g)" = "pag",
-                                                      "Composite prior - P(g) (see slider below)" = "pg",
-                                                      "Probability - P(g|a)" = "pga"), selected = "s"),
+                    radioButtons("var", "Variable", choices, selected = "s"),
+                    wellPanel(
                     conditionalPanel(
                         condition = "(input.var == 'pga') || (input.var == 'pg')",
-                        sliderInput("priormix", "Composite Prior (move slider below to change composition)", min = 0, max = 1, value = c(.1,.4), step  = 0.05),
-                        shiny::textOutput("priortext")),
+                        sliders)),
                     sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
                     checkboxInput("showall", "Show all antennas", value = FALSE),
                     selectInput("sel", "Antenna", cells, selected = cells[1])),
@@ -78,21 +68,39 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
             # })
 
 
-            output$priortext <- renderText({
-                paste0(round(input$priormix[1] * 100), "% uniform, ",
-                       round((input$priormix[2] - input$priormix[1])  * 100), "% land use, ",
-                       round((1-input$priormix[2]) * 100), "% signal strength")
+
+            get_composition <- reactive({
+                values <- sapply(choices_prior[-nprior], function(x) {
+                    input[[x]]
+                })
+                if (sum(values) > 1) {
+                    showW <- TRUE
+                    values <- values / sum(values)
+                } else {
+                    showW <- FALSE
+                }
+                composition <- c(values, 1-sum(values))
+                attr(composition, "showW") <- showW
+                composition
+            })
+
+            output$plast <- renderUI({
+                composition <- get_composition()
+                showW <- attr(composition, "showW")
+                HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
             })
 
             output$map <- renderLeaflet({
 
                 ## subset data
                 sel <- input$sel
-                probsel <- prob %>% filter(antenna %in% sel)
-                rids <- unique(probsel$rid)
+                psel <- propagation %>% filter(antenna %in% sel)
+                rids <- unique(psel$rid)
+
+                composition = get_composition()
 
                 if (!input$showall) {
-                    sel2  <- prob %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
+                    sel2  <- propagation %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
                     cpsel <- cp %>% filter(antenna %in% sel2)
                     cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
 
@@ -111,7 +119,7 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 
 
                 ## create raster
-                rst <- create_p_raster(raster, probsel, type = input$var, priormix = input$priormix)
+                rst <- create_p_raster(raster, psel, type = input$var, choices_prior, composition = composition, priorlist)
 
                 title <- switch(input$var,
                                 dBm = "Signal strength in dBm",
@@ -119,12 +127,13 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
                                 lu = "Land use prior (in %)",
                                 pag = "Likelihood - P(a|g) (in %)",
                                 pg = "Composite prior - P(g) (in %)",
-                                pga = "Probability - P(g|a) (in %)")
+                                pga = "Probability - P(g|a) (in %)",
+                                paste("Prior", pnames[input$var]))
 
 
                 visp <- viz_p(cp = cpsel, cp_poly = cp_polysel, rst = rst, title = title, trans = input$trans)
 
-                if (!is.null(tm)) {
+                if (is.null(tm)) {
                     tmap_leaflet(visp)
                 } else {
                     tmap_leaflet(visp + tm)
@@ -156,7 +165,7 @@ cell_inspection_tool <- function(cp, cp_poly, raster, prob, param, prior = NULL,
 }
 
 
-create_p_raster <- function(rst, ppr, type, priormix = c(1,1)) {
+create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist) {
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
 
@@ -166,16 +175,19 @@ create_p_raster <- function(rst, ppr, type, priormix = c(1,1)) {
     } else if (type == "s") {
         ppr <- ppr %>%
             mutate(x = s)
-    } else if (type == "lu") {
+    } else if (type %in% choices_prior) {
+        prior <- priorlist[[as.integer(substr(type, 2, 2))]]
         ppr <- ppr %>%
-            mutate(x = pr_lu)
+            mutate(x = prior$p[match(ppr$rid, prior$rid)])
     } else if (type == "pag") {
         ppr <- ppr %>%
             mutate(x = pag)
     } else {
-        ppr2 <<- ppr
+
+        #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
+        prior <- composite_prior(priorlist, composition = composition)
         ppr <- ppr %>%
-            mutate(pg = pr_u * priormix[1] + pr_lu * (priormix[2] - priormix[1]) + pr_s * (1 - priormix[2]))
+            mutate(pg = prior$p[match(ppr$rid, prior$rid)])
 
         if (type == "pg") {
             ppr <- ppr %>%
