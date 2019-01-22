@@ -13,7 +13,7 @@
 #' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
-#' @param param parameter list. See \code{\link{location_model_parameters}}.
+#' @param param parameter list. See \code{\link{prop_param}}.
 #' @param land land polygon. If specifies, it checks if all antennas are contained inside it
 #' @param elevation see argument \code{cp} (variable \code{z})
 #' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})

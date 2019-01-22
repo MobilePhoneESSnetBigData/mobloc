@@ -20,7 +20,7 @@ validate_cellplan(cp, param, land = NULL, elevation = NULL,
 \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 }}
 
-\item{param}{parameter list. See \code{\link{location_model_parameters}}.}
+\item{param}{parameter list. See \code{\link{prop_param}}.}
 
 \item{land}{land polygon. If specifies, it checks if all antennas are contained inside it}
 

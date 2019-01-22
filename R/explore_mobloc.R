@@ -5,14 +5,16 @@
 #' @param cp cellplan
 #' @param cp_poly cellplan polygons
 #' @param raster raster
-#' @param propagation probabilities per raster cell
+#' @param prop propagation model
+#' @param priorlist list of priors
 #' @param param parameter list
+#' @param tm tmap object (optional), that is plotted on top of the map
 #' @import tmap
 #' @import shiny
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
 #' @export
-explore_antennas <- function(cp, cp_poly, raster, propagation, priorlist = NULL, param, tm = NULL) {
+explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, tm = NULL) {
     tmm <- tmap_mode("view")
 
     pnames <- names(priorlist)
@@ -44,7 +46,7 @@ explore_antennas <- function(cp, cp_poly, raster, propagation, priorlist = NULL,
 
     app <- shinyApp(
         ui = fluidPage(
-            titlePanel("Cell Inspection Tool"),
+            titlePanel("Antenna prop exploration"),
             sidebarLayout(
                 sidebarPanel(
                     radioButtons("var", "Variable", choices, selected = "s"),
@@ -94,13 +96,13 @@ explore_antennas <- function(cp, cp_poly, raster, propagation, priorlist = NULL,
 
                 ## subset data
                 sel <- input$sel
-                psel <- propagation %>% filter(antenna %in% sel)
+                psel <- prop %>% filter(antenna %in% sel)
                 rids <- unique(psel$rid)
 
                 composition = get_composition()
 
                 if (!input$showall) {
-                    sel2  <- propagation %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
+                    sel2  <- prop %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
                     cpsel <- cp %>% filter(antenna %in% sel2)
                     cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
 

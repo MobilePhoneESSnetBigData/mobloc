@@ -40,8 +40,8 @@ NULL
 #'
 #' Residential of Zuid-Limburg, raster object of 100 x 100 meter cells, where for each cell the fraction of area is specified which is tagged as residential. Source: OpenStreetMap
 #'
-#' @usage data(ZL_residential)
-#' @name ZL_residential
+#' @usage data(ZL_resi)
+#' @name ZL_resi
 #' @docType data
 NULL
 

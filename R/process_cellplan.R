@@ -9,7 +9,7 @@
 #' @param param list
 #' @importFrom stats dnorm
 #' @export
-analyse_cellplan <- function(cp, cp_poly, raster, elevation, param) {
+process_cellplan <- function(cp, cp_poly, raster, elevation, param) {
     dist <- dBm <- antenna <- rid <- s <- NULL
 
     r <- brick(raster, elevation)

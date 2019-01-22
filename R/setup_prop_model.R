@@ -1,4 +1,4 @@
-#' Interactive exploration tool for the propagation model
+#' Interactive tool to setup the propagation model
 #'
 #' Tool to setup the propagation model parameters
 #'
@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
 #' @export
-explore_propagation_model <- function(param, plot.height=800) {
+setup_prop_model <- function(param, plot.height=800) {
 
     co <- as.data.frame(expand.grid(x=seq(-1000, 2000, by = 20), y=seq(-1000, 1000, by = 20), z=0))
 
@@ -18,7 +18,7 @@ explore_propagation_model <- function(param, plot.height=800) {
         ui = fluidPage(
             #shinyjs::useShinyjs(),
             shiny::div(style = "font-size:75%;line-height:20px",
-                       titlePanel("Setup location model"),
+                       titlePanel("Propagation model setup"),
                        fluidRow(
                            column(3,
                                   wellPanel(

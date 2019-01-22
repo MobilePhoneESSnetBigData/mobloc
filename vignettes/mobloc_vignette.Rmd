@@ -41,10 +41,10 @@ library(mobloc)
 
 ## Setup signal strength model parameters
 
-The first step to apply the approximate the geographic locations, is to determine the parameters for the signal strength model. The default parameters can be loaded with the function `location_model_parameters`. The result is a standard list:
+The first step to apply the approximate the geographic locations, is to determine the parameters for the signal propagation model. The default parameters can be loaded with the function `prop_param`. The result is a standard list:
 
 ```{r}
-ZL_param <- propagation_parameters()
+ZL_param <- prop_param()
 ```
 
 A short description of the parameters is provided in the table below. Some of these parameters are already discussed in [1]. The first set of eight parameters are used to model the signal strength. The second set of parameters are used to determine the coverage area. The coverage area determines for which grid cells the signal strength is calculated.
@@ -77,12 +77,12 @@ The parameters will be explained in more detail when needed.
 The `mobloc` package contains a tool in which the first set of eight parameters can be tuned. This tool is started as follows:
 
 ```{r eval = FALSE}
-explore_propagation_model(ZL_param)
+setup_prop_model(ZL_param)
 ```
 
 <img src="images/cell_modelling_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()">
 
-All parameter values that are set with the interactive tool are silently returned by `cell_modelling_tool`, which can be assigned to a variable. The function `update_model_parameters` can also be used to change parameters.
+All parameter values that are set with the interactive tool are silently returned by `setup_prop_model`, which can be assigned to a variable. The function `update_prop_param` can also be used to change parameters.
 
 The top left box shows the settings of an antenna which should be contained in the cellplan, namely, the height, the horizontal tilt ($\beta_j$ in [1]), and whether it is a small cell (i.e. omnidirectional). If these variables are not available, not all tools from the `mobloc` package can be used.
 
@@ -107,7 +107,7 @@ The transformation from absolute signal strength values to the likelood values i
 When the parameters have been set, the model can be applied to cellplan data. To illustrate the model, we included artificial data to this package. This data can be loaded as follows:
 
 ```{r}
-data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_landuse")
+data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_resi")
 ```
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
@@ -129,6 +129,8 @@ qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 ```
 
 <img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
+
+The object `ZL_resi` is a raster object that contains fraction of land that is used for residential areas. We will use this information later on to define prior information.
 
 The function `validate_cellplan` should be used to validate the cellplan. It checks if required variables are present. Variables that are not required as input, but needed for further analysis are imputed. For instance, if `tilt` is missing, it is imputed by the default value `ZL_param$tilt`. Also, 
 
@@ -174,60 +176,73 @@ As discussed in [1], there are a couple of downsides to the use the Voronoi poly
 
 Recall that each of these polygons only determines the coverage area of the corresponding antenna, but not the signal strength. At this stage, the shape of the polygons is not very important, as long as it covers the area for which the signal strength is expected to be good enough for communication.
 
-## Calculating relative signal strength probabilites
+## Modelling the signal propagation
 
-In the final stage, the relative signal strength probabilities are calculated. See equation (1) in [1]. These are the probabilities of presence at a certain grid cell (say 100 by 100 metres) given the id of the logged antenna. Recall that these probabilities depend on the relative signal strengths (see $s(i,j)$ in equation (6) in [1]) of the logged antenna as well the antennas that also have coverage at the corresponding location.
-
-The function to calculate these relative signal strength probabilities, called `analyse_cellplan`, supports parallel computing.
-
-The following code chunk will calculate the relative signal strength probabilities. It returns a `data.frame` which consists of the following variables: `Cell_name`, `rid` (raster cell id), `p` (probabilities), `s` (relative signal strength), `dist` the distance between the cell and the raster cell, and `db` the signal strength in dBm.
+In the final stage, the signal propagation is modelled. This is done with rasterization, i.e. all spatial objects are transformed into small raster cells, e.g. of 100 by 100 meters. This is mainly done for computational reasons. The raster is created as follows:
 
 ```{r eval=FALSE}
 # create a raster of 100 by 100 meter cells
 ZL_raster <- create_raster(ZL_bbox)
-
-# create a parallel cluster
-ncores <- parallel::detectCores()
-cl <- parallel::makeCluster(ncores)
-doParallel::registerDoParallel(cl)
-
-# calculate probabilities
-ZL_propagation <- process_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
 ```
 
-The result is a `data.frame` with the following columns: 
+This object is a `raster` object that contains the raster id values, which are numbered from top left to bottom right row-wise.
+
+For each raster cell $g$ and antenna $a$ where $g$ intersects with the polygon of $a$, the following variables are computed: the distance, the modelled signal strength, the relative signal strength, and the liklihood value. The function for these calculations, called `process_cellplan`, supports parallel computing. This requires the packages `parallel` and `doParallel`
+
+
+```{r eval=FALSE}
+# create a parallel cluster
+require(parallel)
+require(doParallel)
+ncores <- detectCores()
+cl <- makeCluster(ncores)
+registerDoParallel(cl)
+
+# calculate probabilities
+ZL_prop <- process_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
+
+# stop the cluster
+stopCluster(cl)
+```
+
+The result is a `data.frame` that contains information about the modelled propagation (that is were the abbreviation `prop` stands for). It has the following columns: 
 
 * `Cell_name` The identification numbers or names of the antennas.
 * `rid` Raster cell id number. These are numbered according to the cells of specified raster object, in our example `ZL_raster`. The first number corresponds to the top left cell, and the sequence of numbers is row-wise.
 * `dist` Distance from the antenna location to the center of the grid cell.
 * `dBm` Signal strength in dBm.
 * `s` The relative signal strength. The signal strength (dBm) is 
-* `pag` The likelihood value. More speficically, it is the probability that an certain antenna is used given that the device is located in a certain the grid cell.
+* `pag` The likelihood value. More speficically, it is the probability that a certain antenna is used given that the device is located in a certain the grid cell.
 
+## Mobile location approximation
 
-The result can be visualized using `cell_inspection_tool`.
+The propagation results, in our example `ZL_prop`, contains the propagation and likelihood values. In order to approximate the location of mobile devices, prior information can be used additionally. For each raster cell, a probability is assigned based on prior knowledge such as land use.
+
+In this example, we propose four priors:
+
+* A uniform prior. In this prior, every raster cell has the same probability. So no additional information is used.
+* A land use prior. The probability depends on the land use. The general philosophy behind this approach is that in urban areas, it is more likely to espect people than in rural areas. In the example below, we use a simple land use prior, namely the fraction of land that is used for residential areas. This is stored in the raster object `ZL_resi`.
+* A network prior. The antennas are not placed without reason: an MNO (mobile network operator) will probably place more antennas in dense areas. This information can be seen as prior information. We will extract this information from the propagation model.
+* Composite prior. Since each of the previous priors have pros and cons, it may be worthwile to create a composite prior in order to find good balance.
 
 ```{r eval=FALSE}
-cell_inspection_tool(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_propagation, ZL_param)
+ZL_uniform_prior <- extract_uniform_prior(ZL_prop)
+ZL_resi_prior <- extract_prior(ZL_resi, ZL_prop)
+ZL_network_prior <- extract_network_prior(ZL_prop)
+
+ZL_composite_prior <- composite_prior(list(ZL_uniform_prior, ZL_resi_prior, ZL_network_prior))
 ```
+
+
+
+
+```{r eval=FALSE}
+explore_mobloc(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_prop, list(uniform = ZL_uniform_prior, residential = ZL_resi_prior, network = ZL_network_prior),  ZL_param)
+```
+
+
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
-
-```{r eval=FALSE}
-
-
-ZL_network_prior <- extract_network_prior(ZL_propagation)
-ZL_landuse_prior <- extract_prior(ZL_landuse, ZL_propagation)
-ZL_uniform_prior <- extract_uniform_prior(ZL_propagation)
-
-ZL_composite_prior <- composite_prior(ZL_uniform_prior, ZL_landuse_prior, ZL_network_prior)
-
-explore_antennas(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_propagation, list(uniform = ZL_uniform_prior, landuse = ZL_landuse_prior, network = ZL_network_prior),  ZL_param)
-```
-
-
-
-
 
 
 ## Reference

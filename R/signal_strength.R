@@ -98,8 +98,8 @@ attach_mapping <- function(param) {
 # }
 
 # transform dBm to relative signal strength (s)
-db2s <- function(db, db_mid, db_width = 5) {
-    scale <- (db - db_mid) / db_width
+db2s <- function(dBm, db_mid, db_width = 5) {
+    scale <- (dBm - db_mid) / db_width
     1 / (1 + exp(1)^(-scale))
 }
 
@@ -146,9 +146,9 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
     if ("d" %in% enable) {
-        db <- distance2dB(r, ifelse(small, param$db0_small, param$db0_tower))
+        dBm <- distance2dB(r, ifelse(small, param$db0_small, param$db0_tower))
     } else{
-        db <- rep(param$db_mid + param$db_width, length(r))
+        dBm <- rep(param$db_mid + param$db_width, length(r))
     }
 
     if ("h" %in% enable && !small && !any(is.na(direction)) && !any(is.na(beam_h))) {
@@ -168,7 +168,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
         azim2 <- ATAN2(a, e)
 
         sd <- find_sd(beam_width = beam_h, db_back = param$azim_dB_back, mapping = param$azim_mapping) #param$azim_min3dB
-        db <- db + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
+        dBm <- dBm + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
     }
 
     if ("v" %in% enable && !small && !any(is.na(tilt))) {
@@ -178,11 +178,11 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
         elev[elev < -180] <- elev[elev < -180] + 360
 
         sd <- find_sd(beam_width = beam_v, db_back = param$elev_dB_back, mapping = param$elev_mapping) #param$elev_min3dB
-        db <- db + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
+        dBm <- dBm + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
     }
 
-    s <- db2s(db, db_mid = param$db_mid, db_width = param$db_width)
+    s <- db2s(dBm, db_mid = param$db_mid, db_width = param$db_width)
 
-    #list(lh = lh, dists = r, db = azim2) # plot projected angles
-    list(s = s, dists = r, db = db)
+    #list(lh = lh, dists = r, dBm = azim2) # plot projected angles
+    list(s = s, dists = r, dBm = dBm)
 }

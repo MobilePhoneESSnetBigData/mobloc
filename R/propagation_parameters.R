@@ -1,9 +1,9 @@
-#' Set and update location model parameters
+#' Set and update propagation model parameters
 #'
-#' Set and update location model parameters. The function \code{location_model_parameters} specifies model parameters, which can be updated with \code{update_model_parameters}
+#' Set and update propagation model parameters. The function \code{prop_param} specifies model parameters, which can be updated with \code{update_prop_param}
 #'
-#' @name propagation_parameters
-#' @rdname propagation_parameters
+#' @name prop_param
+#' @rdname prop_param
 #' @param db0_tower signal strength in dBm near a normal antennas (placed in a cell tower or rooftop site)
 #' @param db0_small signal strength in dBm near a small cell (omnidirectional)
 #' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
@@ -26,7 +26,7 @@
 #' @param max_overlapping_cells maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected
 #' @return parameter list
 #' @export
-propagation_parameters <- function(
+prop_param <- function(
     db0_tower = -45,
     db0_small = -60,
     azim_min3dB = 65,
@@ -48,17 +48,17 @@ propagation_parameters <- function(
     area_expension = 4,
     max_overlapping_cells = 20) {
 
-    nms <- names(formals(location_model_parameters))
+    nms <- names(formals(prop_param))
     lst <- sapply(nms, get, envir=environment(), simplify = FALSE)
-    class(lst) <- "location_model_parameters"
+    class(lst) <- "prop_param"
     lst
 }
 
-#' @rdname location_model_parameters
-#' @param param parameter list created with \code{location_model_parameters}
-#' @param ... parameter updates, see arguments of \code{location_model_parameters}
+#' @rdname prop_param
+#' @param param parameter list created with \code{prop_param}
+#' @param ... parameter updates, see arguments of \code{prop_param}
 #' @export
-update_model_parameters <- function(param, ...) {
+update_prop_param <- function(param, ...) {
     args <- list(...)
     if (!all(names(args) %in% names(param))) stop("Unknown arguments")
 
