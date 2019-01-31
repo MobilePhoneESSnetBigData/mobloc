@@ -25,7 +25,7 @@ explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, t
     names(pnames) <- choices_prior
 
     choices <- c("Signal strength - dBm" = "dBm",
-                 "Relative signal strength - s" = "s",
+                 "Signal quality - s" = "s",
                  choices_prior,
                  "Likelihood - P(a|g)" = "pag",
                  "Composite prior - P(g) (see slider below)" = "pg",
@@ -125,7 +125,7 @@ explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, t
 
                 title <- switch(input$var,
                                 dBm = "Signal strength in dBm",
-                                s = "Relative signal strength - s (in %)",
+                                s = "Signal quality - s (in %)",
                                 lu = "Land use prior (in %)",
                                 pag = "Likelihood - P(a|g) (in %)",
                                 pg = "Composite prior - P(g) (in %)",

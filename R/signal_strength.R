@@ -11,7 +11,7 @@
 # https://www.cisco.com/c/en/us/support/docs/wireless-mobility/wireless-lan-wlan/82068-omni-vs-direct.html
 # https://community.arubanetworks.com/t5/tkb/articleprintpage/tkb-id/ControllerBasedWLANs/article-id/521
 # https://en.wikipedia.org/wiki/E-plane_and_H-plane
-
+# https://electronics.stackexchange.com/questions/299889/how-much-power-is-radiated-by-cell-towers
 
 r2d <- function(x) x * 180 / pi
 d2r <- function(x) x / 180 * pi
@@ -26,10 +26,19 @@ ATAN <- function(x) r2d(atan(x))
 ATAN2 <- function(y, x) r2d(atan2(y, x))
 
 
+# https://www.rapidtables.com/electric/dBW.html
+dBW2dBm <- function(dBW) {
+    dBW + 30
+}
 
-distance2dB <- function(r, db0 = -50) {
+W2dBW <- function(W) {
+    10 * log10(W)
+}
+
+
+distance2dB <- function(r, ple, db0 = -50) {
     #-75 - 10 * log10(r/1)
-    db0 - 20 * log10(r/1)
+    db0 - ple * 10 * log10(r)
     #db0 - .05 * r
 }
 
@@ -97,7 +106,7 @@ attach_mapping <- function(param) {
 #     (dnorm(a, 0, sd) - dens_max) * inflate
 # }
 
-# transform dBm to relative signal strength (s)
+# transform dBm to signal quality (s)
 db2s <- function(dBm, db_mid, db_width = 5) {
     scale <- (dBm - db_mid) / db_width
     1 / (1 + exp(1)^(-scale))
@@ -132,7 +141,7 @@ project_to_e_plane <- function(b, c, beta) {
 
 
 
-signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, co, param, enable = c("d", "h", "v")) {
+signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, co, ple, param, enable = c("d", "h", "v")) {
     #browser()
 
   # cat(param$azim_min3dB, "\n")
@@ -146,7 +155,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
     if ("d" %in% enable) {
-        dBm <- distance2dB(r, ifelse(small, param$db0_small, param$db0_tower))
+        dBm <- distance2dB(r, ple, ifelse(small, param$db0_small, param$db0_tower))
     } else{
         dBm <- rep(param$db_mid + param$db_width, length(r))
     }

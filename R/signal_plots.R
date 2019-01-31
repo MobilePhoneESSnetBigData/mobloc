@@ -1,66 +1,89 @@
-heatmap_ground <- function(co, param, input) {
+get_grid_coor <- function(range) {
+
+    as.data.frame(expand.grid(x=seq(-range/2, range, by = range / 100), y=seq(-range/2, range/2, by = range/100), z=0))
+}
+
+
+heatmap_ground <- function(co, param, input, range, discrete_colors) {
+
+    co <- get_grid_coor(range  = range)
+
     lh <- x <- y <- db <- NULL
-  if (length(input$enable) || input$small) {
-    enable <- if (input$small) "d" else input$enable
-    co2 <- cbind(co, signal_strength(0,0,input$height, direction = 90, tilt = input$tilt, beam_h = input$h3dB, beam_v =  input$v3dB, small = input$small, co = co, param = param, enable = enable))
+    if (length(input$enable) || input$small) {
+        enable <- if (input$small) "d" else input$enable
+        co2 <- cbind(co, signal_strength(0,0,input$height, direction = 90, tilt = input$tilt, beam_h = input$h3dB, beam_v =  input$v3dB, small = input$small, co = co, ple = input$ple, param = param, enable = enable))
 
-    if (input$type == "likelihood") {
-      co2$lh <- co2$lh / sum(co2$lh)
-      if (input$mask) {
-        values <- sort(co2$lh, decreasing = TRUE)
-        thvalue <- values[which.min(abs(cumsum(values) - input$maskrangelh))]
-        co3 <- co2[co2$lh >= thvalue, ]
-      }
-      gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = lh)) + geom_tile() + coord_fixed() + scale_fill_continuous("Probability")
-    } else {
-      if (input$mask) co3 <- co2[co2$dBm >= input$maskrangedb[1] & co2$dBm <= input$maskrangedb[2], ]
-      co2$dbcat <- cut(co2$dBm, breaks = c(-Inf, seq(-130, -60, by = 10), Inf),
-                       labels = c("-130 or less", "-130 to -120", "-120 to -110", "-110 to -100",
-                                  "-100 to -90", "-90 to -80", "-80 to -70", "-70 to -60", "-60 or better"))
+        if (input$type == "quality") {
 
-      #co2$dbcat <- cut(co2$db, breaks = c(-Inf, seq(-1,1, by=.25) * pi, Inf)) # test projected angles
+            if (input$mask) {
+                values <- sort(co2$s, decreasing = TRUE)
+                thvalue <- values[which.min(abs(cumsum(values) - input$maskrangelh))]
+                co3 <- co2[co2$s >= thvalue, ]
+            }
+
+            co2$valueCat <- cut(co2$s, breaks = seq(0, 1, by = .1), include.lowest = TRUE, right = FALSE)
+
+            co2$value <- co2$s
+
+            lims <- c(0, 1)
+            tit <- "Quality"
+
+        } else {
+
+            if (input$mask) co3 <- co2[co2$dBm >= input$maskrangedb[1] & co2$dBm <= input$maskrangedb[2], ]
+
+            co2$valueCat <- cut(co2$dBm, breaks = c(-Inf, seq(-120, -70, by = 10), Inf),
+                                labels = c("-120 or less", "-120 to -110", "-110 to -100",
+                                           "-100 to -90", "-90 to -80", "-80 to -70", "-70 or better"))
+
+            co2$value <- co2$dBm
+            co2$value[co2$value > -70] <- -70
+            co2$value[co2$value < -120] <- -120
 
 
-      #gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = dbcat)) + geom_tile() + coord_fixed() + scale_fill_manual("dB", values = viridis(9, option = "C"))
-      co2$dBm[co2$dBm > -60] <- -60
-      co2$dBm[co2$dBm < -130] <- -130
+            lims <- c(-120, -70)
+            tit <- "dBm"
+        }
 
+        if (discrete_colors) {
+            gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = valueCat)) + geom_tile() + coord_fixed() + scale_fill_manual(tit, values = RColorBrewer::brewer.pal(nlevels(co2$valueCat), "Spectral"), drop = FALSE) # viridisLite::viridis(9, option = "C")
+        } else {
+            gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = value)) + geom_tile() + coord_fixed() + scale_fill_gradient(tit, limits = lims)
+        }
 
-      gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = dBm)) + geom_tile() + coord_fixed() + scale_fill_gradient("dBm", limits = c(-130, -60))
+        if (input$mask) {
+            gg <- gg + geom_tile(data = co3, fill = "red")
+        }
+        gg
     }
-    if (input$mask) {
-      gg <- gg + geom_tile(data = co3, fill = "red")
-    }
-    gg
-  }
 
 }
 
 #' Signal strength plot functions
 #'
-#' Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{relative_signal_strength_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
+#' Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
 #'
 #' @name distance_plot
 #' @rdname plot_functions
 #' @param db0 signal strength in dBm near a cell
 #' @param base_size base size of the plot
 #' @export
-distance_plot <- function(db0, base_size = 11) {
+distance_plot <- function(db0, ple, base_size = 11) {
     distance <- dBm <- NULL
   df <- data.frame(distance = seq(10, 3000, by=10))
-  df$dBm <- distance2dB(df$distance, db0)
+  df$dBm <- distance2dB(df$distance, ple, db0)
   ggplot(df, aes(x=distance, y= dBm)) + geom_line() + theme_bw(base_size = base_size)
 }
 
-#' @name relative_signal_strength_plot
+#' @name signal_quality_plot
 #' @rdname plot_functions
 #' @param db_mid middle point in the logistic function to map signal strength to probability
 #' @param db_width width of the logistic function to map signal strength to probability
-relative_signal_strength_plot <- function(db_mid, db_width, base_size = 11) {
+signal_quality_plot <- function(db_mid, db_width, base_size = 11) {
     dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
   df$rsig <- db2s(df$dBm, db_mid, db_width)
-  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Relative signal strength") + theme_bw(base_size = base_size)
+  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Signal quality") + theme_bw(base_size = base_size)
 }
 
 #' @name radiation_plot

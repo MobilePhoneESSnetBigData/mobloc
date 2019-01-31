@@ -27,8 +27,8 @@
 #' @return parameter list
 #' @export
 prop_param <- function(
-    db0_tower = -45,
-    db0_small = -60,
+    db0_tower = 40,
+    db0_small = 10,
     azim_min3dB = 65,
     azim_dB_back = -30,
     elev_min3dB = 9,
