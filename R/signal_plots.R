@@ -54,7 +54,12 @@ heatmap_ground <- function(co, param, input, range, discrete_colors) {
         if (input$mask) {
             gg <- gg + geom_tile(data = co3, fill = "red")
         }
-        gg
+
+        if (input$small) {
+            gg + ggtitle("Top view of a small cell antenna")
+        } else {
+            gg + ggtitle("Top view of an antenna directed eastwards")
+        }
     }
 
 }

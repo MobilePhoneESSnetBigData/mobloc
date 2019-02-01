@@ -35,6 +35,14 @@ W2dBW <- function(W) {
     10 * log10(W)
 }
 
+dBW2W <- function(dBW) {
+    10^(dBW / 10)
+}
+
+dBm2dBW <- function(dBm) {
+    dBm - 30
+}
+
 
 distance2dB <- function(r, ple, db0 = -50) {
     #-75 - 10 * log10(r/1)

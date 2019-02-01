@@ -30,6 +30,7 @@ setup_prop_model <- function(param, plot.height=800) {
                                             sliderInput("db0_tower", "dBm at source (tower)", 0, 70, value = param$db0_tower, step = 5)),
                                         conditionalPanel("input.small",
                                             sliderInput("db0_small", "dBm at source (small)", 0, 70, value = param$db0_small, step = 5)),
+                                        shiny::uiOutput("db0text"),
                                         sliderInput("ple", "path loss exponent", min = 1.5, max = 6, step = 0.1, value = 2)
                                         ),
                                   conditionalPanel("!input.small",
@@ -69,6 +70,15 @@ setup_prop_model <- function(param, plot.height=800) {
             )),
         server = function(input, output) {
 
+            output$db0text <- renderUI({
+                db0 <- ifelse(input$small, input$db0_small, input$db0_tower)
+                dBW <- dBm2dBW(db0)
+                W <- dBW2W(dBW)
+                Wtext <- ifelse(W>=1,
+                                paste(sprintf("%.2f", W), "W"),
+                                paste(sprintf("%.2f", W/1000), "mW"))
+                shiny::HTML(db0, " dBm = ", dBW, " dBW = ", Wtext)
+            })
 
             output$heatmap <- renderPlot({
                 param <- list(db0_tower = input$db0_tower,
