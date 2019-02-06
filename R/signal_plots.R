@@ -4,20 +4,19 @@ get_grid_coor <- function(range) {
 }
 
 
-heatmap_ground <- function(co, param, input, range, discrete_colors) {
+heatmap_ground <- function(co, param_model, param_plots, param) {
 
-    co <- get_grid_coor(range  = range)
+    co <- get_grid_coor(range  = param_plots$range)
 
     lh <- x <- y <- db <- NULL
-    if (length(input$enable) || input$small) {
-        enable <- if (input$small) "d" else input$enable
-        co2 <- cbind(co, signal_strength(0,0,input$height, direction = 90, tilt = input$tilt, beam_h = input$h3dB, beam_v =  input$v3dB, small = input$small, co = co, ple = input$ple, param = param, enable = enable))
+    if (length(param_plots$enable)) {
+        co2 <- cbind(co, signal_strength(0,0, param_model$height, direction = param_model$direction, tilt = param_model$tilt, beam_h = param_model$h3dB, beam_v =  param_model$v3dB, W = param_model$W, co = co, ple = param_model$ple, param = param, enable = param_plots$enable))
 
-        if (input$type == "quality") {
+        if (param_plots$type == "quality") {
 
-            if (input$mask) {
+            if (param_plots$mask) {
                 values <- sort(co2$s, decreasing = TRUE)
-                thvalue <- values[which.min(abs(cumsum(values) - input$maskrangelh))]
+                thvalue <- values[which.min(abs(cumsum(values) - param_plots$maskrangelh))]
                 co3 <- co2[co2$s >= thvalue, ]
             }
 
@@ -30,7 +29,7 @@ heatmap_ground <- function(co, param, input, range, discrete_colors) {
 
         } else {
 
-            if (input$mask) co3 <- co2[co2$dBm >= input$maskrangedb[1] & co2$dBm <= input$maskrangedb[2], ]
+            if (param_plots$mask) co3 <- co2[co2$dBm >= param_plots$maskrangedb[1] & co2$dBm <= param_plots$maskrangedb[2], ]
 
             co2$valueCat <- cut(co2$dBm, breaks = c(-Inf, seq(-120, -70, by = 10), Inf),
                                 labels = c("-120 or less", "-120 to -110", "-110 to -100",
@@ -45,17 +44,17 @@ heatmap_ground <- function(co, param, input, range, discrete_colors) {
             tit <- "dBm"
         }
 
-        if (discrete_colors) {
+        if (param_plots$discrete_colors) {
             gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = valueCat)) + geom_tile() + coord_fixed() + scale_fill_manual(tit, values = RColorBrewer::brewer.pal(nlevels(co2$valueCat), "Spectral"), drop = FALSE) # viridisLite::viridis(9, option = "C")
         } else {
             gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = value)) + geom_tile() + coord_fixed() + scale_fill_gradient(tit, limits = lims)
         }
 
-        if (input$mask) {
+        if (param_plots$mask) {
             gg <- gg + geom_tile(data = co3, fill = "red")
         }
 
-        if (input$small) {
+        if (is.na(param_model$direction)) {
             gg + ggtitle("Top view of a small cell antenna")
         } else {
             gg + ggtitle("Top view of an antenna directed eastwards")
@@ -70,14 +69,16 @@ heatmap_ground <- function(co, param, input, range, discrete_colors) {
 #'
 #' @name distance_plot
 #' @rdname plot_functions
-#' @param db0 signal strength in dBm near a cell
+#' @param W power of a cell
 #' @param base_size base size of the plot
 #' @export
-distance_plot <- function(db0, ple, base_size = 11) {
-    distance <- dBm <- NULL
-  df <- data.frame(distance = seq(10, 3000, by=10))
-  df$dBm <- distance2dB(df$distance, ple, db0)
-  ggplot(df, aes(x=distance, y= dBm)) + geom_line() + theme_bw(base_size = base_size)
+distance_plot <- function(W, ple, range, base_size = 11) {
+  distance <- NULL
+  dBm <- W2dBm(W)
+  df <- data.frame(distance = seq(10, range, by=10))
+  df$dBm <- distance2dB(df$distance, ple, W)
+  df <- df[df$dBm >= -110 & df$dBm <= 0, ]
+  ggplot(df, aes(x=distance, y= dBm)) + geom_line() + scale_x_continuous(limits = c(0, range)) + scale_y_continuous(limits = c(-110, 0)) + theme_bw(base_size = base_size) + ggtitle("Signal loss over distance")
 }
 
 #' @name signal_quality_plot
@@ -88,7 +89,7 @@ signal_quality_plot <- function(db_mid, db_width, base_size = 11) {
     dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
   df$rsig <- db2s(df$dBm, db_mid, db_width)
-  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Signal quality") + theme_bw(base_size = base_size)
+  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() + scale_y_continuous("Signal quality", limits = c(0, 1)) + theme_bw(base_size = base_size) + ggtitle("Signal quality")
 }
 
 #' @name radiation_plot

@@ -11,104 +11,143 @@
 setup_prop_model <- function(param, plot.height=800) {
 
 
+    SliderInput <- function(...) {
+        div(style = "height: 75px;line-height:75%;", sliderInput(...))
+    }
 
     assign("param", param, envir = .MOBLOC_CACHE)
 
     app <- shinyApp(
         ui = fluidPage(
             #shinyjs::useShinyjs(),
-            shiny::div(style = "font-size:75%;line-height:20px",
+            shiny::div(style = "font-size:75%;",
                        titlePanel("Propagation model setup"),
                        fluidRow(
                            column(3,
                                   wellPanel(
-                                      sliderInput("height", "Height", 10, 300, value = 55, step = 5),
-                                      sliderInput("tilt", "Tilt", -20, 0, value = -4, step = 1),
-                                      checkboxInput("small", "Small cell", value = FALSE)),
-                                  wellPanel(
-                                        conditionalPanel("!input.small",
-                                            sliderInput("db0_tower", "dBm at source (tower)", 0, 70, value = param$db0_tower, step = 5)),
-                                        conditionalPanel("input.small",
-                                            sliderInput("db0_small", "dBm at source (small)", 0, 70, value = param$db0_small, step = 5)),
-                                        shiny::uiOutput("db0text"),
-                                        sliderInput("ple", "path loss exponent", min = 1.5, max = 6, step = 0.1, value = 2)
-                                        ),
-                                  conditionalPanel("!input.small",
-                                                   wellPanel(
-                                                       sliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$azim_min3dB, step = 1),
-                                                       #sliderInput("hf", "Dens. in hor. -3dB range", .05, .99, value = param$azim_pmin3dB, step = .01))
-                                                       sliderInput("hback", "Hozizontal dB back", -40, -10, value = -30, step = 5))
-                                  )
+                                      shiny::HTML("<h3>Antenna configuration</h3>"),
+                                      checkboxInput("small", "Small cell", value = FALSE),
+                                      conditionalPanel("!input.small",
+                                                       SliderInput("height", "Height", 10, 300, value = param$height, step = 5),
+                                                       SliderInput("tilt", "Tilt", -20, 0, value = -4, step = 1),
+                                                       SliderInput("W_tower", "Power (Watt)", 1, 30, value = param$W_tower, step = .5),
+                                                       div(style = "margin-bottom:10px;", shiny::uiOutput("Wtext")),
+                                                       SliderInput("ple", "Path loss exponent", min = 1.5, max = 6, step = 0.25, value = param$ple),
+                                                       SliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$azim_min3dB, step = 1),
+                                                       SliderInput("hback", "Hozizontal dB back", -40, -10, value = -30, step = 5),
+                                                       SliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$elev_min3dB, step = 1),
+                                                       SliderInput("vback", "Vertical dB back", -40, -10, value = -30, step = 5)),
+                                      conditionalPanel("input.small",
+                                                       SliderInput("height_small", "Height", 10, 300, value = param$height_small, step = 5),
+                                                       SliderInput("W_small", "Power (Watt)", 1, 30, value = param$W_small, step = .5),
+                                                       div(style = "margin-bottom:10px;", shiny::uiOutput("Wtext_small")),
+                                                       SliderInput("ple_small", "Path loss exponent", min = 1.5, max = 6, step = 0.1, value = param$ple_small)))
                            ),
                            column(3,
-                                  conditionalPanel("!input.small",
-                                                   wellPanel(
-                                                       sliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$elev_min3dB, step = 1),
-                                                       sliderInput("vback", "Vertical dB back", -40, -10, value = -30, step = 5))),
-
-                                  #sliderInput("vf", "Dens. in vert. -dB range", .05, .99, value = param$elev_pmin3dB, step = .01))),
                                   wellPanel(
+                                      shiny::HTML("<h3>Signal quality configuration</h3>"),
+                                      sliderInput("dbmid", "dB Mid", -100, -80, value = -92.5, step = 2.5),
+                                      sliderInput("dbwidth", "db Width", 1, 20, value = 5, step = 1)),
+                                  wellPanel(
+                                      shiny::HTML("<h3>Heatmap setup</h3>"),
                                       radioButtons("type", "Output type", choices = c("dBm", "quality"), selected = "dBm"),
-                                      checkboxGroupInput("enable", "Enable", choices = c("distance" =  "d", "horizontal beam" = "h", "vertical beam" = "v"), selected = c("d", "h", "v"))),
-                                  conditionalPanel("input.type == 'quality'",
-                                                   wellPanel(
-                                                       sliderInput("dbmid", "dB Mid", -100, -80, value = -92.5, step = 2.5),
-                                                       sliderInput("dbwidth", "db Width", 1, 20, value = 5, step = 1))),
-                                  wellPanel(
-                                      sliderInput("range", "Heatmap range", 250, 30000, value = 30000, step = 250),
+                                      checkboxGroupInput("enable", "Signal loss components", choices = c("Distance" =  "d", "Horizontal offset" = "h", "Vertical offset" = "v"), selected = c("d", "h", "v")),
+                                      conditionalPanel("!input.small", sliderInput("range", "Heatmap range", 250, 30000, value = 20000, step = 250)),
+                                      conditionalPanel("input.small", sliderInput("range_small", "Heatmap range", 250, 30000, value = 1000, step = 250)),
                                       checkboxInput("discrete_colors", "Discrete color scale", value = TRUE),
                                       checkboxInput("mask", "Enable mask", value = FALSE),
-                                      conditionalPanel("input.mask && input.type == 'dB'",
+                                      conditionalPanel("input.mask && input.type == 'dBm'",
                                                        sliderInput("maskrangedb", "Mask range", min = -130, max = -50, value = c(-100, -50))),
-                                      conditionalPanel("input.mask && input.type == 'likelihood'",
+                                      conditionalPanel("input.mask && input.type == 'quality'",
                                                        sliderInput("maskrangelh", "Mask range", min = 0, max = 1, value = .8, step = .05)))
                            ),
                            column(6,
                                   plotOutput("heatmap", height=plot.height / 2),
-                                  plotOutput("lines", height=plot.height / 2)
+                                  plotOutput("lines", height=plot.height / 4),
+                                  plotOutput("radiation", height=plot.height / 4)
                            ))
             )),
         server = function(input, output) {
 
-            output$db0text <- renderUI({
-                db0 <- ifelse(input$small, input$db0_small, input$db0_tower)
-                dBW <- dBm2dBW(db0)
-                W <- dBW2W(dBW)
-                Wtext <- ifelse(W>=1,
-                                paste(sprintf("%.2f", W), "W"),
-                                paste(sprintf("%.2f", W/1000), "mW"))
-                shiny::HTML(db0, " dBm = ", dBW, " dBW = ", Wtext)
+            get_param_model <- reactive({
+                if (input$small) {
+                    list(height = input$height_small,
+                         direction = NA,
+                         W = input$W_small,
+                         ple = input$ple_small,
+                         db_mid = input$dbmid,
+                         db_width = input$dbwidth)
+                } else {
+                    list(height = input$height,
+                         tilt = input$tilt,
+                         direction = 90,
+                         W = input$W_tower,
+                         ple = input$ple,
+                         db_mid = input$dbmid,
+                         db_width = input$dbwidth,
+                         h3dB = input$h3dB,
+                         hback = input$hback,
+                         v3dB = input$v3dB,
+                         vback = input$vback)
+                }
+            })
+
+            get_param_plots <- reactive({
+                list(type = input$type,
+                     enable = if (input$small) "d" else input$enable,
+                     range = ifelse(input$small, input$range_small, input$range),
+                     mask = input$mask,
+                     maskrangedb = input$maskrangedb,
+                     maskrangelh = input$maskrangelh,
+                     discrete_colors = input$discrete_colors)
+            })
+
+
+            output$Wtext <- renderUI({
+                W <- get_param_model()$W
+                dBm <- W2dBm(W)
+                dBW <- W2dBW(W)
+                shiny::HTML(sprintf("%.1f", W), " W = ", round(dBW), " dBW = ", round(dBm), "dBm")
+            })
+
+            output$Wtext_small <- renderUI({
+                W <- get_param_model()$W
+                dBm <- W2dBm(W)
+                dBW <- W2dBW(W)
+                shiny::HTML(sprintf("%.1f", W), " W = ", round(dBW), " dBW = ", round(dBm), "dBm")
             })
 
             output$heatmap <- renderPlot({
-                param <- list(db0_tower = input$db0_tower,
-                              db0_small = input$db0_small,
-                              azim_min3dB = input$h3dB,
-                              azim_dB_back = input$hback,
-                              elev_min3dB = input$v3dB,
-                              elev_dB_back = input$vback,
-                              db_mid = input$dbmid,
-                              db_width = input$dbwidth)
-                paramFull <- get("param", envir = .MOBLOC_CACHE)
-                paramFull[names(param)] <- param
-                assign("param", paramFull, envir = .MOBLOC_CACHE)
-                heatmap_ground(co, param, input, range = input$range, discrete_colors = input$discrete_colors)
+                param_model <- get_param_model()
+                param_plots <- get_param_plots()
+                heatmap_ground(co, param_model, param_plots, param)
             })
 
 
             output$lines <- renderPlot({
-                g1 <- distance_plot(db0 = ifelse(input$small, input$db0_small, input$db0_tower), ple = input$ple)
+                param_model <- get_param_model()
+                param_plots <- get_param_plots()
+                g1 <- distance_plot(W = param_model$W, ple = param_model$ple, range = param_plots$range)
 
-                g2 <- signal_quality_plot(db_mid = input$dbmid, db_width = input$dbwidth)
+                g2 <- signal_quality_plot(db_mid = param_model$db_mid, db_width = param_model$db_width)
 
-                g3 <- radiation_plot(type = "a", db_back = input$hback, beam_width = input$h3dB)
-                g4 <- radiation_plot(type = "e", db_back = input$vback, beam_width = input$v3dB)
-
-                grid.arrange(g1, g2, g3, g4)
+                grid.arrange(g1, g2, ncol = 2)
             })
-            onStop(function() {
-                stopApp(invisible(get("param", envir = .MOBLOC_CACHE)))
+
+
+            output$radiation <- renderPlot({
+                param_model <- get_param_model()
+                if (!is.na(param_model$direction)) {
+                    g3 <- radiation_plot(type = "a", db_back = param_model$hback, beam_width = param_model$h3dB)
+                    g4 <- radiation_plot(type = "e", db_back = param_model$vback, beam_width = param_model$v3dB)
+
+                    grid.arrange(g3, g4, ncol = 2)
+                } else {
+                    NULL
+                }
+
             })
+
         }
     )
     runApp(app)

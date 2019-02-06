@@ -10,6 +10,7 @@
 #' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 #' \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 #' \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
+#' \item \code{W}. Power of the cell in Watt.
 #' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
@@ -104,10 +105,10 @@ validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) 
     }
 
 
-    if (!"db0" %in% nms) {
-        if (!fix) stop("The variable 'db0' is missing. Set fix = TRUE to fix this issue.")
-        warning("'db0' is missing. Therefore, the db0 of small antennas are set to the parameter db0_small (", param$db0_small, ") and the db0 of other antennas to db0_tower (", param$db0_tower, ").")
-        cp$db0 <- ifelse(cp$small, param$db0_small, param$db0_tower)
+    if (!"W" %in% nms) {
+        if (!fix) stop("The variable 'W' is missing. Set fix = TRUE to fix this issue.")
+        warning("'W' is missing. Therefore, the power of small antennas are set to the parameter W_small (", param$W_small, ") and the power of other antennas to W_tower (", param$W_tower, ").")
+        cp$W <- ifelse(cp$small, param$W_small, param$W_tower)
     }
 
 

@@ -2,6 +2,7 @@
 devtools::load_all("../tmap")
 library(tmaptools)
 library(sf)
+library(raster)
 library(dplyr)
 library(lwgeom)
 ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
@@ -126,10 +127,26 @@ wybt <- st_cast(do.call(c, wyb), "MULTIPOLYGON") %>%
 wr <- rasterize(st_sf(geometry = wybt), ZL_raster, getCover = TRUE)
 qtm(wr) + qtm(wybt)
 
-
 lyrs <- c(rs, list(wr))
-
 ZL_landuse <- do.call(brick, lyrs)
 names(ZL_landuse) <- c("building", "residential", "forest", "roads")
 
-qtm(ZL_landuse)
+# residential areas is at most (1 - building - forest)
+ZL_landuse$residential <-   max(min(1 - ZL_landuse$building - ZL_landuse$forest, ZL_landuse$residential), 0)
+
+# building is at most (1 - forest)
+ZL_landuse$building <-   min(1 - ZL_landuse$forest, ZL_landuse$building)
+
+# make place for roads
+plus <- max(sum(ZL_landuse) - 1, 0)
+
+sums <- sum(ZL_landuse$building, ZL_landuse$forest, ZL_landuse$residential)
+
+ZL_landuse$building <- max(ZL_landuse$building - (ZL_landuse$building / sums) * plus, 0)
+ZL_landuse$residential <- max(ZL_landuse$residential - (ZL_landuse$residential / sums) * plus, 0)
+ZL_landuse$forest <- max(ZL_landuse$forest - (ZL_landuse$forest / sums) * plus, 0)
+
+ZL_landuse[is.na(ZL_landuse)] <- 0
+
+
+save(ZL_landuse, file = "data/ZL_landuse.rda", compress = "xz")

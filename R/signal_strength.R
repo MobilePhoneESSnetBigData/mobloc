@@ -12,6 +12,7 @@
 # https://community.arubanetworks.com/t5/tkb/articleprintpage/tkb-id/ControllerBasedWLANs/article-id/521
 # https://en.wikipedia.org/wiki/E-plane_and_H-plane
 # https://electronics.stackexchange.com/questions/299889/how-much-power-is-radiated-by-cell-towers
+# https://www.repeaterstore.com/pages/femtocell-and-microcell
 
 r2d <- function(x) x * 180 / pi
 d2r <- function(x) x / 180 * pi
@@ -43,9 +44,16 @@ dBm2dBW <- function(dBm) {
     dBm - 30
 }
 
+W2dBm <- function(W) {
+    dBW2dBm(W2dBW(W))
+}
 
-distance2dB <- function(r, ple, db0 = -50) {
+
+distance2dB <- function(r, ple, W) {
     #-75 - 10 * log10(r/1)
+
+    db0 <- W2dBm(W)
+
     db0 - ple * 10 * log10(r)
     #db0 - .05 * r
 }
@@ -149,7 +157,7 @@ project_to_e_plane <- function(b, c, beta) {
 
 
 
-signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, co, ple, param, enable = c("d", "h", "v")) {
+signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, ple, param, enable = c("d", "h", "v")) {
     #browser()
 
   # cat(param$azim_min3dB, "\n")
@@ -163,12 +171,12 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
     if ("d" %in% enable) {
-        dBm <- distance2dB(r, ple, ifelse(small, param$db0_small, param$db0_tower))
+        dBm <- distance2dB(r, ple, W)
     } else{
         dBm <- rep(param$db_mid + param$db_width, length(r))
     }
 
-    if ("h" %in% enable && !small && !any(is.na(direction)) && !any(is.na(beam_h))) {
+    if ("h" %in% enable && !any(is.na(direction)) && !any(is.na(beam_h))) {
         if (!"azim_mapping" %in% names(param)) param <- attach_mapping(param)
         # calculate horizontal angle w.r.t. main direction
         theta_azim <- (90 - ATAN2(co$y-cy, co$x-cx)) # * 180 / pi
@@ -188,7 +196,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, small, 
         dBm <- dBm + norm_dBloss(azim2, db_back = param$azim_dB_back, sd = sd)
     }
 
-    if ("v" %in% enable && !small && !any(is.na(tilt))) {
+    if ("v" %in% enable && !any(is.na(tilt))) {
         gamma_elev <- ATAN2(cz - co$z, sqrt((co$x-cx)^2 + (co$y-cy)^2))
         elev <- (gamma_elev + tilt) %% 360
         elev[elev > 180] <- elev[elev > 180] - 360
