@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
 #' @export
-setup_prop_model <- function(param, plot.height=800) {
+setup_prop_model <- function(param = prop_param(), plot.height=800) {
 
 
     SliderInput <- function(...) {
@@ -26,7 +26,7 @@ setup_prop_model <- function(param, plot.height=800) {
                            column(3,
                                   wellPanel(
                                       shiny::HTML("<h3>Antenna configuration</h3>"),
-                                      checkboxInput("small", "Small cell", value = FALSE),
+                                      div(style = "font-size: 125%", checkboxInput("small", "Small cell", value = FALSE)),
                                       conditionalPanel("!input.small",
                                                        SliderInput("height", "Height", 10, 300, value = param$height, step = 5),
                                                        SliderInput("tilt", "Tilt", -20, 0, value = -4, step = 1),
@@ -46,20 +46,21 @@ setup_prop_model <- function(param, plot.height=800) {
                            column(3,
                                   wellPanel(
                                       shiny::HTML("<h3>Signal quality configuration</h3>"),
-                                      sliderInput("dbmid", "dB Mid", -100, -80, value = -92.5, step = 2.5),
+                                      sliderInput("dbmid", "dB Mid", -120, -70, value = -92.5, step = 2.5),
                                       sliderInput("dbwidth", "db Width", 1, 20, value = 5, step = 1)),
                                   wellPanel(
                                       shiny::HTML("<h3>Heatmap setup</h3>"),
-                                      radioButtons("type", "Output type", choices = c("dBm", "quality"), selected = "dBm"),
+                                      radioButtons("type", "Output type", choices = c("Signal strength (dBm)" = "dBm", "Signal quality" = "quality"), selected = "dBm"),
                                       checkboxGroupInput("enable", "Signal loss components", choices = c("Distance" =  "d", "Horizontal offset" = "h", "Vertical offset" = "v"), selected = c("d", "h", "v")),
-                                      conditionalPanel("!input.small", sliderInput("range", "Heatmap range", 250, 30000, value = 20000, step = 250)),
-                                      conditionalPanel("input.small", sliderInput("range_small", "Heatmap range", 250, 30000, value = 1000, step = 250)),
-                                      checkboxInput("discrete_colors", "Discrete color scale", value = TRUE),
-                                      checkboxInput("mask", "Enable mask", value = FALSE),
-                                      conditionalPanel("input.mask && input.type == 'dBm'",
-                                                       sliderInput("maskrangedb", "Mask range", min = -130, max = -50, value = c(-100, -50))),
-                                      conditionalPanel("input.mask && input.type == 'quality'",
-                                                       sliderInput("maskrangelh", "Mask range", min = 0, max = 1, value = .8, step = .05)))
+                                      conditionalPanel("!input.small", sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250)),
+                                      conditionalPanel("input.small", sliderInput("range_small", "Heatmap range (m)", 250, 30000, value = 1000, step = 250)),
+                                      radioButtons("colors", "Color scale", choices = c("Discrete scale" = "discrete", "Gradient scale" = "gradient"), select = "discrete"),
+                                      conditionalPanel("input.colors == 'gradient'",
+                                                       checkboxInput("mask", "Enable mask", value = FALSE),
+                                                       conditionalPanel("input.mask && input.type == 'dBm'",
+                                                                        sliderInput("maskrangedb", "Mask range", min = -130, max = -50, value = c(-100, -50))),
+                                                       conditionalPanel("input.mask && input.type == 'quality'",
+                                                                        sliderInput("maskrangelh", "Mask range", min = 0, max = 1, value = c(.8, 1), step = .05))))
                            ),
                            column(6,
                                   plotOutput("heatmap", height=plot.height / 2),
@@ -99,7 +100,7 @@ setup_prop_model <- function(param, plot.height=800) {
                      mask = input$mask,
                      maskrangedb = input$maskrangedb,
                      maskrangelh = input$maskrangelh,
-                     discrete_colors = input$discrete_colors)
+                     colors = input$colors)
             })
 
 
