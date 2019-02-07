@@ -29,11 +29,14 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
 
 
     # use Voronoi polygons to determine range
-    vor_area <- as.numeric(st_area(vor))
-    vor_range <- sqrt(vor_area/pi) * param$area_expension
-    cp$rng <- ifelse(cp$small,
-                     pmax(pmin(vor_range, param$max_range_small), param$min_range_small),
-                     pmax(pmin(vor_range, param$max_range), param$min_range))
+    # vor_area <- as.numeric(st_area(vor))
+    # vor_range <- sqrt(vor_area/pi) * param$area_expension
+    # cp$rng <- ifelse(cp$small,
+    #                  pmax(pmin(vor_range, param$max_range_small), param$min_range_small),
+    #                  pmax(pmin(vor_range, param$max_range), param$min_range))
+
+
+    cp$rng <- ifelse(cp$small, param$range_small, param$range)
 
     # subset cp
     cp <- cp %>% dplyr::select(antenna, x, y, rng, direction, beam_h)

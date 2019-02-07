@@ -77,7 +77,7 @@ The parameters will be explained in more detail when needed.
 The `mobloc` package contains a tool in which the first set of eight parameters can be tuned. This tool is started as follows:
 
 ```{r eval = FALSE}
-setup_prop_model(ZL_param)
+setup_prop_model()
 ```
 
 <img src="images/cell_modelling_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()">
@@ -107,7 +107,7 @@ The transformation from absolute signal strength values to the likelood values i
 When the parameters have been set, the model can be applied to cellplan data. To illustrate the model, we included artificial data to this package. This data can be loaded as follows:
 
 ```{r}
-data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_resi")
+data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_landuse")
 ```
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
@@ -130,7 +130,7 @@ qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 
 <img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
-The object `ZL_resi` is a raster object that contains fraction of land that is used for residential areas. We will use this information later on to define prior information.
+The object `ZL_landuse` is a raster object that contains fractions of land that is used for several categories. We will use this information later on to determine the level of urbanization per antenna and to define prior information.
 
 The function `validate_cellplan` should be used to validate the cellplan. It checks if required variables are present. Variables that are not required as input, but needed for further analysis are imputed. For instance, if `tilt` is missing, it is imputed by the default value `ZL_param$tilt`. Also, 
 

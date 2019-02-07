@@ -76,16 +76,16 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                          direction = NA,
                          W = input$W_small,
                          ple = input$ple_small,
-                         db_mid = input$dbmid,
-                         db_width = input$dbwidth)
+                         dBm_mid = input$dbmid,
+                         dBm_width = input$dbwidth)
                 } else {
                     list(height = input$height,
                          tilt = input$tilt,
                          direction = 90,
                          W = input$W_tower,
                          ple = input$ple,
-                         db_mid = input$dbmid,
-                         db_width = input$dbwidth,
+                         dBm_mid = input$dbmid,
+                         dBm_width = input$dbwidth,
                          h3dB = input$h3dB,
                          hback = input$hback,
                          v3dB = input$v3dB,
@@ -130,7 +130,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                 param_plots <- get_param_plots()
                 g1 <- distance_plot(W = param_model$W, ple = param_model$ple, range = param_plots$range)
 
-                g2 <- signal_quality_plot(db_mid = param_model$db_mid, db_width = param_model$db_width)
+                g2 <- signal_quality_plot(dBm_mid = param_model$dBm_mid, dBm_width = param_model$dBm_width)
 
                 grid.arrange(g1, g2, ncol = 2)
             })

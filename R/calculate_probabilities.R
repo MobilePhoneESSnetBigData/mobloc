@@ -15,7 +15,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
         r2 <- st_as_sf(co, coords = c("x", "y", "z"), crs = st_crs(p))
         res <- st_intersects(p, r2, prepared = FALSE)
 
-        pinfo <- as.data.frame(t(st_set_geometry(p[, c("x", "y", "z", "direction", "tilt", "beam_h", "beam_v", "W")], NULL)))
+        pinfo <- as.data.frame(t(st_set_geometry(p[, c("x", "y", "z", "direction", "tilt", "beam_h", "beam_v", "W", "ple")], NULL)))
 
 
         res2 <- mapply(function(pinf, ri) {
@@ -33,6 +33,7 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
                                         beam_h = pinf[6],
                                         beam_v = pinf[7],
                                         W = pinf[8],
+                                        ple = pinf[9],
                                         co = co[ri, c("x", "y", "z")],
                                         param = param) # returns list(lh = lh, dists = r, dBm = dBm)
 

@@ -10,8 +10,8 @@
 #' @param azim_dB_back difference in signal strength between front and back
 #' @param elev_min3dB default vertical beam width. At \code{elev_min3dB/2}, the signal strength is halved (so -3dBM)
 #' @param elev_dB_back difference in signal strength between front and back
-#' @param db_mid middle point in the logistic function to map signal strength to probability
-#' @param db_width width of the logistic function to map signal strength to probability
+#' @param dBm_mid middle point in the logistic function to map signal strength to probability
+#' @param dBm_width width of the logistic function to map signal strength to probability
 #' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.
 #' @param max_range maximum range of normal antennas
 #' @param max_range_small maximum range of small cells
@@ -35,19 +35,22 @@ prop_param <- function(
     azim_dB_back = -30,
     elev_min3dB = 9,
     elev_dB_back = -30,
-    db_mid = -92.5,
-    db_width = 5,
+    dBm_mid = -92.5,
+    dBm_width = 5,
     poly_shape = "oval",
-    max_range = 10000,
-    max_range_small = 100,
-    min_range = 400,
-    min_range_small = 100,
+    range = 20000,
+    range_small = 2000,
+    # max_range = 10000,
+    # max_range_small = 100,
+    # min_range = 400,
+    # min_range_small = 100,
     height = 30,
     height_small = 8,
     tilt = 5,
     beam_v = 9,
     beam_h = 65,
-    area_expension = 4,
+    dBm_th = -110,
+    #area_expension = 4,
     max_overlapping_cells = 20) {
 
     nms <- names(formals(prop_param))

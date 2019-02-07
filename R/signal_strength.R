@@ -123,8 +123,8 @@ attach_mapping <- function(param) {
 # }
 
 # transform dBm to signal quality (s)
-db2s <- function(dBm, db_mid, db_width = 5) {
-    scale <- (dBm - db_mid) / db_width
+db2s <- function(dBm, dBm_mid, dBm_width = 5) {
+    scale <- (dBm - dBm_mid) / dBm_width
     1 / (1 + exp(1)^(-scale))
 }
 
@@ -173,7 +173,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, 
     if ("d" %in% enable) {
         dBm <- distance2dB(r, ple, W)
     } else{
-        dBm <- rep(param$db_mid + param$db_width, length(r))
+        dBm <- rep(param$dBm_mid + param$dBm_width, length(r))
     }
 
     if ("h" %in% enable && !any(is.na(direction)) && !any(is.na(beam_h))) {
@@ -206,7 +206,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, 
         dBm <- dBm + norm_dBloss(elev, db_back = param$elev_dB_back, sd = sd)
     }
 
-    s <- db2s(dBm, db_mid = param$db_mid, db_width = param$db_width)
+    s <- db2s(dBm, dBm_mid = param$dBm_mid, dBm_width = param$dBm_width)
 
     #list(lh = lh, dists = r, dBm = azim2) # plot projected angles
     list(s = s, dists = r, dBm = dBm)

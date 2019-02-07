@@ -100,8 +100,8 @@ validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) 
 
     if (!"range" %in% nms) {
         if (!fix) stop("The variable 'range' is missing. Set fix = TRUE to fix this issue.")
-        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$max_range_small, ") and the range of other antennas to max_range (", param$max_range, ").")
-        cp$range <- ifelse(cp$small, param$max_range_small, param$max_range)
+        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$range_small, ") and the range of other antennas to max_range (", param$range, ").")
+        cp$range <- ifelse(cp$small, param$range_small, param$range)
     }
 
 
