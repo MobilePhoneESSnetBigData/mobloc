@@ -16,7 +16,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
     crs <- st_crs(cp)
 
     # extract the ranges from the Voronoi tesselation, but lowerbound it by max_range_small
-    vor <- create_voronoi(cp, land, bbox)
+    # vor <- create_voronoi(cp, land, bbox)
 
     # wrong Voronoi number
     if (nrow(vor) != nrow(cp)) {
@@ -25,7 +25,7 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
     }
 
     # return Voronoi
-    if (param$poly_shape == "Voronoi") return(list(poly = NULL, vor = vor, shp = NULL))
+    #if (param$poly_shape == "Voronoi") return(list(poly = NULL, vor = vor, shp = NULL))
 
 
     # use Voronoi polygons to determine range
@@ -83,8 +83,8 @@ create_cellplan_polygons <- function(cp, land, bbox, param) {
         warning("Some polygons could not be created, because probably, they are not intersecting with land. Did you run check_cellplan with the argument 'land' specified?", call. = FALSE)
     }
 
-    list(poly = cp_poly, vor = vor, shp = shp)
-
+    #list(poly = cp_poly, vor = vor, shp = shp)
+    cp_poly
 }
 
 create_shape <- function(cp, type = c("oval", "pie"), line_points_per_circle = 360) {

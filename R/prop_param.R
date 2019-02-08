@@ -39,7 +39,7 @@ prop_param <- function(
     dBm_width = 5,
     poly_shape = "oval",
     range = 20000,
-    range_small = 2000,
+    range_small = 5000,
     # max_range = 10000,
     # max_range_small = 100,
     # min_range = 400,
@@ -49,7 +49,7 @@ prop_param <- function(
     tilt = 5,
     beam_v = 9,
     beam_h = 65,
-    dBm_th = -110,
+    dBm_th = -100,
     #area_expension = 4,
     max_overlapping_cells = 20) {
 

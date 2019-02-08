@@ -98,21 +98,23 @@ validate_cellplan <- function(cp, param, land=NULL, elevation=NULL, fix = TRUE) 
         if (max(cp$direction, na.rm = TRUE) < 2 * pi) warning("Probably, direction are in radials. Please check manually, and if needed, provide them in degrees")
     }
 
-    if (!"range" %in% nms) {
-        if (!fix) stop("The variable 'range' is missing. Set fix = TRUE to fix this issue.")
-        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$range_small, ") and the range of other antennas to max_range (", param$range, ").")
-        cp$range <- ifelse(cp$small, param$range_small, param$range)
-    }
-
-
     if (!"W" %in% nms) {
         if (!fix) stop("The variable 'W' is missing. Set fix = TRUE to fix this issue.")
         warning("'W' is missing. Therefore, the power of small antennas are set to the parameter W_small (", param$W_small, ") and the power of other antennas to W_tower (", param$W_tower, ").")
         cp$W <- ifelse(cp$small, param$W_small, param$W_tower)
     }
 
+    if (!"range" %in% nms) {
+        if (!fix) stop("The variable 'range' is missing. Set fix = TRUE to fix this issue.")
+        warning("'range' is missing. Therefore, the range of small antennas are set to the parameter max_range_small (", param$range_small, ") and the range of other antennas to max_range (", param$range, ").")
+        cp$range <- ifelse(cp$small, param$range_small, param$range)
+    }
 
-
+    if (!"ple" %in% nms) {
+        if (!fix) stop("The variable 'ple' (path loss exponent) is missing. Set fix = TRUE to fix this issue.")
+        warning("'ple' (path loss exponent) is missing. Therefore, ple of small antennas are set to the parameter ple_small (", param$ple_small, ") and the ple of other antennas to ple (", param$ple, ").")
+        cp$ple <- ifelse(cp$small, param$ple_small, param$ple)
+    }
 
     if (any(cp$small) && (any(!is.na(cp$direction[cp$small])) ||
         any(!is.na(cp$tilt[cp$small])) ||

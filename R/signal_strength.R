@@ -171,7 +171,7 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, 
     #rbeta <- dbeta(r/param$r_max, param$shape_1, param$shape_2) + param$const
 
     if ("d" %in% enable) {
-        dBm <- distance2dB(r, ple, W)
+        dBm <- distance2dB(pmax(r, 0.01), ple, W)
     } else{
         dBm <- rep(param$dBm_mid + param$dBm_width, length(r))
     }
