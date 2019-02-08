@@ -209,5 +209,5 @@ signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, 
     s <- db2s(dBm, dBm_mid = param$dBm_mid, dBm_width = param$dBm_width)
 
     #list(lh = lh, dists = r, dBm = azim2) # plot projected angles
-    list(s = s, dists = r, dBm = dBm)
+    list(s = s, dist = r, dBm = dBm)
 }

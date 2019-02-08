@@ -37,7 +37,11 @@ circle_coords <- function(cx, cy, rad) {
          y = cy + sin(a) * rad)
 }
 
-find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param, rext, rres) {
+find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, antenna, param, rext, rres) {
+
+
+    #if (round(x,1)==203752.8 && round(y,1)== 324412.3) browser()
+
     if (!is.na(direction)) {
         p1 <- determine_range(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param, range_dir = direction)
         p2 <- determine_range(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param, range_dir = direction + 180)
@@ -82,7 +86,10 @@ find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
 
     df <- expand.grid(colid=colid, rowid=rowid, KEEP.OUT.ATTRS = FALSE)
 
-    df <- df[sqrt((df$colid - mcol)^2 + (df$rowid - mrow)^2) <= rad,  ]
+    df$x <- xs[df$colid]
+    df$y <- ys[df$rowid]
+
+    df <- df[sqrt((df$x - pc[1])^2 + (df$y - pc[2])^2) <= rng,  ]
 
     rids <- calculate_rid(df$colid, df$rowid, length(xs), length(ys))
 
@@ -95,6 +102,8 @@ find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
     }
     rids
 }
+
+
 
 calculate_rid <- function(colid, rowid, nc, nr) {
     ((nr - rowid) * nc) + colid
