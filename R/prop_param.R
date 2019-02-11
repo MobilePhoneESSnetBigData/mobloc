@@ -4,7 +4,7 @@
 #'
 #' @name prop_param
 #' @rdname prop_param
-#' @param W_tower default power in Watt of a normal antennas (placed in a cell tower or rooftop site)
+#' @param W default power in Watt of a normal antennas (placed in a cell tower or rooftop site)
 #' @param W_small default power in Watt of a small cell (omnidirectional)
 #' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
 #' @param azim_dB_back difference in signal strength between front and back
@@ -27,10 +27,12 @@
 #' @return parameter list
 #' @export
 prop_param <- function(
-    W_tower = 10,
+    W = 10,
     W_small = 5,
     ple = 3.25,
     ple_small = 6,
+    ple_0 = 2.5,
+    ple_1 = 4,
     azim_min3dB = 65,
     azim_dB_back = -30,
     elev_min3dB = 9,

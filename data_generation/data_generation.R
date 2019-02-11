@@ -79,19 +79,19 @@ buurt_ZL <- buurt %>%
 
 
 ####### ZL_land: wijk_ZL minus water
-library(osmdata)
-bbL <- bb(matrix(ZL_bbox, ncol=2), current.projection = st_crs(zl)$proj4string, projection = "longlat")
-q1 <- opq(bbL)
-q2 <- add_osm_feature(q1, key="natural", value="water")
-q3 <- add_osm_feature(q1, key="waterway", value="canal")
-osm2 <- osmdata_sf(q2)
-osm3 <- osmdata_sf(q3)
-osm <- c(osm3$osm_polygons$geometry, osm2$osm_polygons$geometry, osm2$osm_multipolygons$geometry)
-osm <- osm[as.numeric(st_area(osm))>(200^2)]
-
-st_erase = function(x, y) st_difference(x, st_union(st_combine(y)))
-zl2 <- st_erase(zl, st_transform(osm, crs= st_crs(zl)))
-ZL_land <- zl2
+# library(osmdata)
+# bbL <- bb(matrix(ZL_bbox, ncol=2), current.projection = st_crs(zl)$proj4string, projection = "longlat")
+# q1 <- opq(bbL)
+# q2 <- add_osm_feature(q1, key="natural", value="water")
+# q3 <- add_osm_feature(q1, key="waterway", value="canal")
+# osm2 <- osmdata_sf(q2)
+# osm3 <- osmdata_sf(q3)
+# osm <- c(osm3$osm_polygons$geometry, osm2$osm_polygons$geometry, osm2$osm_multipolygons$geometry)
+# osm <- osm[as.numeric(st_area(osm))>(200^2)]
+#
+# st_erase = function(x, y) st_difference(x, st_union(st_combine(y)))
+# zl2 <- st_erase(zl, st_transform(osm, crs= st_crs(zl)))
+ZL_region  land <- zl2
 
 
 save(ZL_land, file = "../mobloc/data/ZL_land.rda", compress = "xz")

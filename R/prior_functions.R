@@ -18,6 +18,7 @@ extract_prior <- function(x, prop) {
     df
 }
 
+
 #' @rdname extract_prior
 #' @export
 extract_network_prior <- function(prop) {
@@ -40,10 +41,10 @@ extract_uniform_prior <- function(prop) {
 #'
 #' Create a composite prior
 #' @param priorlist list of priors (see \code{\link{extract_prior}})
-#' @param composition composition of priors, a vector with fractions that should add up to 1
+#' @param comp composition of priors, a vector with fractions that should add up to 1
 #' @return data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
 #' @export
-composite_prior <- function(priorlist, composition = NULL) {
+composite_prior <- function(priorlist, comp = NULL) {
 
     k <- length(priorlist)
 
@@ -52,11 +53,11 @@ composite_prior <- function(priorlist, composition = NULL) {
     } else if (k == 1) {
         return(priorlist[[1]])
     }
-    if (missing(composition)) {
-        composition <- rep(1/k, k)
-        message("composition set to c(", paste(round(composition, 3), collapse = ", "), ").")
+    if (missing(comp)) {
+        comp <- rep(1/k, k)
+        message("comp set to c(", paste(rep(round(comp, 3), k), collapse = ", "), ").")
     } else {
-        if (length(composition) != k) stop("The length of the composition does not correspond to ", k, ", the number of specified priors")
+        if (length(comp) != k) stop("The length of the comp does not correspond to ", k, ", the number of specified priors")
     }
 
     rids_list <- lapply(priorlist, function(prior) unique(prior$rid))
@@ -67,7 +68,7 @@ composite_prior <- function(priorlist, composition = NULL) {
         prior$p[match(rids, prior$rid)]
     }))
 
-    tibble(rid = rids, p = (m %*% composition)[,1])
+    tibble(rid = rids, p = (m %*% comp)[,1])
 }
 
 #' Calculate mobile location
@@ -86,4 +87,20 @@ calculate_mobloc <- function(prop, prior) {
         select(antenna, rid, pga)
 }
 
+combine_raster_layers <- function(x, comp = NULL) {
+    if (!inherits(x, "RasterBrick")) stop("x should be a raster brick")
 
+    k <- raster::nlayers(x)
+
+    if (missing(comp)) {
+        comp <- rep(1, k)
+        message("comp set to c(", paste(rep(1, k), collapse = ", "), ").")
+    } else {
+        if (length(comp) != k) stop("The length of the comp does not correspond to ", k, ", the number of specified priors")
+    }
+
+    a <- x[] %*% comp
+    r <- raster(x)
+    r[] <- a
+    r
+}

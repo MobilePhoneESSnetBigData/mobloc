@@ -1,38 +1,24 @@
-library(raster)
 
+ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
 
-# create a parallel cluster
-require(parallel)
-require(doParallel)
-ncores <- detectCores()
-cl <- makeCluster(ncores)
-registerDoParallel(cl)
-stopCluster(cl)
-
-
-
-
-
-
-ZL_param <- prop_param()
-cp <- validate_cellplan(ZL_cellplan, param = ZL_param, land = ZL_land, elevation = ZL_elevation)
+cp <- ZL_cellplan
+raster <- ZL_raster
 land <- ZL_land
-param <- prop_param()
-param <- attach_mapping(param)
-ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
-r <- create_raster(ZL_bbox)
+param <- ZL_param
 
+
+
+
+# precalculate mapping (needed to calculate the dB loss other directions)
+param <- attach_mapping(param)
 
 cpsel <- cp %>%
     st_set_geometry(NULL) %>%
     dplyr::select(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple)
 
 
-rext <- extent(r)
-rres <- xres(r)
-
-
-
+rext <- raster::extent(raster)
+rres <- raster::xres(raster)
 
 rdf <- get_raster_ids(r, land)
 rdf$z <- ZL_elevation[][rdf$rid]

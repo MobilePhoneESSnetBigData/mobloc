@@ -132,11 +132,15 @@ qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 
 The object `ZL_landuse` is a raster object that contains fractions of land that is used for several categories. We will use this information later on to determine the level of urbanization per antenna and to define prior information.
 
+```{r}
+ZL_envir <- combine_raster_layers(ZL_landuse) 
+```
+
 The function `validate_cellplan` should be used to validate the cellplan. It checks if required variables are present. Variables that are not required as input, but needed for further analysis are imputed. For instance, if `tilt` is missing, it is imputed by the default value `ZL_param$tilt`. Also, 
 
 
 ```{r}
-ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, land = ZL_land, elevation = ZL_elevation)
+ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, land = ZL_land, envir = ZL_envir, elevation = ZL_elevation)
 ```
 
 
@@ -147,38 +151,9 @@ library(sf)
 ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 ```
 
-## Creating antenna covera area polygons
-
-The first step is to create a polygon for each cell. Polygons are created with the function `create_cellplan_polygons`. We can create three types of polygons: `pie`, `oval`, or `Voronoi`. The polygons defines the overall coverage area of a cell. However, the signal strength may vary within this coverage area. It is recommended to define the polygons are large as possible. However, the computation time increases a lot when the polygons are too large, especially when there is much overlap.
-
-In the following line of code, we create polygons that have a shape of an oval. The size is upper bounded by the parameters `max_range` and `max_range_small` for normal and small cells respectively. The sizes of the polygons are determined as follows. First, a Voronoi tesselation is generated. For types `pie` and `oval` the sizes of those Voronoi polygons times the parameter `area_expension` determine the sizes of the polygons. The result is that cells in urban areas have smaller coverage areas, but still overlap each other.
-
-```{r eval=FALSE}
-ZL_poly <- create_cellplan_polygons(ZL_cellplan, ZL_land, ZL_bbox, ZL_param)
-```
-
-The result is a list of three objects: `poly`, which contains the chosen polygons, `vor` which contains Voronoi polygons, and `shp` which contains archetype polygons from which the polygons in `poly` are derived.
-
-
-```{r eval=FALSE}
-qtm(ZL_poly$poly) + qtm(ZL_poly$vor, fill = NULL, border = "red") + qtm(ZL_cellplan)
-```
-
-<img src="images/polygons.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
-
-
-The first layer shows the polygons in gray. Note that these overlap. The red non-filled polygons are the Voronoi polygons. In order to take the direction of the antenna into account (recall that most normal antennas are directional), the controids for which the Voronoi polygons are generated, are shifted 100 meters in the direction of radiation. The major advantage of this adjustment to the Voronoi algorithm is achieved when there are multiple cells per site, typically 120 degrees apart. The result is that due to the shifted geographic locations, a Voronoi polygon is created for each cell.
-
-
-
-As discussed in [1], there are a couple of downsides to the use the Voronoi polygons directly as coverage areas of the antennas. The most important one is that in reality, cells overlap in order to make to mobile phone network robust and dynamic. When a cell tower is out of order, or when the capacity is reached, other nearby cells can take over the connections.
-
-
-Recall that each of these polygons only determines the coverage area of the corresponding antenna, but not the signal strength. At this stage, the shape of the polygons is not very important, as long as it covers the area for which the signal strength is expected to be good enough for communication.
-
 ## Modelling the signal propagation
 
-In the final stage, the signal propagation is modelled. This is done with rasterization, i.e. all spatial objects are transformed into small raster cells, e.g. of 100 by 100 meters. This is mainly done for computational reasons. The raster is created as follows:
+In the next stage, the signal propagation is modelled. This is done with rasterization, i.e. all spatial objects are transformed into small raster cells, e.g. of 100 by 100 meters. This is mainly done for computational reasons. The raster is created as follows:
 
 ```{r eval=FALSE}
 # create a raster of 100 by 100 meter cells

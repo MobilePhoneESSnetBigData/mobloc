@@ -25,7 +25,7 @@ determine_range <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
                            param = param)$dBm
     w1 <- which(ss1 > param$dBm_th)[1]
 
-    if (length(w1) == 0) w1 <- length(ss1)
+    if (is.na(w1)) w1 <- length(ss1)
 
     c(x1s[w1], y1s[w1])
 }
@@ -39,8 +39,6 @@ circle_coords <- function(cx, cy, rad) {
 
 find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, antenna, param, rext, rres) {
 
-
-    #if (round(x,1)==203752.8 && round(y,1)== 324412.3) browser()
 
     if (!is.na(direction)) {
         p1 <- determine_range(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param, range_dir = direction)
