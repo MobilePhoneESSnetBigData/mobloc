@@ -14,7 +14,7 @@
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
 #' @export
-explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, tm = NULL) {
+explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL) {
     tmm <- tmap_mode("view")
 
     pnames <- names(priorlist)
@@ -96,28 +96,39 @@ explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, t
 
                 ## subset data
                 sel <- input$sel
+
+                composition <- get_composition()
+
+
+                # if (input$showall) {
+                #     psel <- prop
+                # } else {
                 psel <- prop %>% filter(antenna %in% sel)
-                rids <- unique(psel$rid)
+                # }
 
-                composition = get_composition()
+                # cpsel <- cp
+                # psel <- prop %>% filter(antenna %in% sel)
+                # rids <- unique(psel$rid)
 
-                if (!input$showall) {
-                    sel2  <- prop %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
-                    cpsel <- cp %>% filter(antenna %in% sel2)
-                    cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
+                # if (!input$showall) {
+                #
+                #
+                #     #sel2  <- prop %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
+                #     #cpsel <- cp %>% filter(antenna %in% sel2)
+                #     #cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
+                #
+                # } else {
+                #     cpsel <- cp
+                #     #cp_polysel <- cp_poly
+                # }
 
-                } else {
-                    cpsel <- cp
-                    cp_polysel <- cp_poly
-                }
+                #cp_polysel$geometry <- st_cast(cp_polysel$geometry, "MULTILINESTRING", group_or_split = FALSE)
 
-                cp_polysel$geometry <- st_cast(cp_polysel$geometry, "MULTILINESTRING", group_or_split = FALSE)
+                cp$sel <- 1L
+                cp$sel[cp$antenna %in% sel] <- 2L
 
-                cpsel$sel <- 1L
-                cpsel$sel[cpsel$antenna %in% sel] <- 2L
-
-                cp_polysel$sel <- 1L
-                cp_polysel$sel[cp_polysel$antenna %in% sel] <- 2L
+                # cp_polysel$sel <- 1L
+                # cp_polysel$sel[cp_polysel$antenna %in% sel] <- 2L
 
 
                 ## create raster
@@ -133,7 +144,7 @@ explore_mobloc <- function(cp, cp_poly, raster, prop, priorlist = NULL, param, t
                                 paste("Prior", pnames[input$var]))
 
 
-                visp <- viz_p(cp = cpsel, cp_poly = cp_polysel, rst = rst, title = title, trans = input$trans)
+                visp <- viz_p(cp = cp, rst = rst, title = title, trans = input$trans)
 
                 if (is.null(tm)) {
                     tmap_leaflet(visp)
@@ -178,18 +189,18 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
         ppr <- ppr %>%
             mutate(x = s)
     } else if (type %in% choices_prior) {
-        prior <- priorlist[[as.integer(substr(type, 2, 2))]]
+        priordf <- prior_to_df(priorlist[[as.integer(substr(type, 2, 2))]], rst)
         ppr <- ppr %>%
-            mutate(x = prior$p[match(ppr$rid, prior$rid)])
+            mutate(x = priordf$p[match(ppr$rid, priordf$rid)])
     } else if (type == "pag") {
         ppr <- ppr %>%
             mutate(x = pag)
     } else {
-
         #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
-        prior <- composite_prior(priorlist, composition = composition)
+
+        priordf <- prior_to_df(do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition))), rst)
         ppr <- ppr %>%
-            mutate(pg = prior$p[match(ppr$rid, prior$rid)])
+            mutate(pg = priordf$p[match(ppr$rid, priordf$rid)])
 
         if (type == "pg") {
             ppr <- ppr %>%

@@ -107,7 +107,8 @@ The transformation from absolute signal strength values to the likelood values i
 When the parameters have been set, the model can be applied to cellplan data. To illustrate the model, we included artificial data to this package. This data can be loaded as follows:
 
 ```{r}
-data("ZL_cellplan", "ZL_land", "ZL_elevation", "ZL_landuse")
+data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
+#ZL_cellplan <- ZL_cellplan[substr(ZL_cellplan$antenna,1,3) == "MAA",]
 ```
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
@@ -125,7 +126,7 @@ These example data can be plot with the `tmap` package
 ```{r eval=FALSE}
 library(tmap)
 tmap_mode("view")
-qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
+qtm(ZL_elevation) + qtm(ZL_muni, fill=NULL) + qtm(ZL_cellplan)
 ```
 
 <img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
@@ -133,14 +134,14 @@ qtm(ZL_elevation) + qtm(ZL_land, fill=NULL) + qtm(ZL_cellplan)
 The object `ZL_landuse` is a raster object that contains fractions of land that is used for several categories. We will use this information later on to determine the level of urbanization per antenna and to define prior information.
 
 ```{r}
-ZL_envir <- combine_raster_layers(ZL_landuse) 
+ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0)) 
 ```
 
 The function `validate_cellplan` should be used to validate the cellplan. It checks if required variables are present. Variables that are not required as input, but needed for further analysis are imputed. For instance, if `tilt` is missing, it is imputed by the default value `ZL_param$tilt`. Also, 
 
 
 ```{r}
-ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, land = ZL_land, envir = ZL_envir, elevation = ZL_elevation)
+ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni, envir = ZL_envir, elevation = ZL_elevation)
 ```
 
 
@@ -174,7 +175,7 @@ cl <- makeCluster(ncores)
 registerDoParallel(cl)
 
 # calculate probabilities
-ZL_prop <- process_cellplan(cp = ZL_cellplan, cp_poly = ZL_poly, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
+ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
 
 # stop the cluster
 stopCluster(cl)
@@ -201,18 +202,16 @@ In this example, we propose four priors:
 * Composite prior. Since each of the previous priors have pros and cons, it may be worthwile to create a composite prior in order to find good balance.
 
 ```{r eval=FALSE}
-ZL_uniform_prior <- extract_uniform_prior(ZL_prop)
-ZL_resi_prior <- extract_prior(ZL_resi, ZL_prop)
-ZL_network_prior <- extract_network_prior(ZL_prop)
-
-ZL_composite_prior <- composite_prior(list(ZL_uniform_prior, ZL_resi_prior, ZL_network_prior))
+ZL_uniform_prior <- create_uniform_prior(ZL_raster)
+ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
+ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 ```
 
 
 
 
 ```{r eval=FALSE}
-explore_mobloc(ZL_cellplan, ZL_poly$poly, ZL_raster, ZL_prop, list(uniform = ZL_uniform_prior, residential = ZL_resi_prior, network = ZL_network_prior),  ZL_param)
+explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(uniform = ZL_uniform_prior, landuse = ZL_landuse_prior, network = ZL_network_prior),  ZL_param)
 ```
 
 

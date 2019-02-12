@@ -3,45 +3,114 @@
 #' Rasterize cellplan
 #'
 #' @param cp cellplan
-#' @param cp_poly cellplan polygons
 #' @param raster raster with indices
 #' @param elevation raster with elevation data
 #' @param param list
+#' @param region polygon shape. If specified, only the signal strength will be calculated for raster cells inside the polygons
 #' @importFrom stats dnorm
+#' @import parallel
+#' @import doParalell
 #' @export
-process_cellplan <- function(cp, cp_poly, raster, elevation, param) {
-    dist <- dBm <- antenna <- rid <- s <- NULL
-
-    r <- brick(raster, elevation)
-
-    shp <- cp_poly$poly
-
-    shp$x <- cp$x
-    shp$y <- cp$y
-
-    shp$z <- cp$z
-    shp$direction <- cp$direction
-    shp$tilt <- cp$tilt
-    shp$beam_h <- cp$beam_h
-    shp$beam_v <- cp$beam_v
-    shp$small <- cp$small
-    # shp <- cbind(shp, cp %>% select(height, a, tilt3, indoor)) currently not working...
-
-    #suppressWarnings(start_cluster())
+process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     parallel <- check_parallel()
+    if (!parallel) message("No parallel backend found, so procell_cellplan will run single threaded")
 
 
-    qres <- quandrantify(shp, r)
-
+    # precalculate mapping (needed to calculate the dB loss other directions)
     param <- attach_mapping(param)
 
-    ppr <- calculate_probabilities(qres$shps, qres$rs, param, parallel = parallel)
-    ## 67 min, 4core i5 16GB, swap-5GB
-    ## 37 min, 16 cores Xeon E5, 38 GB
+    # select required cp variables
+    cpsel <- cp %>%
+        st_set_geometry(NULL) %>%
+        dplyr::select(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple)
 
-    # attach cell name
-    ppr$antenna <- cp$antenna[ppr$pid]
+    # determine raster specs
+    rext <- raster::extent(raster)
+    rres <- raster::xres(raster)
 
-    ppr %>% select(antenna, rid, dist, dBm, s, pag)
+    # select raster id numbers
+    if (!missing(region)) {
+        message("Determining which raster cells intersect with region polygon")
+
+        land <- st_union(region)
+        rdf <- get_raster_ids(raster, land)
+        rdf$z <- elevation[][rdf$rid]
+    } else {
+        rdf <- as.data.frame(coordinates(raster))
+        rdf$rid <- raster[]
+        rdf$z <- elevation[]
+    }
+
+    message("Determining coverage area per antenna")
+
+    # for each antenna determine range for which signal strength is within param$dBm_th (start at +/- range, calculate signal strength and stop when it reached dBm_th)
+    cpsellist <- as.list(cpsel)
+    names(cpsellist$x) <- cp$antenna
+    res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres), USE.NAMES = TRUE), cpsellist))
+
+
+    # debugging mode
+    if (FALSE) {
+        r2 <- raster(raster)
+
+        r2[][res[[52]]] <- 1
+
+        r2 <- trim(r2)
+        qtm(r2) + qtm(cp[52,])
+    }
+
+    # create data.frame for each antenna of selected rids
+    res2 <- mclapply(res, function(rs) {
+        rdf[rdf$rid %in% rs, ]
+    })
+
+    # debugging mode
+    if (FALSE) {
+        r2 <- raster(raster)
+
+        r2[][res2[[132]]$rid] <- 1
+
+        r2 <- trim(r2)
+        qtm(r2) + qtm(cp[132,])
+    }
+
+    # calculate signal strength
+    message("Determine signal strength per antenna for raster cells inside coverage area")
+    df3 <- do.call(mcmapply, c(list(FUN = function(df, x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param) {
+        df2 <- signal_strength(cx=x, cy=y, cz=z,
+                               direction = direction,
+                               tilt = tilt,
+                               beam_h = beam_h,
+                               beam_v = beam_v,
+                               W = W,
+                               co = df[, c("x", "y", "z")],
+                               ple = ple,
+                               param = param)
+        cbind(df, as.data.frame(df2))
+    }, df = res2, MoreArgs = list(param = param), SIMPLIFY = FALSE, USE.NAMES = TRUE), as.list(cpsel)))
+
+    # attach antenna name and put in one data.frame
+    message("Creating data.frame and compute pag values")
+    antennas <- cp$antenna
+    df4 <- do.call(rbind, mcmapply(function(d,nm) {
+        d$antenna <- factor(nm, levels = antennas)
+        d
+    }, df3, names(df3), SIMPLIFY = FALSE, USE.NAMES = FALSE))
+
+    # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
+    df5 <- df4 %>%
+        group_by(rid) %>%
+        filter(order(s)<=param$max_overlapping_cells) %>%
+        mutate(pag = s / sum(s)) %>%
+        ungroup()
+
+    df5 %>% dplyr::select(antenna=antenna, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
+        attach_class("mobloc_prop")
 }
+
+
+
+
+
+

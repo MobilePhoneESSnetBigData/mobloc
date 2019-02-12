@@ -32,13 +32,13 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
 #' @param param parameter list. See \code{\link{prop_param}}.
-#' @param land land polygon. If specifies, it checks if all antennas are contained inside it
+#' @param region polygon shape. If specified, it checks if all antennas are contained inside it
 #' @param elevation see argument \code{cp} (variable \code{z})
 #' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})
 #' @import sf
 #' @import sp
 #' @export
-validate_cellplan <- function(cp, param, elevation=NULL, land=NULL, envir = NULL, fix = TRUE) {
+validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NULL, fix = TRUE) {
     if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points")
 
     nms <- names(cp)
@@ -186,7 +186,8 @@ validate_cellplan <- function(cp, param, elevation=NULL, land=NULL, envir = NULL
     }
 
 
-    if (!missing(land)) {
+    if (!missing(region)) {
+        land <- st_union(region)
         it <- sapply(st_intersects(cp, land), length)
         sel <- (it==1L)
         if (any(!sel)) {

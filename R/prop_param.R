@@ -42,18 +42,13 @@ prop_param <- function(
     poly_shape = "oval",
     range = 20000,
     range_small = 5000,
-    # max_range = 10000,
-    # max_range_small = 100,
-    # min_range = 400,
-    # min_range_small = 100,
     height = 30,
     height_small = 8,
     tilt = 5,
     beam_v = 9,
     beam_h = 65,
-    dBm_th = -100,
-    #area_expension = 4,
-    max_overlapping_cells = 20) {
+    dBm_th = -120,
+    max_overlapping_cells = 100) {
 
     nms <- names(formals(prop_param))
     lst <- sapply(nms, get, envir=environment(), simplify = FALSE)

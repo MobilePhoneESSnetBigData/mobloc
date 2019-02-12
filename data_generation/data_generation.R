@@ -43,7 +43,11 @@ gem <- st_read(file.path(tmpdir, "Uitvoer_shape/gem_2018.shp"))
 gem <- st_transform(gem, crs = 28992)
 ids <- which(st_coordinates(st_centroid(gem))[,2] < 340000)
 gem_ZL <- gem[ids, ]
-zl <- st_union(gem_ZL)
+#zl <- st_union(gem_ZL)
+
+
+ZL_muni <- gem_ZL %>% select(GM_CODE, GM_NAAM, AANT_INW) %>%
+    rename(muni_code = GM_CODE, muni_name = GM_NAAM, population = AANT_INW)
 
 
 wijk_ZL <- wijk %>%
@@ -91,10 +95,9 @@ buurt_ZL <- buurt %>%
 #
 # st_erase = function(x, y) st_difference(x, st_union(st_combine(y)))
 # zl2 <- st_erase(zl, st_transform(osm, crs= st_crs(zl)))
-ZL_region  land <- zl2
 
 
-save(ZL_land, file = "../mobloc/data/ZL_land.rda", compress = "xz")
+save(ZL_muni, file = "../mobloc/data/ZL_muni.rda", compress = "xz")
 
 
 ####### Generate normal antenna locations

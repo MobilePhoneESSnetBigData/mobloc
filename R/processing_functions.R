@@ -111,12 +111,10 @@ calculate_rid <- function(colid, rowid, nc, nr) {
 
 ##### intersection raster land
 get_raster_ids <- function(r, land) {
-    parallel <- check_parallel()
-
 
     rco <- as.data.frame(coordinates(r))
     nr <- nrow(rco)
-    rco$rid <- 1:nr
+    rco$rid <- r[]
     rco_cnk <- split(rco, ceiling((1:nr)/100))
 
     raster_id_fun <- function(df, land) {
@@ -125,11 +123,7 @@ get_raster_ids <- function(r, land) {
     }
 
 
-    if (parallel) {
-        res <- parallel::mclapply(rco_cnk, FUN = raster_id_fun, land = land)
-    } else {
-        res <- lapply(rco_cnk, FUN = raster_id_fun, land = land)
-    }
+    res <- parallel::mclapply(rco_cnk, FUN = raster_id_fun, land = land)
 
     res2 <- unname(sort(unlist(res)))
 
