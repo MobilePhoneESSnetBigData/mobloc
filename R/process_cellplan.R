@@ -12,6 +12,7 @@
 #' @import doParalell
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
+    if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 
     parallel <- check_parallel()
     if (!parallel) message("No parallel backend found, so procell_cellplan will run single threaded")
@@ -19,6 +20,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     # precalculate mapping (needed to calculate the dB loss other directions)
     param <- attach_mapping(param)
+
 
     # select required cp variables
     cpsel <- cp %>%
@@ -93,14 +95,13 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     # attach antenna name and put in one data.frame
     message("Creating data.frame and compute pag values")
     antennas <- cp$antenna
-    df4 <- do.call(rbind, mcmapply(function(d,nm) {
-        d$antenna <- factor(nm, levels = antennas)
-        d
-    }, df3, names(df3), SIMPLIFY = FALSE, USE.NAMES = FALSE))
+
+    df4 <- bind_rows(df3, .id = "antenna")
 
     # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
     df5 <- df4 %>%
         group_by(rid) %>%
+        filter(dBm >= param$dBm_th) %>%
         filter(order(s)<=param$max_overlapping_cells) %>%
         mutate(pag = s / sum(s)) %>%
         ungroup()

@@ -24,15 +24,23 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
     names(choices_prior) <- paste0("Prior ", pnames)
     names(pnames) <- choices_prior
 
-    choices <- c("Signal strength - dBm" = "dBm",
+
+    choices1 <- c("Signal strength - dBm" = "dBm",
                  "Signal quality - s" = "s",
+                 "Best server map" = "bsm",
                  choices_prior,
-                 "Likelihood - P(a|g)" = "pag",
-                 "Composite prior - P(g) (see slider below)" = "pg",
+                 "Composite prior - P(g) (see slider below)" = "pg")
+
+    choices2 <- c("Likelihood - P(a|g)" = "pag",
                  "Probability - P(g|a)" = "pga")
 
     cells <- as.character(cp$antenna)
     #names(cells) <- paste("Cell", 1L:n)
+
+    message("Creating coverage and best server maps...")
+    cm_dBm <- create_coverage_map(prop, raster, type = "dBm")
+    cm_s <- create_coverage_map(prop, raster, type = "s")
+    bsm <- create_best_server_map(prop, raster)
 
 
     sliders <- mapply(function(i, nm) {
@@ -49,15 +57,15 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
             titlePanel("Antenna prop exploration"),
             sidebarLayout(
                 sidebarPanel(
-                    radioButtons("var", "Variable", choices, selected = "s"),
+                    radioButtons("show", "Selection",  c("Whole grid" = "grid", "One antenna" = "ant"), selected = "grid"),
+                    conditionalPanel(condition = "input.show == 'ant'",
+                                     selectInput("sel", "Antenna", cells, selected = cells[1])),
+                    radioButtons("var", "Variable", choices1, selected = "s"),
                     wellPanel(
                     conditionalPanel(
                         condition = "(input.var == 'pga') || (input.var == 'pg')",
                         sliders)),
-                    sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
-                    checkboxInput("showall", "Show all antennas", value = FALSE),
-                    selectInput("sel", "Antenna", cells, selected = cells[1])),
-
+                    sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1)),
                     #checkboxGroupInput("sel", "Selected cells", cells, selected = "c1")),
                 mainPanel(
                     leafletOutput("map", height=1000)
@@ -65,9 +73,15 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
         ),
         server = function(input, output, session) {
 
-            # observe({
-            #     if (!input$threed) rgl::rgl.clear()
-            # })
+            observe({
+                show <- input$show
+                var <- input$var
+                if (!is.null(show)) {
+                    choices <- if (show == "grid") choices1 else c(choices1, choices2)
+                    selected <- if (var %in% choices) var else choices[1]
+                    updateRadioButtons(session, "var", choices = choices, selected = selected)
+                }
+            })
 
 
 
@@ -93,17 +107,42 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
             })
 
             output$map <- renderLeaflet({
+                type <- input$var
+
+
+                if (input$show == "grid") {
+
+                    cp$sel <- 1L
+
+                    composition <- get_composition()
+
+
+                    rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, cm_dBm, cm_s, bsm)
+
+
+                } else {
+                    sel <- input$sel
+
+                    if (type == "bsm") {
+                        rst <- create_best_server_map(prop, raster, antennas = sel)
+                    } else {
+                        composition <- get_composition()
+                        psel <- prop %>% filter(antenna == sel)
+
+                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist)
+                    }
+
+                    cp$sel <- 1L
+                    cp$sel[cp$antenna %in% sel] <- 2L
+
+                }
 
                 ## subset data
-                sel <- input$sel
-
-                composition <- get_composition()
 
 
                 # if (input$showall) {
                 #     psel <- prop
                 # } else {
-                psel <- prop %>% filter(antenna %in% sel)
                 # }
 
                 # cpsel <- cp
@@ -124,19 +163,18 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 
                 #cp_polysel$geometry <- st_cast(cp_polysel$geometry, "MULTILINESTRING", group_or_split = FALSE)
 
-                cp$sel <- 1L
-                cp$sel[cp$antenna %in% sel] <- 2L
 
                 # cp_polysel$sel <- 1L
                 # cp_polysel$sel[cp_polysel$antenna %in% sel] <- 2L
 
 
                 ## create raster
-                rst <- create_p_raster(raster, psel, type = input$var, choices_prior, composition = composition, priorlist)
+
 
                 title <- switch(input$var,
                                 dBm = "Signal strength in dBm",
                                 s = "Signal quality - s (in %)",
+                                bsm = "Best server map",
                                 lu = "Land use prior (in %)",
                                 pag = "Likelihood - P(a|g) (in %)",
                                 pg = "Composite prior - P(g) (in %)",
@@ -178,6 +216,34 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 }
 
 
+create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, cm_dBm, cm_s, bsm) {
+    #rindex <- raster::getValues(rst)
+    #r <- raster::raster(rst)
+
+    if (type == "dBm") {
+        r <- cm_dBm
+    } else if (type == "s") {
+        r <- cm_s
+    } else if (type == "bsm") {
+        r <- bsm
+    } else if (type %in% choices_prior) {
+        r <- priorlist[[as.integer(substr(type, 2, 2))]]
+    } else if (type == "pg") {
+        #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
+        r <- do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition)))
+    }
+
+    # if (type != "dBm") {
+    #     ppr <- ppr %>%
+    #         mutate(x = x / sum(x) * 100)
+    # }
+
+    # raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
+    # r <- raster::trim(r)
+    # r[r==0] <- NA
+    r
+}
+
 create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist) {
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
@@ -211,11 +277,11 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
         }
     }
 
-
-    if (type != "dBm") {
-        ppr <- ppr %>%
-            mutate(x = x / sum(x) * 100)
-    }
+#
+#     if (type != "dBm") {
+#         ppr <- ppr %>%
+#             mutate(x = x / sum(x) * 100)
+#     }
 
     raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
     r <- raster::trim(r)

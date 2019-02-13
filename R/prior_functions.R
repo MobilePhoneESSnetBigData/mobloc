@@ -39,27 +39,45 @@ create_network_prior <- function(prop, raster) {
 }
 
 
-create_coverage_map <- function(prop, raster) {
+create_coverage_map <- function(prop, raster, type = c("dBm", "s")) {
+    type <- match.arg(type)
     z <- prop %>%
         group_by(rid) %>%
-        summarize(dBm = max(dBm)) %>%
+        rename_("x" = type) %>%
+        summarize(x = max(x)) %>%
         ungroup()
 
     y <- raster::raster(raster)
-    y[] <- 0
-    y[][match(z$rid, raster[])] <- z$dBm
+    y[][match(z$rid, raster[])] <- z$x
+    names(y) <- type
     y
 }
 
-create_coverage_map2 <- function(prop, raster) {
+create_best_server_map <- function(prop, raster, antennas = NULL) {
+
+
+    if (!missing(antennas)) {
+        rids <- unique(prop$rid[prop$antenna %in% antennas])
+        prop <- prop %>% filter(rid %in% rids)
+    }
+
     z <- prop %>%
         group_by(rid) %>%
-        summarize(s = sum(s)) %>%
-        ungroup()
+        summarize(antenna = antenna[which.max(dBm)[1]])
+
+    if (!missing(antennas)) {
+        z <- z %>% filter(antenna %in% antennas)
+    }
+
+
+    z <- z %>% mutate(antenna = factor(antenna))
+    ants <- levels(z$antenna)
 
     y <- raster::raster(raster)
-    y[] <- 0
-    y[][match(z$rid, raster[])] <- z$s
+    y[][match(z$rid, raster[])] <- as.integer(z$antenna)
+    y <- raster::ratify(y)
+    levels(y) <- list(data.frame(ID = 1L:length(ants), antenna = ants))
+    names(y) <- "antenna"
     y
 }
 
