@@ -103,6 +103,8 @@ heatmap_ground <- function(co, param_model, param_plots, param) {
 #' @name distance_plot
 #' @rdname plot_functions
 #' @param W power of a cell
+#' @param ple path loss exponent
+#' @param range range
 #' @param base_size base size of the plot
 #' @export
 distance_plot <- function(W, ple, range, base_size = 11) {

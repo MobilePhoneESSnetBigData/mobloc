@@ -18,8 +18,6 @@ explore_mobloc(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 \item{param}{parameter list}
 
 \item{tm}{tmap object (optional), that is plotted on top of the map}
-
-\item{cp_poly}{cellplan polygons}
 }
 \description{
 Visualize signal strengths and probabilities per raster cell

@@ -15,6 +15,10 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 \arguments{
 \item{W}{power of a cell}
 
+\item{ple}{path loss exponent}
+
+\item{range}{range}
+
 \item{base_size}{base size of the plot}
 
 \item{dBm_mid}{middle point in the logistic function to map signal strength to probability}

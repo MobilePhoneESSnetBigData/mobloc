@@ -20,6 +20,14 @@ update_prop_param(param, ...)
 
 \item{W_small}{default power in Watt of a small cell (omnidirectional)}
 
+\item{ple}{default path loss exponent}
+
+\item{ple_small}{path loss exponent for small cells}
+
+\item{ple_0}{path loss exponent for free space}
+
+\item{ple_1}{path loss exponent for dense environments}
+
 \item{azim_min3dB}{default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)}
 
 \item{azim_dB_back}{difference in signal strength between front and back}
@@ -34,6 +42,10 @@ update_prop_param(param, ...)
 
 \item{poly_shape}{shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.}
 
+\item{range}{maximum range of normal antennas}
+
+\item{range_small}{maximum range of small cells}
+
 \item{height}{default height of normal antennas}
 
 \item{height_small}{default height of small cells}
@@ -44,21 +56,13 @@ update_prop_param(param, ...)
 
 \item{beam_h}{default horizontal beam width. Only applicable for directional antennas}
 
+\item{dBm_th}{dBm threshold}
+
 \item{max_overlapping_cells}{maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected}
 
 \item{param}{parameter list created with \code{prop_param}}
 
 \item{...}{parameter updates, see arguments of \code{prop_param}}
-
-\item{max_range}{maximum range of normal antennas}
-
-\item{max_range_small}{maximum range of small cells}
-
-\item{min_range}{minimum range of normal antennas}
-
-\item{min_range_small}{minimum range of small cells}
-
-\item{area_expension}{when \code{poly_shape} is \code{"pie"} or \code{"oval"}, the sizes of the polygons set to the area size of the corresponding Voronoi are multiplied by \code{area_expension}. These sizes are subsequently adjusted such that the range is bounded by \code{min_range} and \code{max_range} for normal cells and \code{min_range_small} and \code{max_range_small} for small cells. The purpose of \code{area_expension} is to allow overlap. This number (which should be greater than 1) contols the amout of overlap. The default value 1.5.}
 }
 \value{
 parameter list

@@ -27,21 +27,21 @@ NULL
 #' @docType data
 NULL
 
-#' Land of Zuid-Limburg
+#' Municipalities of Zuid-Limburg
 #'
-#' Land of Zuid-Limburg, which is the shape of Zuid-Limburg with large water areas removed.
+#' Municipalities of Zuid-Limburg. Source: CBS
 #'
-#' @usage data(ZL_land)
-#' @name ZL_land
+#' @usage data(ZL_muni)
+#' @name ZL_muni
 #' @docType data
 NULL
 
-#' Residential areas of Zuid-Limburg
+#' Landuse of Zuid-Limburg
 #'
-#' Residential of Zuid-Limburg, raster object of 100 x 100 meter cells, where for each cell the fraction of area is specified which is tagged as residential. Source: OpenStreetMap
+#' Landuse groups. Source: OpenStreetMap
 #'
-#' @usage data(ZL_resi)
-#' @name ZL_resi
+#' @usage data(ZL_landuse)
+#' @name ZL_landuse
 #' @docType data
 NULL
 

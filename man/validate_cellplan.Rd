@@ -27,6 +27,8 @@ validate_cellplan(cp, param, elevation = NULL, region = NULL,
 
 \item{region}{polygon shape. If specified, it checks if all antennas are contained inside it}
 
+\item{envir}{raster layer that specifies the environment: free space is 0, and dense environment is 1. These values are scaled to the parameters \code{ple_0} and \code{ple_1}.}
+
 \item{fix}{should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})}
 }
 \description{
