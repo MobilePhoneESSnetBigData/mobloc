@@ -51,16 +51,16 @@ create_network_prior <- function(prop, raster) {
 #' @export
 prior_filter <- function(prior, region) {
     name <- get_mobloc_prior(prior)
-    r <- raster(x)
+    r <- raster(prior)
     r[] <- 1:length(r)
-    land <- st_union(region)
-    rids <- get_raster_ids(r, land)$rid
+
+    rids <- get_raster_ids(r, region)$rid
 
     r[] <- 0
-    r[][rids] <- x[][rids]
+    r[][rids] <- prior[][rids]
 
-    r[][rids] / sum(r[])
-    set_mobloc_prior(y, name)
+    r[][rids] <- r[][rids] / sum(r[])
+    set_mobloc_prior(r, name)
 }
 
 #' Functions to estimate a coverage map and a best server map.

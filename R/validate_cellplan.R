@@ -188,9 +188,7 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
 
 
     if (!missing(region)) {
-        land <- st_union(region)
-        it <- sapply(st_intersects(cp, land), length)
-        sel <- (it==1L)
+        sel <- which_inside(cp, region)
         if (any(!sel)) {
             if (!fix) stop("some antennas are not inside land: ", paste(which(!sel), collapse = ", "), "Set fix = TRUE to fix this issue.")
             message("some antennas are not inside land: ", paste(which(!sel), collapse = ", "), "These are omitted.")
@@ -206,6 +204,11 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
 
     attr(cp, "valid_cellplan") <- TRUE
     cp
+}
+
+which_inside <- function(points, poly) {
+    it <- sapply(st_intersects(points, poly), length)
+    it>=1L
 }
 
 

@@ -110,20 +110,21 @@ calculate_rid <- function(colid, rowid, nc, nr) {
 
 
 ##### intersection raster land
-get_raster_ids <- function(r, land) {
+get_raster_ids <- function(r, region) {
 
     rco <- as.data.frame(coordinates(r))
     nr <- nrow(rco)
     rco$rid <- r[]
     rco_cnk <- split(rco, ceiling((1:nr)/100))
 
-    raster_id_fun <- function(df, land) {
+    raster_id_fun <- function(df, region) {
         dfsf <- st_as_sf(df, coords = c("x", "y"), crs = 28992)
-        df$rid[st_intersects(dfsf, land, sparse = FALSE)[,1]]
+        sel <- which_inside(dfsf, region)
+        df$rid[sel]
     }
 
 
-    res <- parallel::mclapply(rco_cnk, FUN = raster_id_fun, land = land)
+    res <- parallel::mclapply(rco_cnk, FUN = raster_id_fun, region = region)
 
     res2 <- unname(sort(unlist(res)))
 

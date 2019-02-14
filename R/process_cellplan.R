@@ -35,8 +35,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     if (!missing(region)) {
         message("Determining which raster cells intersect with region polygon")
 
-        land <- st_union(region)
-        rdf <- get_raster_ids(raster, land)
+        rdf <- get_raster_ids(raster, region)
         rdf$z <- elevation[][rdf$rid]
     } else {
         rdf <- as.data.frame(coordinates(raster))
