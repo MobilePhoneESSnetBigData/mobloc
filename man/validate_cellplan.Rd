@@ -4,8 +4,8 @@
 \alias{validate_cellplan}
 \title{Validate cellplan}
 \usage{
-validate_cellplan(cp, param, land = NULL, elevation = NULL,
-  fix = TRUE)
+validate_cellplan(cp, param, elevation = NULL, region = NULL,
+  envir = NULL, fix = TRUE)
 }
 \arguments{
 \item{cp}{cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., `st_geometry_type(cp)` should return `POINT`s). The optional variables are:
@@ -16,15 +16,16 @@ validate_cellplan(cp, param, land = NULL, elevation = NULL,
 \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
+\item \code{W}. Power of the cell in Watt.
 \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
 \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 }}
 
 \item{param}{parameter list. See \code{\link{prop_param}}.}
 
-\item{land}{land polygon. If specifies, it checks if all antennas are contained inside it}
-
 \item{elevation}{see argument \code{cp} (variable \code{z})}
+
+\item{region}{polygon shape. If specified, it checks if all antennas are contained inside it}
 
 \item{fix}{should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})}
 }

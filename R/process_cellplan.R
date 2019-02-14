@@ -9,7 +9,7 @@
 #' @param region polygon shape. If specified, only the signal strength will be calculated for raster cells inside the polygons
 #' @importFrom stats dnorm
 #' @import parallel
-#' @import doParalell
+#' @import doParallel
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")

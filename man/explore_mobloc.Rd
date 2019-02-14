@@ -4,13 +4,10 @@
 \alias{explore_mobloc}
 \title{Explore the Visualize signal strengths and probabilities per raster cell}
 \usage{
-explore_mobloc(cp, cp_poly, raster, prop, priorlist = NULL, param,
-  tm = NULL)
+explore_mobloc(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 }
 \arguments{
 \item{cp}{cellplan}
-
-\item{cp_poly}{cellplan polygons}
 
 \item{raster}{raster}
 
@@ -21,6 +18,8 @@ explore_mobloc(cp, cp_poly, raster, prop, priorlist = NULL, param,
 \item{param}{parameter list}
 
 \item{tm}{tmap object (optional), that is plotted on top of the map}
+
+\item{cp_poly}{cellplan polygons}
 }
 \description{
 Visualize signal strengths and probabilities per raster cell

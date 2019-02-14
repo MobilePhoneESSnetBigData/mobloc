@@ -4,18 +4,18 @@
 \alias{process_cellplan}
 \title{Rasterize cellplan}
 \usage{
-process_cellplan(cp, cp_poly, raster, elevation, param)
+process_cellplan(cp, raster, elevation, param, region = NULL)
 }
 \arguments{
 \item{cp}{cellplan}
-
-\item{cp_poly}{cellplan polygons}
 
 \item{raster}{raster with indices}
 
 \item{elevation}{raster with elevation data}
 
 \item{param}{list}
+
+\item{region}{polygon shape. If specified, only the signal strength will be calculated for raster cells inside the polygons}
 }
 \description{
 Rasterize cellplan

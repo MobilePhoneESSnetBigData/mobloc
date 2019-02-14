@@ -20,7 +20,7 @@ viz_p <- function(cp, rst, title, trans) {
         tm_basemap("OpenStreetMap")
 
 
-    tm <- tm + tm_shape(rst) + tm_raster(alpha = trans, title = title, group = title, stretch.palette = FALSE)
+    tm <- tm + tm_shape(rst, is.master = TRUE) + tm_raster(alpha = trans, title = title, group = title, stretch.palette = FALSE)
 
     tm
 }

@@ -4,7 +4,7 @@
 \alias{setup_prop_model}
 \title{Interactive tool to setup the propagation model}
 \usage{
-setup_prop_model(param, plot.height = 800)
+setup_prop_model(param = prop_param(), plot.height = 800)
 }
 \arguments{
 \item{param}{list of parameters}

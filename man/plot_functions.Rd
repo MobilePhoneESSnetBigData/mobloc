@@ -2,24 +2,24 @@
 % Please edit documentation in R/signal_plots.R
 \name{distance_plot}
 \alias{distance_plot}
-\alias{relative_signal_strength_plot}
+\alias{signal_quality_plot}
 \alias{radiation_plot}
 \title{Signal strength plot functions}
 \usage{
-distance_plot(db0, base_size = 11)
+distance_plot(W, ple, range, base_size = 11)
 
-relative_signal_strength_plot(db_mid, db_width, base_size = 11)
+signal_quality_plot(dBm_mid, dBm_width, base_size = 11)
 
 radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 }
 \arguments{
-\item{db0}{signal strength in dBm near a cell}
+\item{W}{power of a cell}
 
 \item{base_size}{base size of the plot}
 
-\item{db_mid}{middle point in the logistic function to map signal strength to probability}
+\item{dBm_mid}{middle point in the logistic function to map signal strength to probability}
 
-\item{db_width}{width of the logistic function to map signal strength to probability}
+\item{dBm_width}{width of the logistic function to map signal strength to probability}
 
 \item{type}{\code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane}
 
@@ -28,5 +28,5 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 \item{db_back}{difference in signal strength between front and back}
 }
 \description{
-Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{relative_signal_strength_plot} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
+Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
 }

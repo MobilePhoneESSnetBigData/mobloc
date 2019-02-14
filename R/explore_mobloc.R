@@ -3,7 +3,6 @@
 #' Visualize signal strengths and probabilities per raster cell
 #'
 #' @param cp cellplan
-#' @param cp_poly cellplan polygons
 #' @param raster raster
 #' @param prop propagation model
 #' @param priorlist list of priors
@@ -241,7 +240,7 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
     # raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
     # r <- raster::trim(r)
     # r[r==0] <- NA
-    r
+    raster::trim(r)
 }
 
 create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist) {
