@@ -25,6 +25,8 @@ create_prior <- function(..., name = "composite", weights = NULL) {
 create_uniform_prior <- function(raster) {
     if (missing(raster)) stop("Please specify a raster object")
 
+    check_raster(raster)
+
     y <- raster::raster(raster)
 
     y[] <- 1/raster::ncell(raster)
@@ -34,6 +36,7 @@ create_uniform_prior <- function(raster) {
 #' @rdname create_prior
 #' @export
 create_network_prior <- function(prop, raster) {
+    check_raster(raster)
     totals <- sum(prop$s)
     z <- prop %>%
         group_by(rid) %>%
@@ -73,6 +76,7 @@ prior_filter <- function(prior, region) {
 #' @param antennas selection of antennas
 #' @export
 create_coverage_map <- function(prop, raster, type = c("dBm", "s"), antennas = NULL) {
+    check_raster(raster)
     if (!missing(antennas)) {
         prop <- prop %>% filter(antenna %in% antennas)
     }
@@ -90,6 +94,7 @@ create_coverage_map <- function(prop, raster, type = c("dBm", "s"), antennas = N
 }
 
 create_best_server_map <- function(prop, raster, antennas = NULL) {
+    check_raster(raster)
     if (!missing(antennas)) {
         rids <- unique(prop$rid[prop$antenna %in% antennas])
         prop <- prop %>% filter(rid %in% rids)

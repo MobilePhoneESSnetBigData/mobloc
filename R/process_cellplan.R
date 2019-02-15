@@ -14,6 +14,8 @@
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 
+    check_raster(raster)
+
     parallel <- check_parallel()
     if (!parallel) message("No parallel backend found, so procell_cellplan will run single threaded")
 

@@ -20,6 +20,14 @@ create_raster <- function(x, cell.size = 100) {
     setValues(r, 1L:length(r))
 }
 
+check_raster <- function(x) {
+    values <- x[]
+    if (any(is.na(values))) stop("Invalid raster. It contains missing values", call. = FALSE)
+    if (anyDuplicated(values)) stop("Invalid raster. It contains duplicated values", call. = FALSE)
+    NULL
+}
+
+
 
 get_chunks <- function(n, chunks_per_core = 4) {
     cores <- detectCores()
