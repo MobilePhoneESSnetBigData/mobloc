@@ -219,6 +219,11 @@ explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(uniform = ZL_uniform_prior,
 ```
 
 
+```{r eval=FALSE}
+ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
+
+ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
+```
 
 <img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
