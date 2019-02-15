@@ -113,10 +113,14 @@ create_best_server_map <- function(prop, raster, antennas = NULL) {
     ants <- levels(z$antenna)
 
     y <- raster::raster(raster)
-    y[][match(z$rid, raster[])] <- as.integer(z$antenna)
-    y <- raster::ratify(y)
-    levels(y) <- list(data.frame(ID = 1L:length(ants), antenna = ants))
-    names(y) <- "antenna"
+
+    if (nrow(z) != 0) {
+        y[][match(z$rid, raster[])] <- as.integer(z$antenna)
+        y <- raster::ratify(y)
+        levels(y) <- list(data.frame(ID = 1L:length(ants), antenna = ants))
+        names(y) <- "antenna"
+    }
+
     y
 }
 

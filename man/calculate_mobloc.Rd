@@ -4,12 +4,14 @@
 \alias{calculate_mobloc}
 \title{Calculate mobile location}
 \usage{
-calculate_mobloc(prop, prior)
+calculate_mobloc(prop, prior, raster)
 }
 \arguments{
 \item{prop}{propagation object, the result of \code{\link{process_cellplan}}}
 
 \item{prior}{prior object, the result of \code{\link{create_uniform_prior}}, \code{\link{create_prior}}, or \code{\link{create_network_prior}}}
+
+\item{raster}{raster raster object}
 }
 \description{
 Calculate the mobile location given the calculated propagation and a prior.

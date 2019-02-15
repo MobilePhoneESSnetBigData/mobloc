@@ -11,10 +11,15 @@ dBm_classes <- list(breaks = c(-Inf, seq(-120, -70, by = 10), Inf),
                     tit = "Signal strength (dBm)")
 
 qty_classes <- list(breaks = seq(0, 1, by = .1),
-                    labels = NULL,
+                    labels = paste(sprintf("%.1f", seq(0, 1, by = .1)[1:10]), "to", sprintf("%.1f", seq(0, 1, by = .1)[2:11])),
                     colors = RColorBrewer::brewer.pal(10, "Spectral"),
                     lims = c(0, 1),
                     tit = "Signal quality")
+
+
+
+
+
 
 heatmap_ground <- function(co, param_model, param_plots, param) {
 

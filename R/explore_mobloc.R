@@ -42,6 +42,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
     bsm <- create_best_server_map(prop, raster)
 
 
+
     sliders <- mapply(function(i, nm) {
         if (i == choices_prior[length(choices_prior)]) {
             shiny::htmlOutput("plast")
@@ -106,22 +107,18 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
             })
 
             output$map <- renderLeaflet({
+                base_map(cp)
+            })
+
+
+            observe({
                 type <- input$var
-
-
                 if (input$show == "grid") {
-
                     cp$sel <- 1L
-
                     composition <- get_composition()
-
-
                     rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, cm_dBm, cm_s, bsm)
-
-
                 } else {
                     sel <- input$sel
-
                     if (type == "bsm") {
                         rst <- create_best_server_map(prop, raster, antennas = sel)
                     } else {
@@ -130,65 +127,11 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 
                         rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist)
                     }
-
                     cp$sel <- 1L
                     cp$sel[cp$antenna %in% sel] <- 2L
-
                 }
 
-                ## subset data
-
-
-                # if (input$showall) {
-                #     psel <- prop
-                # } else {
-                # }
-
-                # cpsel <- cp
-                # psel <- prop %>% filter(antenna %in% sel)
-                # rids <- unique(psel$rid)
-
-                # if (!input$showall) {
-                #
-                #
-                #     #sel2  <- prop %>% filter(rid %in% rids) %>% dplyr::select(antenna) %>% unlist() %>% as.character() %>%  unique()
-                #     #cpsel <- cp %>% filter(antenna %in% sel2)
-                #     #cp_polysel <- cp_poly %>% filter(antenna %in% sel2)
-                #
-                # } else {
-                #     cpsel <- cp
-                #     #cp_polysel <- cp_poly
-                # }
-
-                #cp_polysel$geometry <- st_cast(cp_polysel$geometry, "MULTILINESTRING", group_or_split = FALSE)
-
-
-                # cp_polysel$sel <- 1L
-                # cp_polysel$sel[cp_polysel$antenna %in% sel] <- 2L
-
-
-                ## create raster
-
-
-                title <- switch(input$var,
-                                dBm = "Signal strength in dBm",
-                                s = "Signal quality - s (in %)",
-                                bsm = "Best server map",
-                                lu = "Land use prior (in %)",
-                                pag = "Likelihood - P(a|g) (in %)",
-                                pg = "Composite prior - P(g) (in %)",
-                                pga = "Probability - P(g|a) (in %)",
-                                paste("Prior", pnames[input$var]))
-
-
-                visp <- viz_p(cp = cp, rst = rst, title = title, trans = input$trans)
-
-                if (is.null(tm)) {
-                    tmap_leaflet(visp)
-                } else {
-                    tmap_leaflet(visp + tm)
-                }
-
+                viz_p(cp = cp, rst = rst, var = input$var, trans = input$trans, pnames = pnames)
             })
 
             observeEvent(input$map_marker_click, { # update the location selectInput on map clicks

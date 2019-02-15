@@ -108,6 +108,7 @@ When the parameters have been set, the model can be applied to cellplan data. To
 
 ```{r}
 data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
+ZL_cellplan <- readRDS("sandbox/cp_ZL.RDS")
 #ZL_cellplan <- ZL_cellplan[substr(ZL_cellplan$antenna,1,3) == "MAA",]
 ```
 
