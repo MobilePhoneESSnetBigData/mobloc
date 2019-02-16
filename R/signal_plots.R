@@ -111,6 +111,7 @@ heatmap_ground <- function(co, param_model, param_plots, param) {
 #' @param ple path loss exponent
 #' @param range range
 #' @param base_size base size of the plot
+#' @importFrom RColorBrewer brewer.pal
 #' @export
 distance_plot <- function(W, ple, range, base_size = 11) {
   distance <- NULL

@@ -54,19 +54,22 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 
     app <- shinyApp(
         ui = fluidPage(
-            titlePanel("Antenna prop exploration"),
+            titlePanel("Mobile location exploration"),
             sidebarLayout(
                 sidebarPanel(
-                    radioButtons("show", "Selection",  c("Whole grid" = "grid", "One antenna" = "ant"), selected = "grid"),
-                    conditionalPanel(condition = "input.show == 'ant'",
-                                     selectInput("sel", "Antenna", cells, selected = cells[1])),
-                    radioButtons("var", "Variable", choices1, selected = "s"),
-                    wellPanel(
-                    conditionalPanel(
-                        condition = "(input.var == 'pga') || (input.var == 'pg')",
-                        sliders)),
-                    sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1)),
-                    #checkboxGroupInput("sel", "Selected cells", cells, selected = "c1")),
+                    tabsetPanel(
+                        tabPanel("Map setup",
+                                 radioButtons("show", "Selection",  c("Whole grid" = "grid", "One antenna" = "ant"), selected = "grid"),
+                                 radioButtons("var", "Variable", choices1, selected = "s"),
+                                 wellPanel(
+                                     conditionalPanel(
+                                         condition = "(input.var == 'pga') || (input.var == 'pg')",
+                                         sliders)),
+                                 sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1)),
+                        tabPanel("Antenna data",
+                                 selectInput("sel", "Antenna", cells, selected = cells[1]),
+                                 dataTableOutput("antennainfo"))
+                    )),
                 mainPanel(
                     leafletOutput("map", height=1000)
                 ))
@@ -111,14 +114,23 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
             })
 
 
+            output$antennainfo <- renderDataTable({
+                cpant <- as.list(cp[cp$antenna == input$sel, ] %>% st_set_geometry(NULL))
+                cpant$x <- sprintf("%.2f", cpant$x)
+                cpant$y <- sprintf("%.2f", cpant$y)
+                cpant$z <- sprintf("%.2f", cpant$z)
+                data.frame(Variable = names(cpant), Value = unname(unlist(cpant)))
+            }, options = list(searching = FALSE, scrollx = FALSE, paging = FALSE, info = FALSE))
+
             observe({
                 type <- input$var
+                sel <- input$sel
+                cp$sel <- 1L
+                cp$sel[cp$antenna %in% sel] <- 2L
                 if (input$show == "grid") {
-                    cp$sel <- 1L
                     composition <- get_composition()
                     rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, cm_dBm, cm_s, bsm)
                 } else {
-                    sel <- input$sel
                     if (type == "bsm") {
                         rst <- create_best_server_map(prop, raster, antennas = sel)
                     } else {
@@ -127,8 +139,6 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 
                         rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist)
                     }
-                    cp$sel <- 1L
-                    cp$sel[cp$antenna %in% sel] <- 2L
                 }
 
                 viz_p(cp = cp, rst = rst, var = input$var, trans = input$trans, pnames = pnames)

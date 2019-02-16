@@ -44,7 +44,7 @@ library(mobloc)
 The first step to apply the approximate the geographic locations, is to determine the parameters for the signal propagation model. The default parameters can be loaded with the function `prop_param`. The result is a standard list:
 
 ```{r}
-ZL_param <- prop_param(ple_0 = 3.5, ple_1 = 4)
+ZL_param <- prop_param(ple_0 = 3.5, ple_1 = 4, range = 7500)
 ```
 
 A short description of the parameters is provided in the table below. Some of these parameters are already discussed in [1]. The first set of eight parameters are used to model the signal strength. The second set of parameters are used to determine the coverage area. The coverage area determines for which grid cells the signal strength is calculated.
@@ -216,7 +216,7 @@ ZL_best_server_map <- create_best_server_map(ZL_prop, ZL_raster)
 
 
 ```{r eval=FALSE}
-explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(uniform = ZL_uniform_prior, landuse = ZL_landuse_prior, network = ZL_network_prior),  ZL_param)
+explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior),  ZL_param)
 ```
 
 
