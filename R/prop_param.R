@@ -16,7 +16,6 @@
 #' @param elev_dB_back difference in signal strength between front and back
 #' @param dBm_mid middle point in the logistic function to map signal strength to probability
 #' @param dBm_width width of the logistic function to map signal strength to probability
-#' @param poly_shape shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.
 #' @param range maximum range of normal antennas
 #' @param range_small maximum range of small cells
 #' @param height default height of normal antennas
@@ -41,7 +40,6 @@ prop_param <- function(
     elev_dB_back = -30,
     dBm_mid = -92.5,
     dBm_width = 5,
-    poly_shape = "oval",
     range = 20000,
     range_small = 5000,
     height = 30,

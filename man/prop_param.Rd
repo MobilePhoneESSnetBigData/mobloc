@@ -8,10 +8,9 @@
 prop_param(W = 10, W_small = 5, ple = 3.25, ple_small = 6,
   ple_0 = 2.5, ple_1 = 4, azim_min3dB = 65, azim_dB_back = -30,
   elev_min3dB = 9, elev_dB_back = -30, dBm_mid = -92.5,
-  dBm_width = 5, poly_shape = "oval", range = 20000,
-  range_small = 5000, height = 30, height_small = 8, tilt = 5,
-  beam_v = 9, beam_h = 65, dBm_th = -120,
-  max_overlapping_cells = 100)
+  dBm_width = 5, range = 20000, range_small = 5000, height = 30,
+  height_small = 8, tilt = 5, beam_v = 9, beam_h = 65,
+  dBm_th = -120, max_overlapping_cells = 100)
 
 update_prop_param(param, ...)
 }
@@ -39,8 +38,6 @@ update_prop_param(param, ...)
 \item{dBm_mid}{middle point in the logistic function to map signal strength to probability}
 
 \item{dBm_width}{width of the logistic function to map signal strength to probability}
-
-\item{poly_shape}{shape of the polygon that defines the coverage area of a cell. One of \code{"pie"}, \code{"oval"} (default), \code{"Voronoi"}.}
 
 \item{range}{maximum range of normal antennas}
 
