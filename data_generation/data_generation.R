@@ -104,19 +104,24 @@ save(ZL_muni, file = "../mobloc/data/ZL_muni.rda", compress = "xz")
 
 set.seed(1234)
 wijk_ZL$pop <- round(wijk_ZL$AANT_INW / 6000)
-ZL_cellplan_normal <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$pop!=0], type = "regular")
+ZL_cellplan_normal1 <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$pop!=0], type = "regular")
+ZL_cellplan_normal2 <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$pop!=0], type = "regular")
 
+
+attributes(ZL_cellplan_normal1) <- NULL
+attributes(ZL_cellplan_normal2) <- NULL
+
+ZL_cellplan_normal <- st_sfc(c(ZL_cellplan_normal1, ZL_cellplan_normal2), crs = 28992)
 
 ####### Generate small cell locations
 
-set.seed(1242)
-buurt_ZL$pop <- round(buurt_ZL$AANT_INW / 6000)
-buurt_ZL$small_cell <- buurt_ZL$STED==1 & sample(0:1, size = nrow(buurt_ZL), replace = TRUE, prob = c(.5, .5))
 
-ZL_cellplan_small <- st_sample(buurt_ZL[buurt_ZL$small_cell,], rep(1, sum(buurt_ZL$small_cell)), type = "regular")
-qtm(ZL_cellplan_small)
-
-
+if (FALSE) {
+    ZL_small_cells_manual <- mapedit::drawFeatures()
+    saveRDS(ZL_small_cells_manual, file = "data_generation/ZL_small_cells_manual.rds")
+}
+ZL_small_cells_manual <- readRDS("data_generation/ZL_small_cells_manual.rds")
+ZL_cellplan_small <- st_transform(ZL_small_cells_manual, crs = 28992) %>% st_geometry()
 
 #######  Create antenna data
 
@@ -130,7 +135,8 @@ get_gamma_sample <- function(n, shape, rate, min, max, digits = 0) {
 #######  Create height data
 
 if (FALSE) {
-    cp <- readRDS("cp.rds") # data distribution taken from a cellplan file cp.rds
+    #cp <- readRDS("cp.rds") # data distribution taken from a cellplan file cp.rds
+    cp <- readRDS("sandbox/cp_ZL.RDS")
     summary(cp)
     plot(sort(cp$height[!cp$small]))
     quantile(cp$height[!cp$small], probs = seq(0, 1, by = 0.01))
@@ -142,11 +148,11 @@ if (FALSE) {
 nn <- length(ZL_cellplan_normal)
 ns <- length(ZL_cellplan_small)
 
-sample_heights_n <- get_gamma_sample(nn, 5, .5, 10, 100, 2)
+sample_heights_n <- get_gamma_sample(nn, 10, .4, 12, 52, 2)
 quantile(sample_heights_n, probs = seq(0, 1, by = 0.01))
 plot(sort(sample_heights_n))
 
-sample_heights_s <- get_gamma_sample(ns, 2, .5, 1, 30, 2)
+sample_heights_s <- get_gamma_sample(ns, 2, .5, 1, 15, 2)
 quantile(sample_heights_s, probs = seq(0, 1, by = 0.01))
 plot(sort(sample_heights_s))
 
@@ -198,7 +204,7 @@ ZL_cellplan_normal_sf <- st_sf(geometry = ZL_cellplan_normal,
                             tilt = sample_tilt,
                             #beam_h = fixed_beam_h,
                             #beam_v = sample_beam_v,
-                            site = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_normal, gem_ZL))], 1, 3)), round(runif(nn, min = 100, max = 999)), "N", sep = "_"),
+                            site = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_normal, gem_ZL))], 1, 3)), sample(100:999, size = nn), "N", sep = "_"),
                             small = FALSE) %>%
     mutate(antenna = paste0(site, 1))
 
@@ -242,17 +248,14 @@ ZL_cellplan_small_sf <- st_sf(geometry = ZL_cellplan_small,
                               antenna = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_small, gem_ZL))], 1, 3)), round(runif(ns, min = 100, max = 999)), "S1", sep = "_"),
                               beam_h = NA,
                               beam_v = NA)
-    mutate(
-
-    )
-
 
 ZL_cellplan <- rbind(ZL_cellplan_normal_sf_v2, ZL_cellplan_small_sf) %>%
     select(antenna, small, height, direction, tilt, beam_h, beam_v) %>%
     arrange(antenna)
 
 # filter antennas that are inside land
-it <- sapply(st_intersects(ZL_cellplan, ZL_land), length)
-ZL_cellplan <- ZL_cellplan[it==1, ]
+water <- raster::extract(ZL_landuse[[4]], ZL_cellplan)
+
+ZL_cellplan <- ZL_cellplan[water <= .75, ]
 
 save(ZL_cellplan, file = "../mobloc/data/ZL_cellplan.rda", compress = "xz")

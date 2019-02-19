@@ -11,6 +11,7 @@
 #' @param name name of the prior
 #' @param prior object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}
 #' @return data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
+#' @export
 create_prior <- function(..., name = "composite", weights = NULL) {
     x <- combine_raster_layers(..., weights = weights)
 

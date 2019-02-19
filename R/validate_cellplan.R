@@ -38,6 +38,7 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})
 #' @import sf
 #' @import sp
+#' @import dplyr
 #' @export
 validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NULL, fix = TRUE) {
     if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points")
@@ -128,17 +129,6 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
     cp$W <- check_cp_var(cp$W, cp$small, param$W_small, param$W, "W", fix)
 
 
-    cp$range <- check_cp_var(cp$range, cp$small, param$range_small, param$range, "range", fix)
-
-    if (!missing(envir)) {
-        if (!fix) stop("The variable 'ple' is missing. Set fix = TRUE to fix this issue.")
-        message("Path loss exponent ('ple') values updated with envir object")
-        attr(cp, "valid_cellplan") <- TRUE
-        cp <- update_ple(cp, envir, param$ple_0, param$ple_1, param$ple_small)
-    } else {
-        cp$ple <- check_cp_var(cp$ple, cp$small, param$ple_small, param$ple, "ple", fix)
-    }
-
     if (any(cp$small) && (any(!is.na(cp$direction[cp$small])) ||
         any(!is.na(cp$tilt[cp$small])) ||
         any(!is.na(cp$beam_h[cp$small])) ||
@@ -186,6 +176,16 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
 
     }
 
+    cp$range <- check_cp_var(cp$range, cp$small, param$range_small, param$range, "range", fix)
+
+    if (!missing(envir)) {
+        if (!fix) stop("The variable 'ple' is missing. Set fix = TRUE to fix this issue.")
+        attr(cp, "valid_cellplan") <- TRUE
+        cp <- update_ple(cp, envir, param$ple_0, param$ple_1, param$ple_small)
+        message("Path loss exponent ('ple') values updated with envir object")
+    } else {
+        cp$ple <- check_cp_var(cp$ple, cp$small, param$ple_small, param$ple, "ple", fix)
+    }
 
     if (!missing(region)) {
         sel <- which_inside(cp, region)

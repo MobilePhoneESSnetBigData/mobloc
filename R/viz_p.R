@@ -1,16 +1,17 @@
-base_map <- function(cp) {
-    cp2 <- move_cp_to_direction(cp, 175)
+base_map <- function(cp, offset) {
+    cp2 <- move_cp_to_direction(cp, offset)
     cp_lines <- create_connection_lines(cp, cp2)
 
     leaflet() %>% addPolylines(data = cp_lines %>% st_transform(crs = 4326), color = "#777777", opacity = 1, weight = 3, group = "Antenna locations") %>%
         addTiles()
 }
 
-viz_p <- function(cp, rst, var, trans, pnames) {
-    cp2 <- move_cp_to_direction(cp, 175)
+viz_p <- function(cp, rst, var, trans, pnames, offset) {
+    cp$sel <- factor(ifelse(cp$sel == 2, "Selected", ifelse(cp$small, "Small cell", "Normal antenna")), levels = c("Selected", "Small cell", "Normal antenna"))
+
+    cp2 <- move_cp_to_direction(cp, offset)
     cp_lines <- create_connection_lines(cp, cp2)
 
-    cp2$sel <- factor(ifelse(cp2$sel == 2, "Selected", ifelse(cp2$small, "Small cell", "Normal antenna")), levels = c("Selected", "Small cell", "Normal antenna"))
 
     pal <- colorFactor(c("red", "gray70", "gold"), levels = c("Selected", "Small cell", "Normal antenna"))
 
@@ -34,14 +35,9 @@ viz_p <- function(cp, rst, var, trans, pnames) {
         qty_classes
     }
 
-
-
-
-
     numpal <- ifelse(var %in% c("dBm", "s"), "Blues",
                      ifelse(var == "pga", "Purples",
                             ifelse(var == "pag", "Greens", "Blues")))
-
 
     if (var %in% c("dBm", "s")) {
         pal2 <- colorBin(cls$colors, bins = cls$breaks, na.color = "#00000000")#, dBm_classes$labels)
@@ -64,23 +60,34 @@ viz_p <- function(cp, rst, var, trans, pnames) {
         clearMarkers() %>%
         clearImages() %>%
         clearControls() %>%
-        addCircleMarkers(data = cp2 %>% st_transform(crs = 4326), fillColor = ~pal(sel), color = "black", fillOpacity = 1, radius = 5, weight = 1, group = "Antenna locations", layerId = ~antenna)
+        clearShapes()
+
+
+    if (offset > 0) {
+        lf <- lf %>%
+            addPolylines(data = cp_lines %>% st_transform(crs = 4326), color = "#777777", opacity = 1, weight = 3, group = "Antenna locations") %>%
+            addCircleMarkers(data = cp2 %>% st_transform(crs = 4326), fillColor = ~pal(sel), color = "black", fillOpacity = 1, radius = 5, weight = 1, group = "Antenna locations", layerId = ~antenna)
+    } else {
+        lf <- lf %>%
+            addCircleMarkers(data = cp %>% st_transform(crs = 4326), fillColor = ~pal(sel), color = "black", fillOpacity = 1, radius = 5, weight = 1, group = "Antenna locations", layerId = ~antenna)
+    }
+
 
     if (var %in% c("dBm", "s")) {
         lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
-            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft") %>%
-            addLegend(colors = cls$colors, labels = cls$labels, opacity = trans)
+            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
+            addLegend(colors = cls$colors, labels = cls$labels, opacity = trans, title = title)
 
     } else if (var == "bsm") {
         lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols) %>%
-            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft") %>%
-            addLegend(colors = cols, labels = as.character(lvls$antenna), opacity = trans)
+            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
+            addLegend(colors = cols, labels = as.character(lvls$antenna), opacity = trans, title = title)
     } else if (var == "empty") {
         lf %>% leaflet::addLayersControl(overlayGroups = c("Antenna locations"), position = "topleft")
     } else {
         lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
-            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft") %>%
-            addLegend(pal = pal2, values = rng, opacity = trans)
+            leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
+            addLegend(pal = pal2, values = rng, opacity = trans, title = title)
     }
 
 }

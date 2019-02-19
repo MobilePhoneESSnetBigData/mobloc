@@ -41,6 +41,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
     cm_s <- create_coverage_map(prop, raster, type = "s")
     bsm <- create_best_server_map(prop, raster)
 
+    offset_value <- 150
 
 
     sliders <- mapply(function(i, nm) {
@@ -65,7 +66,8 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
                                      conditionalPanel(
                                          condition = "(input.var == 'pga') || (input.var == 'pg')",
                                          sliders)),
-                                 sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1)),
+                                 sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
+                                 checkboxInput("offset", "Antenna offset", value = TRUE)),
                         tabPanel("Antenna data",
                                  selectInput("sel", "Antenna", cells, selected = cells[1]),
                                  dataTableOutput("antennainfo"))
@@ -110,7 +112,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
             })
 
             output$map <- renderLeaflet({
-                base_map(cp)
+                base_map(cp, offset_value)
             })
 
 
@@ -119,6 +121,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
                 cpant$x <- sprintf("%.2f", cpant$x)
                 cpant$y <- sprintf("%.2f", cpant$y)
                 cpant$z <- sprintf("%.2f", cpant$z)
+                cpant$ple <- sprintf("%.2f", cpant$ple)
                 data.frame(Variable = names(cpant), Value = unname(unlist(cpant)))
             }, options = list(searching = FALSE, scrollx = FALSE, paging = FALSE, info = FALSE))
 
@@ -141,7 +144,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
                     }
                 }
 
-                viz_p(cp = cp, rst = rst, var = input$var, trans = input$trans, pnames = pnames)
+                viz_p(cp = cp, rst = rst, var = input$var, trans = input$trans, pnames = pnames, offset = ifelse(input$offset, offset_value, 0))
             })
 
             observeEvent(input$map_marker_click, { # update the location selectInput on map clicks

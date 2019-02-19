@@ -41,10 +41,10 @@ library(mobloc)
 
 ## Setup signal strength model parameters
 
-The first step to apply the approximate the geographic locations, is to determine the parameters for the signal propagation model. The default parameters can be loaded with the function `prop_param`. The result is a standard list:
+The first step to approximate the geographic locations, is to determine the parameters for the signal propagation model. The default parameters can be loaded with the function `prop_param`. The result is a standard list:
 
 ```{r}
-ZL_param <- prop_param(ple_0 = 3.5, ple_1 = 4, range = 7500)
+ZL_param <- prop_param()
 ```
 
 A short description of the parameters is provided in the table below. These parameters are used to model the signal strenght. Most parameters are default values for parameters that are often unknown. For imputing unkown parameters, we consider two types of antennas: normal antennas, which are placed in cell towers or on roof tops, and small cells, which are placed indoors or in dense urban areas (e.g. on street lights). Since these two types antenans of antennas have very different characteristics, they also have different default values. E.g. the power of a normal antenna is set to 10 Watt for normal antennas and 5 Watt for small cells.
@@ -63,8 +63,8 @@ The following table describes the parameters. More detailed information can be f
 | azim_dB_back      | Signal strength at the back of the cell in the azimuth plane |
 | elev_min3dB      | Vertical beam width $\theta_j$ in [1]) |
 | elev_dB_back     | Signal strength at the back of the cell in the elevation plane |
-| db_mid      | Midpoint of the logistic transformation ($S^{mid}$ in [1]) |
-| db_width      | Width of the logistic transformation ($S^{width}$ in [1]) |
+| dBm_mid      | Midpoint of the logistic transformation ($S^{mid}$ in [1]) |
+| dBm_width      | Width of the logistic transformation ($S^{width}$ in [1]) |
 | range      | Maximum range of normal antennas |
 | range_small      | Maximum range of small cells  |
 | height      | Height of a normal antenna (above ground level) |
@@ -83,23 +83,13 @@ setup_prop_model()
 
 <img src="images/prop_model_setup.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()" width="700px">
 
-This tool models the propagation for one antenna. The left hand side panel shows the settings of this. By default these parameters are taken from the parameter list created with `prop_param`. When 'small cell` is ticked 
+This tool shows the modeled the propagation for one antenna. The left hand side panel shows the settings of the propagation model, which are by default set to values of the list we just created with `prop_param`. When *small cell* is ticked, the `_small` arguments are used. The plots on the right hand side shows the propagation results. The heatmap on the top right shows the top view of the signal strength of the antenna. For normal antennas, the direction in this plot is east. Small cells are omniirectional.
 
-The plots on the righ hand side show the propagation results. The top right plot shows the top view of the signal strength of the antenna. For normal antennas, the direction in this plot is east. Small cells are omniirectional. 
+The four plots below the heatmap describe:
 
-The next input boxes on the leftside of the screen configure the antennas These parameters are often contained in the cellplan. If not, the default parameters can be used. The first parameter is `W_tower` or `W_small` depending on whether the *small cell* checkbox is ticked. Notice that different default settings are used, since antennas contained in cell towers and on rooftop are often much stronger than small cells. The top left plot below the heatmap shows the signal loss as a function of the distance (see equation (4) in [1]).
-
-The next two input boxes contain the -3dB angles and dB back values for both the horizontal (azimuth) and vertical (elevation) planes. The radiation area of an antenna can be seen as a three dimensional bulb. In the main direction (e.g. the direction in which the antenna radiates) there is no loss in signal strength, irrespective of the distance. However, at a certain offset, there is signal loss. The -3dB angle is the angle at which the signal is halved. These angles (both for the horizontal and vertical plane) are usually contained in the cellplan. The dB back points are signal loss ratios between the front and the back of the antenna The two plots the the right bottom of the screen illustrate the radiation pattern in the horizontal/azimuth plane the the vertical/elevation plane. The black contour lines indicate the signal loss as a function of the offset angle. The red points are the -3dB points. These radiation plots can also be generated directly in R:
-
-```{r eval=FALSE}
-radiation_plot(beam_width = 65, db_back = -30)
-radiation_plot(type = "e", db_back = -30, beam_width = 9)
-```
-
-
-The output type sets the type of radiation plot that is shown in the heatmap. dBm means the absolute signal strength value, and the likelihood the likelihood of connection, given the abolute signal strength values. 
-
-The transformation from absolute signal strength values to the likelood values is achieved by applying a logistic function, which is parameterized by `dm_mid` ($S^{mid}$ in [1]) and and `db_width` ($S^{width}$ in [1]). The reason to apply such a transformation is that the probability of connection not only depends on the signal strength, but also on load balancing. For load balancing, the tails of the distribution are less important, e.g. whether a signal is very good (say -80dBm) or superb (say -70 dBm) is less important than the availability of that antenna. The transformation function is plotted in the top right chart below the heatmap. The transformation is defined in equations (6) and (7) of [1].
+* The top left line diagram shows yhe signal loss as a function of the distance. The parameters that influence this are the antenna power (`W`) and the path loss exponent (`ple`), which reflects the environment of the antenna: 2 can be used for free space, 4 for urban areas, and 6 for buildings.
+* The top right line diagram shows the signal quality as a function of the signal strength in dBm.  It can be interpreted as the quality of connection, based on the assumption that for a mobile phone network, it is not important whether the connection is good (say -90 dBm) or extreme good (say -70 dBm). Instead, load balancing is much more important when there are multiple antennas to choose from. Therefore, we applied a logistic function on the signal strength to flatten both tails. This function can be adjusted with the parameters `dBm_mid` and `dBm_width`.
+* The bottom two plots illustrate the radiation pattern in the horizontal/azimuth plane the the vertical/elevation plane. The black contour lines indicate the signal loss as a function of the offset angle. The red points are the -3dB points, i.e. the angle at which the signal loss is 3 dB. These radiation plots can also be generated directly in R with the function `radiation_plot`. The parameters `azim_min3dB`, `azim_dB_back`, `elev_min3dB`, and `elev_dB_back` have influence on these radiation pattern.
 
 ## Loading artificial cellplan data
 
@@ -107,8 +97,6 @@ When the parameters have been set, the model can be applied to cellplan data. To
 
 ```{r}
 data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
-#ZL_cellplan <- readRDS("sandbox/cp_ZL.RDS")
-#ZL_cellplan <- ZL_cellplan[substr(ZL_cellplan$antenna,1,3) == "MAA",]
 ```
 
 It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most southern part of the Netherlands, which is roughly 30 by 30 kilometres large. 
@@ -116,7 +104,7 @@ It is artifical cellplan data from the NUTS3 region Zuid-Limburg, the most south
 The object `ZL_cellplan` is an `sf` object (see packge `sf`) that contains all the geopgraphic locations of the antennas and the metadata.
 
 ```{r}
-head(ZL_cellplan)
+ZL_cellplan
 ```
 
 The object `ZL_land` is a large multipolygon that defines the area. The object `ZL_elevation` is a `raster` object that contains the elevation heigths at 100 by 100 metre detail.
@@ -129,7 +117,7 @@ tmap_mode("view")
 qtm(ZL_elevation) + qtm(ZL_muni, fill=NULL) + qtm(ZL_cellplan)
 ```
 
-<img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
+<img src="images/ZL_data.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()" width="700px">
 
 The object `ZL_landuse` is a raster object that contains fractions of land that is used for several categories. We will use this information later on to determine the level of urbanization per antenna and to define prior information.
 
@@ -156,14 +144,14 @@ ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700)
 
 In the next stage, the signal propagation is modelled. This is done with rasterization, i.e. all spatial objects are transformed into small raster cells, e.g. of 100 by 100 meters. This is mainly done for computational reasons. The raster is created as follows:
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 # create a raster of 100 by 100 meter cells
 ZL_raster <- create_raster(ZL_bbox)
 ```
 
 This object is a `raster` object that contains the raster id values, which are numbered from top left to bottom right row-wise.
 
-For each raster cell $g$ and antenna $a$ where $g$ intersects with the polygon of $a$, the following variables are computed: the distance, the modelled signal strength, the relative signal strength, and the liklihood value. The function for these calculations, called `process_cellplan`, supports parallel computing. This requires the packages `parallel` and `doParallel`
+For each raster cell $g$ and antenna $a$ where $g$ intersects with the polygon of $a$, the following variables are computed: the distance, the modelled signal strength, the relative signal strength, and the liklihood value. The function for these calculations, called `process_cellplan`, supports parallel computing. A parallel cluster can be created as follows:
 
 
 ```{r eval=FALSE}
@@ -173,15 +161,17 @@ require(doParallel)
 ncores <- detectCores()
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
-
-# calculate probabilities
-ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
-
-# stop the cluster
-stopCluster(cl)
 ```
 
-The result is a `data.frame` that contains information about the modelled propagation (that is were the abbreviation `prop` stands for). It has the following columns: 
+Note that it is not required to create a parallel cluster in order to process the cellplan. It is recommended for large cellplans since it reduced the computation time significantly. 
+
+```{r eval=TRUE}
+# calculate probabilities
+ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
+ZL_prop
+```
+
+The result is a `data.frame` that contains information about the modelled propagation (that is where the abbreviation `prop` stands for). It has the following columns: 
 
 * `Cell_name` The identification numbers or names of the antennas.
 * `rid` Raster cell id number. These are numbered according to the cells of specified raster object, in our example `ZL_raster`. The first number corresponds to the top left cell, and the sequence of numbers is row-wise.
@@ -194,38 +184,56 @@ The result is a `data.frame` that contains information about the modelled propag
 
 The propagation results, in our example `ZL_prop`, contains the propagation and likelihood values. In order to approximate the location of mobile devices, prior information can be used additionally. For each raster cell, a probability is assigned based on prior knowledge such as land use.
 
-In this example, we propose four priors:
+In this example, we propose three priors:
 
-* A uniform prior. In this prior, every raster cell has the same probability. So no additional information is used.
-* A land use prior. The probability depends on the land use. The general philosophy behind this approach is that in urban areas, it is more likely to espect people than in rural areas. In the example below, we use a simple land use prior, namely the fraction of land that is used for residential areas. This is stored in the raster object `ZL_resi`.
+* A uniform prior. In this prior, every raster cell has the same prior probability. So no additional information is used.
 * A network prior. The antennas are not placed without reason: an MNO (mobile network operator) will probably place more antennas in dense areas. This information can be seen as prior information. We will extract this information from the propagation model.
-* Composite prior. Since each of the previous priors have pros and cons, it may be worthwile to create a composite prior in order to find good balance.
+* A land use prior. The prior probability depends on the land use. The general philosophy behind this approach is that in urban areas, it is more likely to espect people than in rural areas. In the example below, we create a weigthed prior, in which we assign a weight per land use category.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 ZL_uniform_prior <- create_uniform_prior(ZL_raster)
 ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
+names(ZL_landuse) # display the land use classes in this raster brick
 ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 ```
 
-```{r eval=FALSE}
-ZL_coverage_map <- create_coverage_map(ZL_prop, ZL_raster)
-ZL_best_server_map <- create_best_server_map(ZL_prop, ZL_raster)
+Since each of the previous priors have pros and cons, it may be worthwile to create a composite prior in order to find good balance. In this example we use the network prior for `25%` and the land use prior for `75%`.
+
+```{r eval=TRUE}
+ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
 ```
 
+The result can be visualized using `tmap`:
 
+
+```{r eval=FALSE}
+qtm(ZL_comp_prior)
+```
+
+<img src="images/prior.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()" width="700px">
+
+
+The following tool is used to explore the following results:
+
+* the modelled propagation per antenna: the absolute signal strength in dBm, the signal quality, and the best server map (i.e. the best antanna per grid cell). These maps can also be created directly with the functions `ZL_coverage_map` and `ZL_best_server_map`.
+* the specified priors, as well as a composite prior
+* the likelihood `P(a|g)`, that is the propapility that a mobile device connects to antenna `a` given that it is located in grid cell `g`
+* the probability that is regarderd as the final result of mobloc: `P(g|a)`, the probability that a mobile phone is located in grid cell `g`, given that it is connected to antenna `a`.
 
 ```{r eval=FALSE}
 explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior),  ZL_param)
 ```
 
+<img src="images/exploration_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive tool." onload="$(this).tooltip()" width="700px">
 
-```{r eval=FALSE}
-ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
 
+This tool can be used to verify the results. The final result, `P(g|a`), can be calculated as follows:
+
+```{r}
 ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
+ZL_pga
 ```
 
-<img src="images/cell_inspection_tool.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the interactive map." onload="$(this).tooltip()">
 
 
 ## Reference
