@@ -121,7 +121,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
             output$heatmap <- renderPlot({
                 param_model <- get_param_model()
                 param_plots <- get_param_plots()
-                heatmap_ground(co, param_model, param_plots, param)
+                heatmap_ground(param_model, param_plots, param)
             })
 
 

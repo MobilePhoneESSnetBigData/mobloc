@@ -6,7 +6,7 @@ output:
     toc: true
 self_contained: no
 vignette: >
-  %\VignetteIndexEntry{tmap in a nutshell}
+  %\VignetteIndexEntry{mobloc}
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 

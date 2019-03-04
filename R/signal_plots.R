@@ -14,14 +14,14 @@ qty_classes <- list(breaks = seq(0, 1, by = .1),
                     labels = paste(sprintf("%.1f", seq(0, 1, by = .1)[1:10]), "to", sprintf("%.1f", seq(0, 1, by = .1)[2:11])),
                     colors = RColorBrewer::brewer.pal(10, "Spectral"),
                     lims = c(0, 1),
-                    tit = "Signal quality")
+                    tit = "Signal quality              ")
 
 
 
 
 
 
-heatmap_ground <- function(co, param_model, param_plots, param) {
+heatmap_ground <- function(param_model, param_plots, param) {
 
     co <- get_grid_coor(range  = param_plots$range)
 
@@ -51,36 +51,6 @@ heatmap_ground <- function(co, param_model, param_plots, param) {
 
         co2$value[co2$value > cls$lims[2]] <- cls$lims[2]
         co2$value[co2$value < cls$lims[1]] <- cls$lims[1]
-#
-#         if (param_plots$type == "quality") {
-#
-#             if (param_plots$mask) {
-#                 values <- sort(co2$s, decreasing = TRUE)
-#                 thvalue <- values[which.min(abs(cumsum(values) - param_plots$maskrangelh))]
-#                 co3 <- co2[co2$s >= thvalue, ]
-#             }
-#
-#             co2$valueCat <- cut(co2$s, breaks = seq(0, 1, by = .1), include.lowest = TRUE, right = FALSE)
-#
-#             co2$value <- co2$s
-#
-#             lims <- c(0, 1)
-#             tit <- "Quality"
-#
-#         } else {
-#
-#             if (param_plots$mask) co3 <- co2[co2$dBm >= param_plots$maskrangedb[1] & co2$dBm <= param_plots$maskrangedb[2], ]
-#
-#             co2$valueCat <- cut(co2$dBm, dBm_classes$breaks, dBm_classes$labels, include.lowest = TRUE, right = FALSE)
-#
-#             co2$value <- co2$dBm
-#             co2$value[co2$value > -70] <- -70
-#             co2$value[co2$value < -120] <- -120
-#
-#
-#             lims <- c(-120, -70)
-#             tit <- "dBm"
-#         }
 
         if (param_plots$colors == "discrete") {
             gg <- ggplot(co2, mapping = aes(x=x, y=y, fill = valueCat)) + geom_tile() + coord_fixed() + scale_fill_manual(cls$tit, values = cls$colors, drop = FALSE) # viridisLite::viridis(9, option = "C")
@@ -91,6 +61,9 @@ heatmap_ground <- function(co, param_model, param_plots, param) {
         if (param_plots$mask) {
             gg <- gg + geom_tile(data = co3, fill = "red")
         }
+
+
+        #gg + geom_point(aes(x=x,y=y, color = col, fill=NA), data = data.frame(x=0, y=0, col="black")) + scale_color_manual("trfsdgsdgsfgdsfa", values = 1)
 
         if (is.na(param_model$direction)) {
             gg + ggtitle("Top view of a small cell antenna")
@@ -113,58 +86,74 @@ heatmap_ground <- function(co, param_model, param_plots, param) {
 #' @param base_size base size of the plot
 #' @importFrom RColorBrewer brewer.pal
 #' @export
-distance_plot <- function(W, ple, range, base_size = 11) {
+distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {
   distance <- NULL
   dBm <- W2dBm(W)
   df <- data.frame(distance = seq(10, range, by=10))
   df$dBm <- distance2dB(df$distance, ple, W)
   df <- df[df$dBm >= -110 & df$dBm <= 0, ]
 
-  brks <- c(-130, dBm_classes$breaks[2:(length(dBm_classes$breaks) - 1)], 0)
-  rangemin <- -range/30
-  df2 <- data.frame(xmin = rangemin,
-                    xmax = rangemin / 4,
-                    ymin = brks[-length(brks)],
-                    ymax = brks[-1],
-                    fill = dBm_classes$colors)
+  if (show_classes) {
+      brks <- c(-130, dBm_classes$breaks[2:(length(dBm_classes$breaks) - 1)], 0)
+      rangemin <- -range/30
+      df2 <- data.frame(xmin = rangemin,
+                        xmax = rangemin / 4,
+                        ymin = brks[-length(brks)],
+                        ymax = brks[-1],
+                        fill = dBm_classes$colors)
 
 
-  ggplot(df, aes(x=distance, y= dBm)) + geom_line() +
-      geom_rect(data = df2, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL)) +
-      scale_x_continuous(limits = c(rangemin, range), breaks = pretty(c(0, range), n = 8)) +
-      scale_y_continuous("Signal strength", limits = c(-130, 0), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) + theme_bw(base_size = base_size) + ggtitle("Signal loss over distance")
+      ggplot(df, aes(x=distance, y= dBm)) + geom_line() +
+          geom_rect(data = df2, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL)) +
+          scale_x_continuous("Distance (m)", limits = c(rangemin, range), breaks = pretty(c(0, range), n = 8), minor_breaks = NULL) +
+          scale_y_continuous("Signal strength (dBm)", limits = c(-130, 0), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) + theme_bw(base_size = base_size) + ggtitle("Signal loss over distance") +
+          theme(panel.grid.major = element_line("grey85"))
+  } else {
+      ggplot(df, aes(x=distance, y= dBm)) + geom_line() +
+          scale_x_continuous("Distance (m)", limits = c(0, range), breaks = pretty(c(0, range), n = 8), minor_breaks = NULL) +
+          scale_y_continuous("Signal strength (dBm)", limits = c(-130, 0), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) + theme_bw(base_size = base_size) + ggtitle("Signal loss over distance") +
+          theme(panel.grid.major = element_line("grey85"))
+  }
+
 }
 
 #' @name signal_quality_plot
 #' @rdname plot_functions
 #' @param dBm_mid middle point in the logistic function to map signal strength to probability
 #' @param dBm_width width of the logistic function to map signal strength to probability
-signal_quality_plot <- function(dBm_mid, dBm_width, base_size = 11) {
+signal_quality_plot <- function(dBm_mid, dBm_width, base_size = 11, show_classes = TRUE) {
     dBm <- likelihood <- NULL
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
   df$rsig <- db2s(df$dBm, dBm_mid, dBm_width)
 
-  brks <- qty_classes$breaks
-  df2 <- data.frame(xmin = -133,
-                    xmax = -131,
-                    ymin = brks[-length(brks)],
-                    ymax = brks[-1],
-                    fill = qty_classes$colors)
+  if (show_classes) {
+      brks <- qty_classes$breaks
+      df2 <- data.frame(xmin = -133,
+                        xmax = -131,
+                        ymin = brks[-length(brks)],
+                        ymax = brks[-1],
+                        fill = qty_classes$colors)
 
 
-  brks <- c(-130, dBm_classes$breaks[2:(length(dBm_classes$breaks) - 1)], -50)
-  df3 <- data.frame(xmin = brks[-length(brks)],
-                    xmax = brks[-1],
-                    ymin = -.1,
-                    ymax = -.03,
-                    fill = dBm_classes$colors)
+      brks <- c(-130, dBm_classes$breaks[2:(length(dBm_classes$breaks) - 1)], -50)
+      df3 <- data.frame(xmin = brks[-length(brks)],
+                        xmax = brks[-1],
+                        ymin = -.1,
+                        ymax = -.03,
+                        fill = dBm_classes$colors)
 
-  ggplot(df, aes(x=dBm, y=rsig)) + geom_line() +
-      geom_rect(data = df3, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
-      geom_rect(data = df2, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
-      scale_y_continuous("Signal quality", limits = c(-.1, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
-      scale_x_continuous("Signal strength", limits = c(-134, -50), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) +
-      theme_bw(base_size = base_size) + ggtitle("Signal quality")
+      ggplot(df, aes(x=dBm, y=rsig)) + geom_line() +
+          geom_rect(data = df3, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
+          geom_rect(data = df2, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
+          scale_y_continuous("Signal quality", limits = c(-.1, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
+          scale_x_continuous("Signal strength (dBm)", limits = c(-134, -50), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) +
+          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal quality")
+  } else {
+      ggplot(df, aes(x=dBm, y=rsig)) + geom_line() +
+          scale_y_continuous("Signal quality", limits = c(0, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
+          scale_x_continuous("Signal strength (dBm)", limits = c(-130, -50), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) +
+          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal quality")
+  }
 }
 
 #' @name radiation_plot
