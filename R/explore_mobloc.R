@@ -7,14 +7,12 @@
 #' @param prop propagation model
 #' @param priorlist list of priors
 #' @param param parameter list
-#' @param tm tmap object (optional), that is plotted on top of the map
-#' @import tmap
 #' @import shiny
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
 #' @export
-explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL) {
-    tmm <- tmap_mode("view")
+explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
+    antenna <- NULL
 
     pnames <- names(priorlist)
 
@@ -167,7 +165,6 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param, tm = NULL)
     )
 
     suppressWarnings(runApp(app)) # to suppress: Ignoring appended content; appendContent can't be used in a Shiny render call
-    tmap_mode(tmm)
 }
 
 
@@ -200,6 +197,8 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 }
 
 create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist) {
+    dBm <- s <- pag <- pg <- NULL
+
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
 

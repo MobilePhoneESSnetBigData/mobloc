@@ -54,7 +54,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                                       checkboxGroupInput("enable", "Signal loss components", choices = c("Distance" =  "d", "Horizontal offset" = "h", "Vertical offset" = "v"), selected = c("d", "h", "v")),
                                       conditionalPanel("!input.small", sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250)),
                                       conditionalPanel("input.small", sliderInput("range_small", "Heatmap range (m)", 250, 30000, value = 1000, step = 250)),
-                                      radioButtons("colors", "Color scale", choices = c("Discrete scale" = "discrete", "Gradient scale" = "gradient"), select = "discrete"),
+                                      radioButtons("colors", "Color scale", choices = c("Discrete scale" = "discrete", "Gradient scale" = "gradient"), selected = "discrete"),
                                       conditionalPanel("input.colors == 'gradient'",
                                                        checkboxInput("mask", "Enable mask", value = FALSE),
                                                        conditionalPanel("input.mask && input.type == 'dBm'",

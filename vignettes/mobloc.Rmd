@@ -165,10 +165,9 @@ registerDoParallel(cl)
 
 Note that it is not required to create a parallel cluster in order to process the cellplan. It is recommended for large cellplans since it reduced the computation time significantly. 
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 # calculate probabilities
 ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
-ZL_prop
 ```
 
 The result is a `data.frame` that contains information about the modelled propagation (that is where the abbreviation `prop` stands for). It has the following columns: 
@@ -190,16 +189,15 @@ In this example, we propose three priors:
 * A network prior. The antennas are not placed without reason: an MNO (mobile network operator) will probably place more antennas in dense areas. This information can be seen as prior information. We will extract this information from the propagation model.
 * A land use prior. The prior probability depends on the land use. The general philosophy behind this approach is that in urban areas, it is more likely to espect people than in rural areas. In the example below, we create a weigthed prior, in which we assign a weight per land use category.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 ZL_uniform_prior <- create_uniform_prior(ZL_raster)
 ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
-names(ZL_landuse) # display the land use classes in this raster brick
 ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 ```
 
 Since each of the previous priors have pros and cons, it may be worthwile to create a composite prior in order to find good balance. In this example we use the network prior for `25%` and the land use prior for `75%`.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
 ```
 
@@ -229,10 +227,11 @@ explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior,
 
 This tool can be used to verify the results. The final result, `P(g|a`), can be calculated as follows:
 
-```{r}
+```{r eval=FALSE}
 ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
-ZL_pga
 ```
+
+The columns of the obtained data.frame are the antenan id `antenna`, the raster id `rid`, and the posterior probability `pga`, so the probability that a mobile phone is located in grid cell `g`, given that it is connected to antenna `a`.
 
 
 

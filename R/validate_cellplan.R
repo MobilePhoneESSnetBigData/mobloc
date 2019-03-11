@@ -39,6 +39,7 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' @import sf
 #' @import sp
 #' @import dplyr
+#' @importFrom methods as
 #' @export
 validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NULL, fix = TRUE) {
     if (!inherits(cp, "sf") || !(all(st_geometry_type(cp) == "POINT"))) stop("cp should be an sf object of points")

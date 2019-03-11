@@ -22,6 +22,7 @@ qty_classes <- list(breaks = seq(0, 1, by = .1),
 
 
 heatmap_ground <- function(param_model, param_plots, param) {
+    valueCat <- value <- NULL
 
     co <- get_grid_coor(range  = param_plots$range)
 
@@ -84,10 +85,11 @@ heatmap_ground <- function(param_model, param_plots, param) {
 #' @param ple path loss exponent
 #' @param range range
 #' @param base_size base size of the plot
+#' @param show_classes show the class colors
 #' @importFrom RColorBrewer brewer.pal
 #' @export
 distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {
-  distance <- NULL
+  distance <- fill <- xmin <- xmax <- ymin <- ymax <- NULL
   dBm <- W2dBm(W)
   df <- data.frame(distance = seq(10, range, by=10))
   df$dBm <- distance2dB(df$distance, ple, W)
@@ -122,7 +124,9 @@ distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {
 #' @param dBm_mid middle point in the logistic function to map signal strength to probability
 #' @param dBm_width width of the logistic function to map signal strength to probability
 signal_quality_plot <- function(dBm_mid, dBm_width, base_size = 11, show_classes = TRUE) {
-    dBm <- likelihood <- NULL
+    dBm <- likelihood <- rsig <- fill <- xmin <- xmax <- ymin <- ymax <- NULL
+
+
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
   df$rsig <- db2s(df$dBm, dBm_mid, dBm_width)
 

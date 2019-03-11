@@ -4,7 +4,7 @@
 \alias{explore_mobloc}
 \title{Explore the Visualize signal strengths and probabilities per raster cell}
 \usage{
-explore_mobloc(cp, raster, prop, priorlist = NULL, param, tm = NULL)
+explore_mobloc(cp, raster, prop, priorlist = NULL, param)
 }
 \arguments{
 \item{cp}{cellplan}
@@ -16,8 +16,6 @@ explore_mobloc(cp, raster, prop, priorlist = NULL, param, tm = NULL)
 \item{priorlist}{list of priors}
 
 \item{param}{parameter list}
-
-\item{tm}{tmap object (optional), that is plotted on top of the map}
 }
 \description{
 Visualize signal strengths and probabilities per raster cell

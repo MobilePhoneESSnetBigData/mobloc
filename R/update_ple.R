@@ -17,6 +17,8 @@ update_ple <- function(cp, envir, ple_0 = 2.5, ple_1 = 4, ple_small = NA) {
 }
 
 sample_envir_points <- function(cp, envir, omnidir_angles = c(0, 90, 180, 270), dir_angles_mply = c(-1, -.5, -.25, 0, .25, .5, 1), radius = c(50, 150, 250, 500, 1000)) {
+    rd <- NULL
+
     angles <- mapply(function(dir, bh) {
         res <- if (is.na(dir)) {
             omnidir_angles
