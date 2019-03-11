@@ -3,15 +3,15 @@
 #' Create empty raster from a bounding box with a specified projection.
 #'
 #' @param x either a bounding box (see \code{\link[sf:st_bbox]{st_bbox}}) where the projection (\code{crs}) must be specified, or a raster object (where the elevation object is supposed to be used)
-#' @param cell.size cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)
+#' @param tile.size cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)
 #' @return raster layer
 #' @import sf
 #' @importFrom raster raster setValues brick extent crop extract
 #' @export
-create_raster <- function(x, cell.size = 100) {
+create_raster <- function(x, tile.size = 100) {
     if (inherits(x, "bbox")) {
-        nc <- (x[3] - x[1]) / cell.size
-        nr <- (x[4] - x[2]) / cell.size
+        nc <- (x[3] - x[1]) / tile.size
+        nr <- (x[4] - x[2]) / tile.size
 
         r <- raster(nrows=nr, ncols=nc, xmn=x[1], xmx=x[3], ymn=x[2], ymx=x[4], crs=attr(x, "crs")$proj4string)
     } else if (inherits(x, "Raster")) {

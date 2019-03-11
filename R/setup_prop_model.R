@@ -2,7 +2,7 @@
 #'
 #' Tool to setup the propagation model parameters
 #'
-#' @param param list of parameters
+#' @param param parameter list created with \code{prop_param}
 #' @param plot.height heigth of the plots in the tool (in pixels)
 #' @import shiny
 #' @import ggplot2

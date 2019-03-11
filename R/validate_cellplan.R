@@ -24,14 +24,14 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' \item \code{height}. Height of the antenna. If omitted, it will be derived from variable \code{z} if specified and otherwise, the default value \code{height} from the parameter list \code{param} will be used.
 #' \item \code{z}. Note that \code{z = elevation + height}. Elevation is taken from the argument \code{elevation}. If this is not specified, it will be assumed 0.
 #' \item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional antennas.
-#' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional cells. If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
+#' \item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional antennas If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 #' \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 #' \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
-#' \item \code{W}. Power of the cell in Watt.
+#' \item \code{W}. Power of the antenna in Watt.
 #' \item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
 #' \item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
 #' }
-#' @param param parameter list. See \code{\link{prop_param}}.
+#' @param param parameter list created with \code{prop_param}
 #' @param region polygon shape. If specified, it checks if all antennas are contained inside it
 #' @param envir raster layer that specifies the environment: free space is 0, and dense environment is 1. These values are scaled to the parameters \code{ple_0} and \code{ple_1}.
 #' @param elevation see argument \code{cp} (variable \code{z})

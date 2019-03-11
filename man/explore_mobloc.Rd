@@ -2,21 +2,21 @@
 % Please edit documentation in R/explore_mobloc.R
 \name{explore_mobloc}
 \alias{explore_mobloc}
-\title{Explore the Visualize signal strengths and probabilities per raster cell}
+\title{Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile}
 \usage{
 explore_mobloc(cp, raster, prop, priorlist = NULL, param)
 }
 \arguments{
-\item{cp}{cellplan}
+\item{cp}{cellplan, validated with \code{\link{validate_cellplan}}}
 
-\item{raster}{raster}
+\item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{prop}{propagation model}
+\item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
 \item{priorlist}{list of priors}
 
-\item{param}{parameter list}
+\item{param}{parameter list created with \code{prop_param}}
 }
 \description{
-Visualize signal strengths and probabilities per raster cell
+Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
 }

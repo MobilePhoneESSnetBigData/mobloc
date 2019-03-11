@@ -7,7 +7,7 @@
 setup_prop_model(param = prop_param(), plot.height = 800)
 }
 \arguments{
-\item{param}{list of parameters}
+\item{param}{parameter list created with \code{prop_param}}
 
 \item{plot.height}{heigth of the plots in the tool (in pixels)}
 }

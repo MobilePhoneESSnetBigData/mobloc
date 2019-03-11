@@ -8,5 +8,5 @@
 data(ZL_cellplan)
 }
 \description{
-Artificial cell plan data for Zuid-Limburg, i.e.
+Artificial cellplan data for Zuid-Limburg
 }

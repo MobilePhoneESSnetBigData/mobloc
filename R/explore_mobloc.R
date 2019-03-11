@@ -1,12 +1,12 @@
-#' Explore the Visualize signal strengths and probabilities per raster cell
+#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
 #'
-#' Visualize signal strengths and probabilities per raster cell
+#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
 #'
-#' @param cp cellplan
-#' @param raster raster
-#' @param prop propagation model
+#' @param cp cellplan, validated with \code{\link{validate_cellplan}}
+#' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
+#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param priorlist list of priors
-#' @param param parameter list
+#' @param param parameter list created with \code{prop_param}
 #' @import shiny
 #' @import leaflet
 #' @importFrom graphics plot.new xspline

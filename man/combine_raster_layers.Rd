@@ -11,6 +11,12 @@ combine_raster_layers(..., weights = NULL)
 
 \item{weights}{numeric vector that specifies the weights of the raster layers}
 }
+\value{
+raster object of one layer
+}
 \description{
 Combine raster layers to a single raster layer. Weights can be assigned to the raster layers.
+}
+\seealso{
+\code{\link{create_prior}}
 }

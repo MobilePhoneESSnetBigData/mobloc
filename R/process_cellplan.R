@@ -2,11 +2,11 @@
 #'
 #' Rasterize cellplan
 #'
-#' @param cp cellplan
-#' @param raster raster with indices
+#' @param cp cellplan, validated with \code{\link{validate_cellplan}}
+#' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param elevation raster with elevation data
-#' @param param list
-#' @param region polygon shape. If specified, only the signal strength will be calculated for raster cells inside the polygons
+#' @param param parameter list created with \code{prop_param}
+#' @param region polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons
 #' @importFrom stats dnorm
 #' @import parallel
 #' @import doParallel
@@ -38,7 +38,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     # select raster id numbers
     if (!missing(region)) {
-        message("Determining which raster cells intersect with region polygon")
+        message("Determining which raster tiles intersect with region polygon")
 
         rdf <- get_raster_ids(raster, region)
         rdf$z <- elevation[][rdf$rid]
@@ -82,7 +82,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     }
 
     # calculate signal strength
-    message("Determine signal strength per antenna for raster cells inside coverage area")
+    message("Determine signal strength per antenna for raster tiles inside coverage area")
     df3 <- do.call(mcmapply, c(list(FUN = function(df, x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param) {
         df2 <- signal_strength(cx=x, cy=y, cz=z,
                                direction = direction,
@@ -102,11 +102,11 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     df4 <- bind_rows(df3, .id = "antenna")
 
-    # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
+    # select top [param$max_overlapping_antennas] antennas for each rid, and calculate pag
     df5 <- df4 %>%
         group_by(rid) %>%
         filter(dBm >= param$dBm_th) %>%
-        filter(order(s)<=param$max_overlapping_cells) %>%
+        filter(order(s)<=param$max_overlapping_antennas) %>%
         mutate(pag = s / sum(s)) %>%
         ungroup()
 

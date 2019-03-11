@@ -1,9 +1,9 @@
 #' Calculate mobile location
 #'
-#' Calculate the mobile location given the calculated propagation and a prior.
-#' @param prop propagation object, the result of \code{\link{process_cellplan}}
+#' Calculate the (estimated) mobile device location given the modelled propagation and a prior.
+#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param prior prior object, the result of \code{\link{create_uniform_prior}}, \code{\link{create_prior}}, or \code{\link{create_network_prior}}
-#' @param raster raster raster object
+#' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @export
 calculate_mobloc <- function(prop, prior, raster) {
     pag <- antenna <- pga <- rid <- NULL

@@ -8,5 +8,5 @@
 data(ZL_elevation)
 }
 \description{
-Elevation data of Zuid-Limburg, raster object of 100 x 100 meter cells
+Elevation data of Zuid-Limburg, raster object of 100 x 100 meter tiles
 }

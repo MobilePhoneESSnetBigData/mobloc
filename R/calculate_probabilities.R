@@ -79,10 +79,10 @@ calculate_probabilities <- function(shps, rs, param, parallel) {
     #     mutate(priorn=prior/sum(prior)) %>%
     #     ungroup()
     #
-    # # reduce number of overlapping cells to max_overlap (by default 5) and divide the p's by the (truncated) number of overlapping cells
+    # # reduce number of overlapping antennas to max_overlap (by default 5) and divide the p's by the (truncated) number of overlapping antennas
     df <- df %>%
         group_by(rid) %>%
-        filter(order(s)<=param$max_overlapping_cells) %>%
+        filter(order(s)<=param$max_overlapping_antennas) %>%
         mutate(pag = s / sum(s)) %>%
         ungroup()
 

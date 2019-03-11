@@ -3,7 +3,7 @@
 \name{create_coverage_map}
 \alias{create_coverage_map}
 \alias{create_best_server_map}
-\title{Functions to estimate a coverage map and a best server map.}
+\title{Create a best server map and a coverage map.}
 \usage{
 create_coverage_map(prop, raster, type = c("dBm", "s"),
   antennas = NULL)
@@ -11,14 +11,14 @@ create_coverage_map(prop, raster, type = c("dBm", "s"),
 create_best_server_map(prop, raster, antennas = NULL)
 }
 \arguments{
-\item{prop}{propagation model}
+\item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
-\item{raster}{raster raster object}
+\item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
 \item{type}{either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal quality values}
 
 \item{antennas}{selection of antennas}
 }
 \description{
-The function \code{create_coverage_map} is used to create a coverage map, and the function \code{create_best_server_map} to create a best (area) server map. The former shows the best signal strength per raster cell (either in dBm or in signal quality). The latter shows the best antenna per raster cell.
+The function \code{create_best_server_map} to create a best (area) server map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_coverage_map} is used to create a coverage map. It shows the best antenna per raster tile.
 }

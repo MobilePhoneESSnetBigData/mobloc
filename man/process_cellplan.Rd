@@ -7,15 +7,15 @@
 process_cellplan(cp, raster, elevation, param, region = NULL)
 }
 \arguments{
-\item{cp}{cellplan}
+\item{cp}{cellplan, validated with \code{\link{validate_cellplan}}}
 
-\item{raster}{raster with indices}
+\item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
 \item{elevation}{raster with elevation data}
 
-\item{param}{list}
+\item{param}{parameter list created with \code{prop_param}}
 
-\item{region}{polygon shape. If specified, only the signal strength will be calculated for raster cells inside the polygons}
+\item{region}{polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons}
 }
 \description{
 Rasterize cellplan

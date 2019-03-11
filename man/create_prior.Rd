@@ -20,19 +20,19 @@ prior_filter(prior, region)
 
 \item{name}{name of the prior}
 
-\item{weights}{The weights of the raster objects (see \code{...}). See also the underlying function \code{\link{combine_raster_layers}}.}
+\item{weights}{The weights of the raster objects, which should be a vector of the same length as the number of specified raster layers. See also the underlying function \code{\link{combine_raster_layers}}.}
 
-\item{raster}{a raster object that contains the raster numbers (e.g. created with \code{\link{create_raster}})}
+\item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
 \item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
 \item{prior}{object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}}
 
-\item{region}{a polygons object (class \code{sf}) that specifies a region}
+\item{region}{a polygons object (class \code{sf}) that specifies a region. If the object, contains multiple polygons, they are considered as one.}
 }
 \value{
 data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
 }
 \description{
-Functions to create a prior. A prior is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} extracts a uniform prior from the propagation model. The function \code{create_network_prior} extracts a prior from the propagation model. The function \code{prior_filter} can be used to filter a prior raster using a polygons object.
+Functions to create a prior. A prior is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} create a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (e.g. the administrative region of interest).
 }

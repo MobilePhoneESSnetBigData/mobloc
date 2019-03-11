@@ -24,7 +24,7 @@
 #' @param beam_v default vertical beam width. Only applicable for directional antennas
 #' @param beam_h default horizontal beam width. Only applicable for directional antennas
 #' @param dBm_th dBm threshold
-#' @param max_overlapping_cells maximum number of polygons that may overlap per raster cell. If the actual number exceeds this parameter, the \code{max_overlapping_cells} cells with the highest signal strength are selected
+#' @param max_overlapping_antennas maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected
 #' @return parameter list
 #' @export
 prop_param <- function(
@@ -48,7 +48,7 @@ prop_param <- function(
     beam_v = 9,
     beam_h = 65,
     dBm_th = -120,
-    max_overlapping_cells = 100) {
+    max_overlapping_antennas = 100) {
 
     nms <- names(formals(prop_param))
     lst <- sapply(nms, get, envir=environment(), simplify = FALSE)

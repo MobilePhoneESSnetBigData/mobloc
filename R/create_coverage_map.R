@@ -1,11 +1,11 @@
-#' Functions to estimate a coverage map and a best server map.
+#' Create a best server map and a coverage map.
 #'
-#' The function \code{create_coverage_map} is used to create a coverage map, and the function \code{create_best_server_map} to create a best (area) server map. The former shows the best signal strength per raster cell (either in dBm or in signal quality). The latter shows the best antenna per raster cell.
+#' The function \code{create_best_server_map} to create a best (area) server map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_coverage_map} is used to create a coverage map. It shows the best antenna per raster tile.
 #'
 #' @name create_coverage_map
 #' @rdname create_coverage_map
-#' @param prop propagation model
-#' @param raster raster raster object
+#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
+#' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param type either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal quality values
 #' @param antennas selection of antennas
 #' @export

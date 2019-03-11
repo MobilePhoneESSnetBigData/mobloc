@@ -75,17 +75,18 @@ heatmap_ground <- function(param_model, param_plots, param) {
 
 }
 
-#' Signal strength plot functions
+#' Plot aspects of the propagation model
 #'
-#' Signal strength plot functions. The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and likelihood, which is modelled as a logistic function
+#' The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function
 #'
 #' @name distance_plot
 #' @rdname plot_functions
-#' @param W power of a cell
+#' @param W power of an antenna
 #' @param ple path loss exponent
 #' @param range range
 #' @param base_size base size of the plot
 #' @param show_classes show the class colors
+#' @seealso \code{\link{setup_prop_model}}
 #' @importFrom RColorBrewer brewer.pal
 #' @export
 distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {

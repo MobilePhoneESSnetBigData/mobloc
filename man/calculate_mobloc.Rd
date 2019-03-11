@@ -7,12 +7,12 @@
 calculate_mobloc(prop, prior, raster)
 }
 \arguments{
-\item{prop}{propagation object, the result of \code{\link{process_cellplan}}}
+\item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
 \item{prior}{prior object, the result of \code{\link{create_uniform_prior}}, \code{\link{create_prior}}, or \code{\link{create_network_prior}}}
 
-\item{raster}{raster raster object}
+\item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 }
 \description{
-Calculate the mobile location given the calculated propagation and a prior.
+Calculate the (estimated) mobile device location given the modelled propagation and a prior.
 }

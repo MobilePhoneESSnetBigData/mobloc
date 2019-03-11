@@ -11,7 +11,7 @@ NULL
 
 #' Elevation data of Zuid-Limburg
 #'
-#' Elevation data of Zuid-Limburg, raster object of 100 x 100 meter cells
+#' Elevation data of Zuid-Limburg, raster object of 100 x 100 meter tiles
 #'
 #' @usage data(ZL_elevation)
 #' @name ZL_elevation
@@ -20,7 +20,7 @@ NULL
 
 #' Cellplan data for Zuid-Limburg
 #'
-#' Artificial cell plan data for Zuid-Limburg, i.e.
+#' Artificial cellplan data for Zuid-Limburg
 #'
 #' @usage data(ZL_cellplan)
 #' @name ZL_cellplan
