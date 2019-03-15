@@ -18,12 +18,34 @@ create_connection_lines <- function(cp1, cp2) {
     })), antenna = cp1$antenna, crs = st_crs(cp1))
 }
 
-base_map <- function(cp, offset) {
+get_leafletCRS <- function(epsg) {
+    if (epsg == 3035) {
+        leafletCRS(crsClass = "L.Proj.CRS",
+                   code='EPSG:3035',
+                   proj4def="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+                   resolutions = 2^(7:0))
+    } else {
+        leafletCRS(crsClass = "L.CRS.EPSG3857")
+    }
+}
+
+get_epsg_tiles <- function(map, epsg) {
+    if (epsg == 3035) {
+        addWMSTiles(map, "https://image.discomap.eea.europa.eu/arcgis/services/GioLandPublic/DEM/MapServer/WmsServer", layers = "Image")
+    } else {
+        addTiles(map)
+    }
+}
+
+
+base_map <- function(cp, offset, epsg) {
     cp2 <- move_cp_to_direction(cp, offset)
     cp_lines <- create_connection_lines(cp, cp2)
 
-    leaflet() %>% addPolylines(data = cp_lines %>% st_transform(crs = 4326), color = "#777777", opacity = 1, weight = 3, group = "Antenna locations") %>%
-        addTiles()
+    lf <- leaflet(options = leafletOptions(crs = get_leafletCRS(epsg))) %>%
+        addPolylines(data = cp_lines %>% st_transform(crs = 4326), color = "#777777", opacity = 1, weight = 3, group = "Antenna locations") %>%
+        get_epsg_tiles(epsg)
+
 }
 
 viz_p <- function(cp, rst, var, trans, pnames, offset) {
@@ -61,7 +83,8 @@ viz_p <- function(cp, rst, var, trans, pnames, offset) {
 
     if (var %in% c("dBm", "s")) {
         pal2 <- colorBin(cls$colors, bins = cls$breaks, na.color = "#00000000")#, dBm_classes$labels)
-        rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string)
+        #rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string)
+        rst2 <- rst
     } else if (var == "bsm") {
         rst2 <- raster::projectRaster(rst, crs = st_crs(3857)$proj4string, method = "ngb")
         lvls <- raster::levels(rst)[[1]]

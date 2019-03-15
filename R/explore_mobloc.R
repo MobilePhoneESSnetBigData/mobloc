@@ -12,6 +12,18 @@
 #' @importFrom graphics plot.new xspline
 #' @export
 explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
+
+    crs <- st_crs(raster)
+
+    epsg <- 4326
+
+#     epsg <- if(crs$proj4string == "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")  {
+#         3035
+#     } else {
+#         4326
+#     }
+
+
     antenna <- NULL
 
     pnames <- names(priorlist)
@@ -110,7 +122,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
             })
 
             output$map <- renderLeaflet({
-                base_map(cp, offset_value)
+                base_map(cp, offset_value, epsg)
             })
 
 

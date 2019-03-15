@@ -5,10 +5,12 @@ library(sf)
 library(raster)
 library(dplyr)
 library(lwgeom)
-ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
+
+ZL_bbox <- st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
+#ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
 
 library(osmdata)
-bbL <- bb(ZL_bbox, current.projection = st_crs(28992)$proj4string, projection = "longlat")
+bbL <- bb(ZL_bbox, current.projection = st_crs(3035)$proj4string, projection = "longlat")
 q <- opq(bbL)
 
 polykeys <- c(rep("landuse", 14), "natural", "waterway")
@@ -64,7 +66,7 @@ shp_landuse <- do.call(rbind, lapply(plevels, function(ct) {
     geom <- st_union(lwgeom::st_make_valid(do.call(c, polys[polycat == ct])))
     st_sf(geometry = geom, category = factor(ct, levels = plevels))
 }))
-shp_landuse <- st_transform(shp_landuse, 28992)
+shp_landuse <- st_transform(shp_landuse, 3035)
 
 devtools::load_all()
 ZL_raster <- create_raster(ZL_bbox)
@@ -112,7 +114,7 @@ wy <- mapply(function(k, v) {
         z
     }
 }, keys, values, SIMPLIFY = FALSE)
-wy <- lapply(wy, st_transform, 28992)
+wy <- lapply(wy, st_transform, 3035)
 wyb <- mapply(function(w, wd) {
     st_union(st_buffer(w, dist = wd))
 }, wy, widths, SIMPLIFY = FALSE)

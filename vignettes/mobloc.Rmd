@@ -137,7 +137,8 @@ The corresponding bounding box of Zuid-Limburg is created as follows.
 
 ```{r}
 library(sf)
-ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
+ZL_bbox <- st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
+
 ```
 
 ## Modelling the signal propagation

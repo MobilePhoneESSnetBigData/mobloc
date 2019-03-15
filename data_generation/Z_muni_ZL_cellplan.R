@@ -3,7 +3,8 @@ library(tmaptools)
 library(sf)
 library(dplyr)
 library(lwgeom)
-ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
+#ZL_bbox <- st_bbox(c(xmin = 172700, ymin = 306800, xmax = 204800, ymax = 342700), crs = st_crs(28992))
+ZL_bbox <- st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
 
 
 
@@ -18,7 +19,7 @@ unzip(tmp, exdir = tmpdir)
 
 
 wijk <- st_read(file.path(tmpdir, "Uitvoer_shape/wijk_2018.shp"))
-wijk <- st_transform(wijk, crs = 28992)
+wijk <- st_transform(wijk, crs = 3035)
 
 wijk <- wijk[wijk$WATER=="NEE", ]
 
@@ -40,8 +41,8 @@ for (nm in names(isf)[isf]) {
 wijk <- st_make_valid(wijk)
 
 gem <- st_read(file.path(tmpdir, "Uitvoer_shape/gem_2018.shp"))
-gem <- st_transform(gem, crs = 28992)
-ids <- which(st_coordinates(st_centroid(gem))[,2] < 340000)
+gem <- st_transform(gem, crs = 3035)
+ids <- which(st_coordinates(st_centroid(gem))[,2] < 3115200)
 gem_ZL <- gem[ids, ]
 #zl <- st_union(gem_ZL)
 
@@ -55,7 +56,7 @@ wijk_ZL <- wijk %>%
 
 
 buurt <- st_read(file.path(tmpdir, "Uitvoer_shape/buurt2018.shp"))
-buurt <- st_transform(buurt, crs = 28992)
+buurt <- st_transform(buurt, crs = 3035)
 
 buurt <- buurt[buurt$WATER=="NEE", ]
 
@@ -111,7 +112,7 @@ ZL_cellplan_normal2 <- st_sample(wijk_ZL[wijk_ZL$pop!=0,], wijk_ZL$pop[wijk_ZL$p
 attributes(ZL_cellplan_normal1) <- NULL
 attributes(ZL_cellplan_normal2) <- NULL
 
-ZL_cellplan_normal <- st_sfc(c(ZL_cellplan_normal1, ZL_cellplan_normal2), crs = 28992)
+ZL_cellplan_normal <- st_sfc(c(ZL_cellplan_normal1, ZL_cellplan_normal2), crs = 3035)
 
 ####### Generate small cell locations
 
@@ -121,7 +122,7 @@ if (FALSE) {
     saveRDS(ZL_small_cells_manual, file = "data_generation/ZL_small_cells_manual.rds")
 }
 ZL_small_cells_manual <- readRDS("data_generation/ZL_small_cells_manual.rds")
-ZL_cellplan_small <- st_transform(ZL_small_cells_manual, crs = 28992) %>% st_geometry()
+ZL_cellplan_small <- st_transform(ZL_small_cells_manual, crs = 3035) %>% st_geometry()
 
 #######  Create antenna data
 
