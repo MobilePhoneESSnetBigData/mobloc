@@ -37,7 +37,7 @@ circle_coords <- function(cx, cy, rad) {
          y = cy + sin(a) * rad)
 }
 
-find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, antenna, param, rext, rres) {
+find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, antenna, param, rext, rres, rids) {
 
 
     if (!is.na(direction)) {
@@ -89,16 +89,15 @@ find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
 
     df <- df[sqrt((df$x - pc[1])^2 + (df$y - pc[2])^2) <= rng,  ]
 
-    rids <- calculate_rid(df$colid, df$rowid, length(xs), length(ys))
-
+    rids_native <- calculate_rid(df$colid, df$rowid, length(xs), length(ys))
 
     if (FALSE) {
         r2 <- raster(r)
-        r2[][rids] <- 1
+        r2[][rids_native] <- 1
         r2 <- trim(r2)
         qtm(r2) + qtm(sf2, is.master = TRUE) + qtm(sf) + tm_grid()
     }
-    rids
+    rids[rids_native]
 }
 
 

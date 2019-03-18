@@ -62,13 +62,13 @@ viz_p <- function(cp, rst, var, trans, pnames, offset) {
 
     title <- switch(var,
                     dBm = "Signal strength in dBm",
-                    s = "Signal quality - s (in %)",
+                    s = "Signal quality - s",
                     bsm = "Best server map",
-                    lu = "Land use prior (in %)",
-                    pag = "Likelihood - P(a|g) (in %)",
-                    pg = "Composite prior - P(g) (in %)",
-                    pga = "Probability - P(g|a) (in %)",
-                    paste("Prior", pnames[var], "(in %)"))
+                    #lu = "Land use prior (in %)",
+                    pag = "Likelihood - P(a|g) (in 1 / 1,000)",
+                    pg = "Composite prior - P(g) (in 1/1,000,000)",
+                    pga = "Posterior - P(g|a) (in 1/1,000,000)",
+                    paste("Prior", pnames[var], "(in 1/1,000,000)"))
 
 
     cls <- if (var == "dBm")  {
@@ -92,7 +92,12 @@ viz_p <- function(cp, rst, var, trans, pnames, offset) {
         pal2 <- colorFactor(palette = cols, domain = lvls$ID, na.color = "transparent")
     } else if (var != "empty") {
         rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string)
-        values <- pmin(pmax(rst2[] * 100, 0), 100)
+        if (var == "pag") {
+            values <- pmin(pmax(rst2[] * 1000, 0), 1000)
+        } else {
+            values <- pmin(pmax(rst2[] * 1000000, 0), 1000000)
+        }
+
         rst2[] <- values
         rng <- range(values, na.rm = TRUE)
         pal2 <- colorNumeric(palette = numpal, rng,

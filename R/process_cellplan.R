@@ -53,7 +53,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     # for each antenna determine range for which signal strength is within param$dBm_th (start at +/- range, calculate signal strength and stop when it reached dBm_th)
     cpsellist <- as.list(cpsel)
     names(cpsellist$x) <- cp$antenna
-    res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres), USE.NAMES = TRUE), cpsellist))
+    res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres, rids = raster[]), USE.NAMES = TRUE), cpsellist))
 
 
     # debugging mode

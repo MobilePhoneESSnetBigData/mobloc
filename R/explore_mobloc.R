@@ -41,7 +41,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
                  "Composite prior - P(g) (see slider below)" = "pg")
 
     choices2 <- c("Likelihood - P(a|g)" = "pag",
-                 "Probability - P(g|a)" = "pga")
+                 "Posterior - P(g|a)" = "pga")
+
+    #https://stackoverflow.com/questions/34733147/unable-to-disable-a-shiny-app-radio-button-using-shinyjs
 
     cells <- as.character(cp$antenna)
     #names(cells) <- paste("Cell", 1L:n)
