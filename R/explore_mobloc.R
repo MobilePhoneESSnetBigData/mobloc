@@ -1,17 +1,22 @@
 #' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
 #'
-#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
+#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param priorlist list of priors
-#' @param param parameter list created with \code{prop_param}
+#' @param filter bounding box of the filter of the visualized raster. If not specified, the whole raster is shown, which could be very slow. Therefore, we recommand to use a filter when the raster covers a large area (say 30 by 30 kilometers).
+#' @param coverage_map_dBm coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "dBm"}). If not specified, it will be created (which takes some time).
+#' @param coverage_map_s coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "s"}). If not specified, it will be created (which takes some time).
+#' @param best_server_map best server map, created with \code{\link{create_best_server_map}}. If not specified, it will be created (which takes some time).
+#' @note Note that duo to the reprojection of the raster to the web mercator projection (for interactive maps), the visualized raster does not correspond exactly to the output raster.
 #' @import shiny
+#' @importFrom shinyjs useShinyjs disable
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
 #' @export
-explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
+explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
 
     crs <- st_crs(raster)
 
@@ -22,6 +27,23 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
 #     } else {
 #         4326
 #     }
+
+
+
+    if (!missing(filter)) {
+
+        raster <- mobloc_crop_raster(raster, bbx = filter)
+
+        a <- mobloc_find_antennas(prop, raster)
+        prop <- mobloc_filter_antenna(prop, a, raster)
+        cp <- mobloc_filter_antenna(cp, a)
+
+        priorlist <- lapply(priorlist, mobloc_crop_raster, bbx = filter)
+    }
+
+
+    rect <- create_bbx_rect(raster2bbx(raster)) %>% st_transform(crs = 4326)
+
 
 
     antenna <- NULL
@@ -43,15 +65,33 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
     choices2 <- c("Likelihood - P(a|g)" = "pag",
                  "Posterior - P(g|a)" = "pga")
 
+    choices <- c("Signal strength - dBm" = "dBm",
+                  "Signal quality - s" = "s",
+                  "Best server map" = "bsm",
+                 "Likelihood - P(a|g)" = "pag",
+                  choices_prior,
+                  "Composite prior - P(g) (see slider below)" = "pg",
+                 "Posterior - P(g|a)" = "pga")
+
+
     #https://stackoverflow.com/questions/34733147/unable-to-disable-a-shiny-app-radio-button-using-shinyjs
 
     cells <- as.character(cp$antenna)
     #names(cells) <- paste("Cell", 1L:n)
 
-    message("Creating coverage and best server maps...")
-    cm_dBm <- create_coverage_map(prop, raster, type = "dBm")
-    cm_s <- create_coverage_map(prop, raster, type = "s")
-    bsm <- create_best_server_map(prop, raster)
+
+    if (missing(coverage_map_dBm)) {
+        message("Creating coverage maps (dBm)...")
+        coverage_map_dBm <- create_coverage_map(prop, raster, type = "dBm") # cm_dBm
+    }
+    if (missing(coverage_map_s)) {
+        message("Creating coverage maps (s)...")
+        coverage_map_s <- create_coverage_map(prop, raster, type = "s") #cm_s
+    }
+    if (missing(best_server_map)) {
+        message("Creating best server maps...")
+        best_server_map <- create_best_server_map(prop, raster) #bsm
+    }
 
     offset_value <- 150
 
@@ -67,13 +107,23 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
 
     app <- shinyApp(
         ui = fluidPage(
+            useShinyjs(),
+
+            tags$head(
+                tags$style(HTML("
+                  .disabled {
+                    opacity: 0.4;
+                  }
+                "))
+            ),
+
             titlePanel("Mobile location exploration"),
             sidebarLayout(
                 sidebarPanel(
                     tabsetPanel(
                         tabPanel("Map setup",
-                                 radioButtons("show", "Selection",  c("Whole grid" = "grid", "One antenna" = "ant"), selected = "grid"),
-                                 radioButtons("var", "Variable", choices1, selected = "s"),
+                                 radioButtons("show", "Selection",  c("All antennas" = "grid", "Single antenna" = "ant"), selected = "grid"),
+                                 radioButtons("var", "show", choices, selected = "s"),
                                  wellPanel(
                                      conditionalPanel(
                                          condition = "(input.var == 'pga') || (input.var == 'pg')",
@@ -90,16 +140,39 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
         ),
         server = function(input, output, session) {
 
-            observe({
+            # observe({
+            #     show <- input$show
+            #     var <- input$var
+            #     if (!is.null(show)) {
+            #         #choices <- if (show == "grid") choices1 else c(choices1, choices2)
+            #         #selected <- if (var %in% choices) var else choices[1]
+            #         selected <- if (show == "grid") cho
+            #         updateRadioButtons(session, "var", choices = choices, selected = selected)
+            #     }
+            # })
+
+            get_var <- reactive({
                 show <- input$show
                 var <- input$var
-                if (!is.null(show)) {
-                    choices <- if (show == "grid") choices1 else c(choices1, choices2)
-                    selected <- if (var %in% choices) var else choices[1]
-                    updateRadioButtons(session, "var", choices = choices, selected = selected)
-                }
+
+                if (show == "grid" && var %in% c("pag", "pga")) choices[1] else var
             })
 
+
+            observe({
+                show <- input$show
+                var <- get_var()
+
+                if (show == "grid") {
+                    if (var != input$var) updateRadioButtons(session, "var", choices = choices, selected = var)
+                    shinyjs::runjs("$('#var input[value=pag]').parent().parent().addClass('disabled')")
+                    shinyjs::runjs("$('#var input[value=pga]').parent().parent().addClass('disabled')")
+                } else {
+                    shinyjs::runjs("$('#var input[value=pag]').parent().parent().removeClass('disabled')")
+                    shinyjs::runjs("$('#var input[value=pga]').parent().parent().removeClass('disabled')")
+
+                }
+            })
 
 
             get_composition <- reactive({
@@ -138,13 +211,13 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
             }, options = list(searching = FALSE, scrollx = FALSE, paging = FALSE, info = FALSE))
 
             observe({
-                type <- input$var
+                type <- get_var()
                 sel <- input$sel
                 cp$sel <- 1L
                 cp$sel[cp$antenna %in% sel] <- 2L
                 if (input$show == "grid") {
                     composition <- get_composition()
-                    rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, cm_dBm, cm_s, bsm)
+                    rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, coverage_map_dBm, coverage_map_s, best_server_map)
                 } else {
                     if (type == "bsm") {
                         rst <- create_best_server_map(prop, raster, antennas = sel)
@@ -156,7 +229,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist = NULL, param) {
                     }
                 }
 
-                viz_p(cp = cp, rst = rst, var = input$var, trans = input$trans, pnames = pnames, offset = ifelse(input$offset, offset_value, 0))
+                viz_p(cp = cp, rst = rst, var = type, trans = input$trans, pnames = pnames, offset = ifelse(input$offset, offset_value, 0), rect = rect)
             })
 
             observeEvent(input$map_marker_click, { # update the location selectInput on map clicks

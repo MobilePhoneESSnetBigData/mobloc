@@ -4,7 +4,9 @@
 \alias{explore_mobloc}
 \title{Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile}
 \usage{
-explore_mobloc(cp, raster, prop, priorlist = NULL, param)
+explore_mobloc(cp, raster, prop, priorlist, filter = NULL,
+  coverage_map_dBm = NULL, coverage_map_s = NULL,
+  best_server_map = NULL)
 }
 \arguments{
 \item{cp}{cellplan, validated with \code{\link{validate_cellplan}}}
@@ -15,8 +17,17 @@ explore_mobloc(cp, raster, prop, priorlist = NULL, param)
 
 \item{priorlist}{list of priors}
 
-\item{param}{parameter list created with \code{prop_param}}
+\item{filter}{bounding box of the filter of the visualized raster. If not specified, the whole raster is shown, which could be very slow. Therefore, we recommand to use a filter when the raster covers a large area (say 30 by 30 kilometers).}
+
+\item{coverage_map_dBm}{coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "dBm"}). If not specified, it will be created (which takes some time).}
+
+\item{coverage_map_s}{coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "s"}). If not specified, it will be created (which takes some time).}
+
+\item{best_server_map}{best server map, created with \code{\link{create_best_server_map}}. If not specified, it will be created (which takes some time).}
 }
 \description{
-Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
+Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
+}
+\note{
+Note that duo to the reprojection of the raster to the web mercator projection (for interactive maps), the visualized raster does not correspond exactly to the output raster.
 }

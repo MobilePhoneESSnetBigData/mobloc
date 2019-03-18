@@ -48,7 +48,7 @@ base_map <- function(cp, offset, epsg) {
 
 }
 
-viz_p <- function(cp, rst, var, trans, pnames, offset) {
+viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     cp$sel <- factor(ifelse(cp$sel == 2, "Selected", ifelse(cp$small, "Small cell", "Normal antenna")), levels = c("Selected", "Small cell", "Normal antenna"))
 
     cp2 <- move_cp_to_direction(cp, offset)
@@ -65,10 +65,10 @@ viz_p <- function(cp, rst, var, trans, pnames, offset) {
                     s = "Signal quality - s",
                     bsm = "Best server map",
                     #lu = "Land use prior (in %)",
-                    pag = "Likelihood - P(a|g) (in 1 / 1,000)",
-                    pg = "Composite prior - P(g) (in 1/1,000,000)",
-                    pga = "Posterior - P(g|a) (in 1/1,000,000)",
-                    paste("Prior", pnames[var], "(in 1/1,000,000)"))
+                    pag = "Likelihood - P(a|g)<br>(in 1 / 1,000)",
+                    pg = "Composite prior - P(g)<br>(in 1/1,000,000)",
+                    pga = "Posterior - P(g|a)<br>(in 1/1,000,000)",
+                    paste("Prior", pnames[var], "<br>(in 1/1,000,000)"))
 
 
     cls <- if (var == "dBm")  {
@@ -122,20 +122,21 @@ viz_p <- function(cp, rst, var, trans, pnames, offset) {
 
 
     if (var %in% c("dBm", "s")) {
-        lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
+        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
             leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
             addLegend(colors = cls$colors, labels = cls$labels, opacity = trans, title = title)
 
     } else if (var == "bsm") {
-        lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols) %>%
+        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols) %>%
             leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
             addLegend(colors = cols, labels = as.character(lvls$antenna), opacity = trans, title = title)
     } else if (var == "empty") {
-        lf %>% leaflet::addLayersControl(overlayGroups = c("Antenna locations"), position = "topleft")
+        lf <- lf %>% leaflet::addLayersControl(overlayGroups = c("Antenna locations"), position = "topleft")
     } else {
-        lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
+        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
             leaflet::addLayersControl(overlayGroups = c("Antenna locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
             addLegend(pal = pal2, values = rng, opacity = trans, title = title)
     }
 
+    lf %>% addPolygons(data = rect, color = "#000000", weight = 1, fill = FALSE)
 }
