@@ -14,5 +14,8 @@ calculate_mobloc(prop, prior, raster)
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 }
 \description{
-Calculate the (estimated) mobile device location given the modelled propagation and a prior.
+Calculate the estimated mobile device location (posterior distribution) using the modelled propagation/likelihood and a prior.
+}
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

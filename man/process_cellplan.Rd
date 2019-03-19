@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_cellplan.R
 \name{process_cellplan}
 \alias{process_cellplan}
-\title{Rasterize cellplan}
+\title{Process cellplan}
 \usage{
 process_cellplan(cp, raster, elevation, param, region = NULL)
 }
@@ -17,6 +17,12 @@ process_cellplan(cp, raster, elevation, param, region = NULL)
 
 \item{region}{polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons}
 }
+\value{
+a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame can be used to caluculate the posterior distribution with \code{\link{calculate_mobloc}}, and to run the interactive tool \code{\link{explore_mobloc}}
+}
 \description{
-Rasterize cellplan
+Process cellplan. The propagation is modelled based on the physical properties of the antennas. Also, the likelihood distribution is calculated, which takes the overlap of antennas into account.
+}
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

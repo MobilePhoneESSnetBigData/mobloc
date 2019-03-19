@@ -7,6 +7,7 @@
 #' @import shiny
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
+#' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 setup_prop_model <- function(param = prop_param(), plot.height=800) {
 
@@ -14,8 +15,6 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
     SliderInput <- function(...) {
         div(style = "height: 75px;line-height:75%;", sliderInput(...))
     }
-
-    assign("param", param, envir = .MOBLOC_CACHE)
 
     app <- shinyApp(
         ui = fluidPage(

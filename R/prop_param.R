@@ -1,6 +1,6 @@
-#' Set and update propagation model parameters
+#' Set the propagation model parameters
 #'
-#' Set and update propagation model parameters. The function \code{prop_param} specifies model parameters, which can be updated with \code{update_prop_param}
+#' Set the propagation model parameters. The result is a list.
 #'
 #' @name prop_param
 #' @rdname prop_param
@@ -25,6 +25,7 @@
 #' @param beam_h default horizontal beam width. Only applicable for directional antennas
 #' @param dBm_th dBm threshold
 #' @param max_overlapping_antennas maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected
+#' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @return parameter list
 #' @export
 prop_param <- function(
@@ -54,16 +55,4 @@ prop_param <- function(
     lst <- sapply(nms, get, envir=environment(), simplify = FALSE)
     class(lst) <- "prop_param"
     lst
-}
-
-#' @rdname prop_param
-#' @param param parameter list created with \code{prop_param}
-#' @param ... parameter updates, see arguments of \code{prop_param}
-#' @export
-update_prop_param <- function(param, ...) {
-    args <- list(...)
-    if (!all(names(args) %in% names(param))) stop("Unknown arguments")
-
-    param[names(args)] <- args
-    param
 }

@@ -8,5 +8,5 @@
 data(ZL_landuse)
 }
 \description{
-Landuse groups. Source: OpenStreetMap
+Landuse grouped of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands. The landuse categories are groupd by: building, residential, forest, water and roads. Source: OpenStreetMap
 }

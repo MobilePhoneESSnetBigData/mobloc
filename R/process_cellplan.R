@@ -1,6 +1,6 @@
-#' Rasterize cellplan
+#' Process cellplan
 #'
-#' Rasterize cellplan
+#' Process cellplan. The propagation is modelled based on the physical properties of the antennas. Also, the likelihood distribution is calculated, which takes the overlap of antennas into account.
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
@@ -11,6 +11,8 @@
 #' @import parallel
 #' @import doParallel
 #' @import foreach
+#' @return a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame can be used to caluculate the posterior distribution with \code{\link{calculate_mobloc}}, and to run the interactive tool \code{\link{explore_mobloc}}
+#' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- antenna <- dist <- pag <- NULL

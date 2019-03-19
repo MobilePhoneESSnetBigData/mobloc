@@ -75,9 +75,9 @@ heatmap_ground <- function(param_model, param_plots, param) {
 
 }
 
-#' Plot aspects of the propagation model
+#' Plot of the propagation model
 #'
-#' The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function
+#' The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_prop_model}}.
 #'
 #' @name distance_plot
 #' @rdname plot_functions
@@ -165,7 +165,7 @@ signal_quality_plot <- function(dBm_mid, dBm_width, base_size = 11, show_classes
 #' @rdname plot_functions
 #' @param type \code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane
 #' @param beam_width beam width
-#' @param db_back difference in signal strength between front and back
+#' @param db_back difference in signal strength between the propagation direction of the antenna and the opposite direction
 #' @export
 radiation_plot <- function(type = "a", beam_width, db_back = -30, base_size = 11) {
     deg <- dbLoss <- x <- y <- NULL

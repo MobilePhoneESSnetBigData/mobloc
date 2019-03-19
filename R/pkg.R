@@ -11,7 +11,7 @@ NULL
 
 #' Elevation data of Zuid-Limburg
 #'
-#' Elevation data of Zuid-Limburg, raster object of 100 x 100 meter tiles
+#' Elevation data of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands.. It is a raster object of 100 x 100 meter grid tiles
 #'
 #' @usage data(ZL_elevation)
 #' @name ZL_elevation
@@ -20,7 +20,7 @@ NULL
 
 #' Cellplan data for Zuid-Limburg
 #'
-#' Artificial cellplan data for Zuid-Limburg
+#' Artificial cellplan data for Zuid-Limburg, a province (NUTS 2 region) of the Netherlands
 #'
 #' @usage data(ZL_cellplan)
 #' @name ZL_cellplan
@@ -29,7 +29,7 @@ NULL
 
 #' Municipalities of Zuid-Limburg
 #'
-#' Municipalities of Zuid-Limburg. Source: CBS
+#' Municipalities of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands. Source: CBS
 #'
 #' @usage data(ZL_muni)
 #' @name ZL_muni
@@ -38,12 +38,9 @@ NULL
 
 #' Landuse of Zuid-Limburg
 #'
-#' Landuse groups. Source: OpenStreetMap
+#' Landuse grouped of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands. The landuse categories are groupd by: building, residential, forest, water and roads. Source: OpenStreetMap
 #'
 #' @usage data(ZL_landuse)
 #' @name ZL_landuse
 #' @docType data
 NULL
-
-
-.MOBLOC_CACHE <- new.env(FALSE, parent=globalenv())

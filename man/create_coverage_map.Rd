@@ -20,5 +20,8 @@ create_best_server_map(prop, raster, antennas = NULL)
 \item{antennas}{selection of antennas}
 }
 \description{
-The function \code{create_best_server_map} to create a best (area) server map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_coverage_map} is used to create a coverage map. It shows the best antenna per raster tile.
+The function \code{create_coverage_map} to create a coverage map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_best_server_map} is used to create a best (area) server map. It shows the best antenna per raster tile.
+}
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

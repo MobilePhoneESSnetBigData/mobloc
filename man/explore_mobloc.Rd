@@ -31,3 +31,6 @@ Explore the visualize propagation, prior, likelihood and posterior probabilities
 \note{
 Note that duo to the reprojection of the raster to the web mercator projection (for interactive maps), the visualized raster does not correspond exactly to the output raster.
 }
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
+}

@@ -15,6 +15,7 @@
 #' @importFrom shinyjs useShinyjs disable
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
+#' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
 

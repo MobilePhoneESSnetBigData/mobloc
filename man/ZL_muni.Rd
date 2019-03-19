@@ -8,5 +8,5 @@
 data(ZL_muni)
 }
 \description{
-Municipalities of Zuid-Limburg. Source: CBS
+Municipalities of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands. Source: CBS
 }

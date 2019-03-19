@@ -8,5 +8,5 @@
 data(ZL_cellplan)
 }
 \description{
-Artificial cellplan data for Zuid-Limburg
+Artificial cellplan data for Zuid-Limburg, a province (NUTS 2 region) of the Netherlands
 }

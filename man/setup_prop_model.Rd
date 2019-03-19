@@ -14,3 +14,6 @@ setup_prop_model(param = prop_param(), plot.height = 800)
 \description{
 Tool to setup the propagation model parameters
 }
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
+}

@@ -5,7 +5,7 @@
 \alias{create_uniform_prior}
 \alias{create_network_prior}
 \alias{prior_filter}
-\title{Create prior}
+\title{Create a prior distribution}
 \usage{
 create_prior(..., name = "composite", weights = NULL)
 
@@ -28,11 +28,14 @@ prior_filter(prior, region)
 
 \item{prior}{object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}}
 
-\item{region}{a polygons object (class \code{sf}) that specifies a region. If the object, contains multiple polygons, they are considered as one.}
+\item{region}{a polygons object (class \code{sf}) that specifies a region. If the object contains multiple polygons, they are considered as one.}
 }
 \value{
 data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
 }
 \description{
-Functions to create a prior. A prior is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} create a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (e.g. the administrative region of interest).
+Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place antennas where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
+}
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

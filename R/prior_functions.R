@@ -1,16 +1,17 @@
-#' Create prior
+#' Create a prior distribution
 #'
-#' Functions to create a prior. A prior is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} create a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (e.g. the administrative region of interest).
+#' Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place antennas where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
 #' @rdname create_prior
 #' @name create_prior
 #' @param ... one of more raster objects, or a list of it. When multiple raster layers are used, these are first combined using a weighed sum (see argument \code{weights} and the underlying function \code{\link{combine_raster_layers}}). After that, these values are normalised such that the values add up to 1
 #' @param weights The weights of the raster objects, which should be a vector of the same length as the number of specified raster layers. See also the underlying function \code{\link{combine_raster_layers}}.
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
-#' @param region a polygons object (class \code{sf}) that specifies a region. If the object, contains multiple polygons, they are considered as one.
+#' @param region a polygons object (class \code{sf}) that specifies a region. If the object contains multiple polygons, they are considered as one.
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param name name of the prior
 #' @param prior object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}
 #' @return data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
+#' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 create_prior <- function(..., name = "composite", weights = NULL) {
     x <- combine_raster_layers(..., weights = weights)

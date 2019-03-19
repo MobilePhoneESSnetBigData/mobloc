@@ -2,8 +2,7 @@
 % Please edit documentation in R/prop_param.R
 \name{prop_param}
 \alias{prop_param}
-\alias{update_prop_param}
-\title{Set and update propagation model parameters}
+\title{Set the propagation model parameters}
 \usage{
 prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
   ple_0 = 3.5, ple_1 = 4, azim_min3dB = 65, azim_dB_back = -30,
@@ -11,8 +10,6 @@ prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
   dBm_width = 5, range = 10000, range_small = 1000, height = 30,
   height_small = 8, tilt = 5, beam_v = 9, beam_h = 65,
   dBm_th = -120, max_overlapping_antennas = 100)
-
-update_prop_param(param, ...)
 }
 \arguments{
 \item{W}{default power in Watt of a normal antennas (placed in a cell tower or rooftop site)}
@@ -56,14 +53,13 @@ update_prop_param(param, ...)
 \item{dBm_th}{dBm threshold}
 
 \item{max_overlapping_antennas}{maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected}
-
-\item{param}{parameter list created with \code{prop_param}}
-
-\item{...}{parameter updates, see arguments of \code{prop_param}}
 }
 \value{
 parameter list
 }
 \description{
-Set and update propagation model parameters. The function \code{prop_param} specifies model parameters, which can be updated with \code{update_prop_param}
+Set the propagation model parameters. The result is a list.
+}
+\seealso{
+\href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

@@ -4,7 +4,7 @@
 \alias{distance_plot}
 \alias{signal_quality_plot}
 \alias{radiation_plot}
-\title{Plot aspects of the propagation model}
+\title{Plot of the propagation model}
 \usage{
 distance_plot(W, ple, range, base_size = 11, show_classes = TRUE)
 
@@ -32,10 +32,10 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 
 \item{beam_width}{beam width}
 
-\item{db_back}{difference in signal strength between front and back}
+\item{db_back}{difference in signal strength between the propagation direction of the antenna and the opposite direction}
 }
 \description{
-The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function
+The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_prop_model}}.
 }
 \seealso{
 \code{\link{setup_prop_model}}

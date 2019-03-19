@@ -8,5 +8,5 @@
 data(ZL_elevation)
 }
 \description{
-Elevation data of Zuid-Limburg, raster object of 100 x 100 meter tiles
+Elevation data of Zuid-Limburg, a province (NUTS 2 region) of the Netherlands.. It is a raster object of 100 x 100 meter grid tiles
 }
