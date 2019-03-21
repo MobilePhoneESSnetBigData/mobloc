@@ -23,7 +23,7 @@
 #' @param tilt default (horizontal) tilt. Only applicable for directional antennas
 #' @param beam_v default vertical beam width. Only applicable for directional antennas
 #' @param beam_h default horizontal beam width. Only applicable for directional antennas
-#' @param dBm_th dBm threshold
+#' @param sig_q_th signal quality threshold
 #' @param max_overlapping_antennas maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @return parameter list
@@ -48,7 +48,7 @@ prop_param <- function(
     tilt = 5,
     beam_v = 9,
     beam_h = 65,
-    dBm_th = -120,
+    sig_q_th = 0.005,
     max_overlapping_antennas = 100) {
 
     nms <- names(formals(prop_param))

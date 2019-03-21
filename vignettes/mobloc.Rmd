@@ -74,7 +74,7 @@ The following table describes the parameters. More detailed information can be f
 | tilt      | Tilt of an antenna |
 | beam_v      | Vertical beam width |
 | beam_h      | Horizontal beam width |
-| dBm_th      | Signal strength threshold (in dBm) |
+| sig_q_th      | Signal quality threshold |
 | max_overlapping_cells      | Maximum amount of antennas that have overlapping coverage areas |
 
 The `mobloc` package contains a tool in which these parameters can be tuned. This tool is started as follows:

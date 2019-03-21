@@ -52,7 +52,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     message("Determining coverage area per antenna")
 
-    # for each antenna determine range for which signal strength is within param$dBm_th (start at +/- range, calculate signal strength and stop when it reached dBm_th)
+    # for each antenna determine range for which signal strength is within param$sig_q_th (start at +/- range, calculate signal strength and stop when it reached sig_q_th)
     cpsellist <- as.list(cpsel)
     names(cpsellist$x) <- cp$antenna
     res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres, rids = raster[]), USE.NAMES = TRUE), cpsellist))
@@ -107,7 +107,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     # select top [param$max_overlapping_antennas] antennas for each rid, and calculate pag
     df5 <- df4 %>%
         group_by(rid) %>%
-        filter(dBm >= param$dBm_th) %>%
+        filter(s >= param$sig_q_th) %>%
         filter(order(s)<=param$max_overlapping_antennas) %>%
         mutate(pag = s / sum(s)) %>%
         ungroup()
