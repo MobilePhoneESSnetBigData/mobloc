@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_mobloc.R
 \name{calculate_mobloc}
 \alias{calculate_mobloc}
-\title{Calculate mobile location}
+\title{Calculate the estimated location of mobile devices}
 \usage{
 calculate_mobloc(prop, prior, raster)
 }
@@ -14,7 +14,7 @@ calculate_mobloc(prop, prior, raster)
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 }
 \description{
-Calculate the estimated mobile device location (posterior distribution) using the modelled propagation/likelihood and a prior.
+Calculate the estimated location of mobile devices, i.e. the location posterior probabilities. This is the final step of the mobloc process (see \href{../doc/mobloc.html}{\code{vignette("mobloc")}}).
 }
 \seealso{
 \href{../doc/mobloc.html}{\code{vignette("mobloc")}}

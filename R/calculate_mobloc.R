@@ -1,6 +1,7 @@
-#' Calculate mobile location
+#' Calculate the estimated location of mobile devices
 #'
-#' Calculate the estimated mobile device location (posterior distribution) using the modelled propagation/likelihood and a prior.
+#' Calculate the estimated location of mobile devices, i.e. the location posterior probabilities. This is the final step of the mobloc process (see \href{../doc/mobloc.html}{\code{vignette("mobloc")}}).
+#'
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param prior prior object, the result of \code{\link{create_uniform_prior}}, \code{\link{create_prior}}, or \code{\link{create_network_prior}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})

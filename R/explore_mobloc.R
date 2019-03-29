@@ -1,6 +1,6 @@
-#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile
+#' Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile
 #'
-#' Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
+#' Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
@@ -21,8 +21,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
 
     crs <- st_crs(raster)
 
-    epsg <- 4326
 
+    epsg <- 4326
+    # Note: background maps are available for EPSG 3035, but raster images do not work (see https://github.com/rstudio/leaflet/issues/610)
 #     epsg <- if(crs$proj4string == "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")  {
 #         3035
 #     } else {
@@ -53,26 +54,18 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
 
     nprior <- length(pnames)
     choices_prior <- paste0("p", 1L:nprior)
-    names(choices_prior) <- paste0("Prior ", pnames)
+    names(choices_prior) <- paste0("Prior ", pnames, " - P(g)")
     names(pnames) <- choices_prior
 
 
-    choices1 <- c("Signal strength - dBm" = "dBm",
-                 "Signal quality - s" = "s",
-                 "Best server map" = "bsm",
-                 choices_prior,
-                 "Composite prior - P(g) (see slider below)" = "pg")
-
-    choices2 <- c("Likelihood - P(a|g)" = "pag",
-                 "Posterior - P(g|a)" = "pga")
 
     choices <- c("Signal strength - dBm" = "dBm",
                   "Signal quality - s" = "s",
                   "Best server map" = "bsm",
-                 "Likelihood - P(a|g)" = "pag",
+                 "Connection likelihood - P(a|g)" = "pag",
                   choices_prior,
                   "Composite prior - P(g) (see slider below)" = "pg",
-                 "Posterior - P(g|a)" = "pga")
+                 "Location posterior - P(g|a)" = "pga")
 
 
     #https://stackoverflow.com/questions/34733147/unable-to-disable-a-shiny-app-radio-button-using-shinyjs

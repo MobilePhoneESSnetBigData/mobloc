@@ -65,10 +65,10 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
                     s = "Signal quality - s",
                     bsm = "Best server map",
                     #lu = "Land use prior (in %)",
-                    pag = "Likelihood - P(a|g)<br>(in 1 / 1,000)",
+                    pag = "Connection likelihood - P(a|g)<br>(in 1 / 1,000)",
                     pg = "Composite prior - P(g)<br>(in 1/1,000,000)",
-                    pga = "Posterior - P(g|a)<br>(in 1/1,000,000)",
-                    paste("Prior", pnames[var], "<br>(in 1/1,000,000)"))
+                    pga = "Location posterior - P(g|a)<br>(in 1/1,000,000)",
+                    paste("Prior", pnames[var], " - P(g)<br>(in 1/1,000,000)"))
 
 
     cls <- if (var == "dBm")  {

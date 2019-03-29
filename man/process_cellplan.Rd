@@ -18,7 +18,7 @@ process_cellplan(cp, raster, elevation, param, region = NULL)
 \item{region}{polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons}
 }
 \value{
-a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame can be used to caluculate the posterior distribution with \code{\link{calculate_mobloc}}, and to run the interactive tool \code{\link{explore_mobloc}}
+a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
 }
 \description{
 Process cellplan. The propagation is modelled based on the physical properties of the antennas. Also, the likelihood distribution is calculated, which takes the overlap of antennas into account.

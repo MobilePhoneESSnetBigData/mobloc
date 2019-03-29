@@ -2,7 +2,7 @@
 % Please edit documentation in R/explore_mobloc.R
 \name{explore_mobloc}
 \alias{explore_mobloc}
-\title{Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile}
+\title{Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile}
 \usage{
 explore_mobloc(cp, raster, prop, priorlist, filter = NULL,
   coverage_map_dBm = NULL, coverage_map_s = NULL,
@@ -26,7 +26,7 @@ explore_mobloc(cp, raster, prop, priorlist, filter = NULL,
 \item{best_server_map}{best server map, created with \code{\link{create_best_server_map}}. If not specified, it will be created (which takes some time).}
 }
 \description{
-Explore the visualize propagation, prior, likelihood and posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
+Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile. When the raster is large (say larger than 30 by 30 kilometers), we recommend to specify the filter arguemnt.
 }
 \note{
 Note that duo to the reprojection of the raster to the web mercator projection (for interactive maps), the visualized raster does not correspond exactly to the output raster.
