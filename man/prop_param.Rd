@@ -5,11 +5,11 @@
 \title{Set the propagation model parameters}
 \usage{
 prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
-  ple_0 = 3.5, ple_1 = 4, azim_min3dB = 65, azim_dB_back = -30,
-  elev_min3dB = 9, elev_dB_back = -30, dBm_mid = -92.5,
-  dBm_width = 5, range = 10000, range_small = 1000, height = 30,
-  height_small = 8, tilt = 5, beam_v = 9, beam_h = 65,
-  sig_q_th = 0.005, max_overlapping_antennas = 100)
+  ple_0 = 3.5, ple_1 = 4, dBm_mid = -92.5, dBm_width = 5,
+  range = 10000, range_small = 1000, height = 30, height_small = 8,
+  tilt = 5, beam_v = 9, beam_h = 65, azim_dB_back = -30,
+  elev_dB_back = -30, sig_q_th = 0.005,
+  max_overlapping_antennas = 100)
 }
 \arguments{
 \item{W}{default power in Watt of a normal antennas (placed in a cell tower or rooftop site)}
@@ -23,14 +23,6 @@ prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
 \item{ple_0}{path loss exponent for free space}
 
 \item{ple_1}{path loss exponent for dense environments}
-
-\item{azim_min3dB}{default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)}
-
-\item{azim_dB_back}{difference in signal strength between front and back}
-
-\item{elev_min3dB}{default vertical beam width. At \code{elev_min3dB/2}, the signal strength is halved (so -3dBM)}
-
-\item{elev_dB_back}{difference in signal strength between front and back}
 
 \item{dBm_mid}{middle point in the logistic function to map signal strength to probability}
 
@@ -50,6 +42,10 @@ prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
 
 \item{beam_h}{default horizontal beam width. Only applicable for directional antennas}
 
+\item{azim_dB_back}{difference in signal strength between front and back}
+
+\item{elev_dB_back}{difference in signal strength between front and back}
+
 \item{sig_q_th}{signal quality threshold}
 
 \item{max_overlapping_antennas}{maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected}
@@ -59,6 +55,10 @@ parameter list
 }
 \description{
 Set the propagation model parameters. The result is a list.
+}
+\examples{
+# set parameters
+ZL_param <- prop_param()
 }
 \seealso{
 \href{../doc/mobloc.html}{\code{vignette("mobloc")}}

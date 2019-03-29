@@ -12,6 +12,7 @@
 #' @import doParallel
 #' @import foreach
 #' @return a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
+#' @example ./examples/process_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
@@ -110,9 +111,9 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         filter(s >= param$sig_q_th) %>%
         filter(order(s)<=param$max_overlapping_antennas) %>%
         mutate(pag = s / sum(s)) %>%
-        ungroup()
-
-    df5 %>% dplyr::select(antenna=antenna, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
+        add_timing_advance() %>%
+        ungroup() %>%
+        dplyr::select(antenna=antenna, TA=TA, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
         attach_class("mobloc_prop")
 }
 

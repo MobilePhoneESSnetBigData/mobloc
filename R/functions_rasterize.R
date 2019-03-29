@@ -7,6 +7,7 @@
 #' @return raster layer
 #' @import sf
 #' @importFrom raster raster setValues brick extent crop extract
+#' @example ./examples/create_raster.R
 #' @export
 create_raster <- function(x, tile.size = 100) {
     if (inherits(x, "bbox")) {

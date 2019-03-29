@@ -12,6 +12,7 @@
 #' @param prior object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}
 #' @return data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
+#' @example ./examples/create_prior.R
 #' @export
 create_prior <- function(..., name = "composite", weights = NULL) {
     x <- combine_raster_layers(..., weights = weights)
@@ -78,6 +79,7 @@ prior_filter <- function(prior, region) {
 #' @param weights numeric vector that specifies the weights of the raster layers
 #' @return raster object of one layer
 #' @seealso \code{\link{create_prior}}
+#' @example ./examples/combine_raster_layers.R
 #' @export
 combine_raster_layers <- function(..., weights = NULL) {
     args <- list(...)

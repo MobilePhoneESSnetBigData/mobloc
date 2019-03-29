@@ -15,6 +15,7 @@
 #' @importFrom shinyjs useShinyjs disable
 #' @import leaflet
 #' @importFrom graphics plot.new xspline
+#' @example ./examples/explore_mobloc.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
@@ -117,11 +118,15 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
                     tabsetPanel(
                         tabPanel("Map setup",
                                  radioButtons("show", "Selection",  c("All antennas" = "grid", "Single antenna" = "ant"), selected = "grid"),
-                                 radioButtons("var", "show", choices, selected = "s"),
+                                 radioButtons("var", "Show", choices, selected = "s"),
                                  wellPanel(
                                      conditionalPanel(
                                          condition = "(input.var == 'pga') || (input.var == 'pg')",
                                          sliders)),
+                                 checkboxInput("TA", "Enable Timing Advance", value = FALSE),
+                                 conditionalPanel(
+                                     condition = "input.TA",
+                                     sliderInput("TAvalue", "Timing Advance", min = 0, max = 63, value = 0, step = 1)),
                                  sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
                                  checkboxInput("offset", "Antenna offset", value = TRUE)),
                         tabPanel("Antenna data",
@@ -207,6 +212,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
             observe({
                 type <- get_var()
                 sel <- input$sel
+                ta <- if (input$TA) input$TAvalue else NA
                 cp$sel <- 1L
                 cp$sel[cp$antenna %in% sel] <- 2L
                 if (input$show == "grid") {
@@ -219,7 +225,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
                         composition <- get_composition()
                         psel <- prop %>% filter(antenna == sel)
 
-                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist)
+                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta)
                     }
                 }
 
@@ -277,11 +283,22 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
     raster::trim(r)
 }
 
-create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist) {
+create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta) {
     dBm <- s <- pag <- pg <- NULL
 
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
+
+
+    if (!is.na(ta)) {
+        ppr <- ppr %>%
+            filter(TA == ta)
+    }
+
+    if (nrow(ppr) == 0) {
+        return(r)
+    }
+
 
     if (type == "dBm") {
         ppr <- ppr %>%
@@ -308,7 +325,9 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
                 mutate(x = pg)
         } else {
             ppr <- ppr %>%
-                mutate(x = pag * pg)
+                mutate(x = pag * pg) %>%
+                mutate(x = x / sum(x))
+
         }
     }
 

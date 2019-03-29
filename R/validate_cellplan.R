@@ -41,6 +41,7 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' @import sp
 #' @import dplyr
 #' @importFrom methods as
+#' @example ./examples/validate_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NULL, fix = TRUE) {

@@ -23,6 +23,28 @@ a data.frame is return with the following colums: antenna (antenna id), rid (ras
 \description{
 Process cellplan. The propagation is modelled based on the physical properties of the antennas. Also, the likelihood distribution is calculated, which takes the overlap of antennas into account.
 }
+\examples{
+\dontrun{
+    # set parameters
+    ZL_param <- prop_param()
+
+    # load data
+    data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
+
+    # create environment layer (needed to calculate path loss exponent (ple))
+    ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
+
+    # validate cellplan
+    ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni, envir = ZL_envir, elevation = ZL_elevation)
+
+    # create raster
+    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
+    ZL_raster <- create_raster(ZL_bbox)
+
+    # process cellplan (result is propagation model and connection likelihood)
+    ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
+}
+}
 \seealso{
 \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 }

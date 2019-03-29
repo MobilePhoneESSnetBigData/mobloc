@@ -10,10 +10,6 @@
 #' @param ple_small path loss exponent for small cells
 #' @param ple_0 path loss exponent for free space
 #' @param ple_1 path loss exponent for dense environments
-#' @param azim_min3dB default horizontal beam width. At \code{azim_min3dB/2}, the signal strength is halved (so -3dBM)
-#' @param azim_dB_back difference in signal strength between front and back
-#' @param elev_min3dB default vertical beam width. At \code{elev_min3dB/2}, the signal strength is halved (so -3dBM)
-#' @param elev_dB_back difference in signal strength between front and back
 #' @param dBm_mid middle point in the logistic function to map signal strength to probability
 #' @param dBm_width width of the logistic function to map signal strength to probability
 #' @param range maximum range of normal antennas
@@ -23,9 +19,12 @@
 #' @param tilt default (horizontal) tilt. Only applicable for directional antennas
 #' @param beam_v default vertical beam width. Only applicable for directional antennas
 #' @param beam_h default horizontal beam width. Only applicable for directional antennas
+#' @param azim_dB_back difference in signal strength between front and back
+#' @param elev_dB_back difference in signal strength between front and back
 #' @param sig_q_th signal quality threshold
 #' @param max_overlapping_antennas maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
+#' @example ./examples/prop_param.R
 #' @return parameter list
 #' @export
 prop_param <- function(
@@ -35,10 +34,6 @@ prop_param <- function(
     ple_small = 6,
     ple_0 = 3.5,
     ple_1 = 4,
-    azim_min3dB = 65,
-    azim_dB_back = -30,
-    elev_min3dB = 9,
-    elev_dB_back = -30,
     dBm_mid = -92.5,
     dBm_width = 5,
     range = 10000,
@@ -48,6 +43,8 @@ prop_param <- function(
     tilt = 5,
     beam_v = 9,
     beam_h = 65,
+    azim_dB_back = -30,
+    elev_dB_back = -30,
     sig_q_th = 0.005,
     max_overlapping_antennas = 100) {
 

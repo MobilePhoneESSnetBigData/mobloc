@@ -7,6 +7,7 @@
 #' @import shiny
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
+#' @example ./examples/setup_prop_model.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 setup_prop_model <- function(param = prop_param(), plot.height=800) {
@@ -32,9 +33,9 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                                                        SliderInput("W", "Power (Watt)", 1, 30, value = param$W, step = .5),
                                                        div(style = "margin-bottom:10px;", shiny::uiOutput("Wtext")),
                                                        SliderInput("ple", "Path loss exponent", min = 1.5, max = 6, step = 0.25, value = param$ple),
-                                                       SliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$azim_min3dB, step = 1),
+                                                       SliderInput("h3dB", "Horizontal -3dB angle", 20, 70, value = param$beam_h, step = 1),
                                                        SliderInput("hback", "Hozizontal dB back", -40, -10, value = -30, step = 5),
-                                                       SliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$elev_min3dB, step = 1),
+                                                       SliderInput("v3dB", "Vertical -3dB angle", 4, 20, value = param$beam_v, step = 1),
                                                        SliderInput("vback", "Vertical dB back", -40, -10, value = -30, step = 5)),
                                       conditionalPanel("input.small",
                                                        SliderInput("height_small", "Height", 10, 300, value = param$height_small, step = 5),

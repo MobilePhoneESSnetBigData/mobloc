@@ -17,6 +17,13 @@ raster object of one layer
 \description{
 Combine raster layers to a single raster layer. Weights can be assigned to the raster layers.
 }
+\examples{
+# load data
+data("ZL_landuse")
+
+# create environment layer
+ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
+}
 \seealso{
 \code{\link{create_prior}}
 }

@@ -5,18 +5,31 @@
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param prior prior object, the result of \code{\link{create_uniform_prior}}, \code{\link{create_prior}}, or \code{\link{create_network_prior}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
+#' @param timing.advance logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band).
+#' @example ./examples/calculate_mobloc.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-calculate_mobloc <- function(prop, prior, raster) {
+calculate_mobloc <- function(prop, prior, raster, timing.advance = FALSE) {
     pag <- antenna <- pga <- rid <- NULL
 
     check_raster(raster)
     priordf <- prior_to_df(prior, raster)
-    prop %>%
-        left_join(priordf, by = 'rid') %>%
-        mutate(pga = pag * p) %>%
-        group_by(antenna) %>%
-        mutate(pga = pga / sum(pga)) %>%
-        ungroup() %>%
-        select(antenna, rid, pga)
+
+    if (timing.advance) {
+        prop %>%
+            left_join(priordf, by = 'rid') %>%
+            mutate(pga = pag * p) %>%
+            group_by(antenna, TA) %>%
+            mutate(pga = pga / sum(pga)) %>%
+            ungroup() %>%
+            select(antenna, TA, rid, pga)
+    } else {
+        prop %>%
+            left_join(priordf, by = 'rid') %>%
+            mutate(pga = pag * p) %>%
+            group_by(antenna) %>%
+            mutate(pga = pga / sum(pga)) %>%
+            ungroup() %>%
+            select(antenna, rid, pga)
+    }
 }
