@@ -18,8 +18,6 @@
     # process cellplan (result is propagation model and connection likelihood)
     ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
 
-    ZL_prop <- add_timing_advance(ZL_prop)
-
     # create priors
     ZL_uniform_prior <- create_uniform_prior(ZL_raster)
     ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
