@@ -91,7 +91,11 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
         cols <- rep(RColorBrewer::brewer.pal(8, "Dark2"), length.out = nrow(lvls))
         pal2 <- colorFactor(palette = cols, domain = lvls$ID, na.color = "transparent")
     } else if (var != "empty") {
-        rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string)
+        rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string, method = "bilinear")
+        if (any(is.nan(rst2[]))) {
+            rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string, method = "ngb")
+        }
+
         if (var == "pag") {
             values <- pmin(pmax(rst2[] * 1000, 0), 1000)
         } else {

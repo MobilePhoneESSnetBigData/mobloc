@@ -30,5 +30,5 @@
     ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
 
     # same calculations, but this time with Timing Advance
-    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster, timing.advance = TRUE)
+    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster, timing.advance = TRUE, param = ZL_param)
 }

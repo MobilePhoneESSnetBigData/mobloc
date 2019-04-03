@@ -46,14 +46,14 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                            column(3,
                                   wellPanel(
                                       shiny::HTML("<h3>Signal quality configuration</h3>"),
-                                      sliderInput("dbmid", "dB Mid", -120, -70, value = -92.5, step = 2.5),
-                                      sliderInput("dbwidth", "db Width", 1, 20, value = 5, step = 1)),
+                                      sliderInput("midpoint", "midpoint", -120, -70, value = -92.5, step = 2.5),
+                                      sliderInput("steepness", "steepness", 0, 1, value = 0.05, step = 0.05)),
                                   wellPanel(
                                       shiny::HTML("<h3>Heatmap setup</h3>"),
                                       radioButtons("type", "Output type", choices = c("Signal strength (dBm)" = "dBm", "Signal quality" = "quality"), selected = "dBm"),
                                       checkboxGroupInput("enable", "Signal loss components", choices = c("Distance" =  "d", "Horizontal offset" = "h", "Vertical offset" = "v"), selected = c("d", "h", "v")),
-                                      conditionalPanel("!input.small", sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250)),
-                                      conditionalPanel("input.small", sliderInput("range_small", "Heatmap range (m)", 250, 30000, value = 1000, step = 250)),
+                                      conditionalPanel("!input.small", sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250, ticks = FALSE)),
+                                      conditionalPanel("input.small", sliderInput("range_small", "Heatmap range (m)", 250, 30000, value = 1000, step = 250, ticks = FALSE)),
                                       radioButtons("colors", "Color scale", choices = c("Discrete scale" = "discrete", "Gradient scale" = "gradient"), selected = "discrete"),
                                       conditionalPanel("input.colors == 'gradient'",
                                                        checkboxInput("mask", "Enable mask", value = FALSE),
@@ -76,16 +76,16 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                          direction = NA,
                          W = input$W_small,
                          ple = input$ple_small,
-                         dBm_mid = input$dbmid,
-                         dBm_width = input$dbwidth)
+                         midpoint = input$midpoint,
+                         steepness = input$steepness)
                 } else {
                     list(height = input$height,
                          tilt = input$tilt,
                          direction = 90,
                          W = input$W,
                          ple = input$ple,
-                         dBm_mid = input$dbmid,
-                         dBm_width = input$dbwidth,
+                         midpoint = input$midpoint,
+                         steepness = input$steepness,
                          h3dB = input$h3dB,
                          hback = input$hback,
                          v3dB = input$v3dB,
@@ -130,7 +130,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                 param_plots <- get_param_plots()
                 g1 <- distance_plot(W = param_model$W, ple = param_model$ple, range = param_plots$range)
 
-                g2 <- signal_quality_plot(dBm_mid = param_model$dBm_mid, dBm_width = param_model$dBm_width)
+                g2 <- signal_quality_plot(midpoint = param_model$midpoint, steepness = param_model$steepness)
 
                 grid.arrange(g1, g2, ncol = 2)
             })

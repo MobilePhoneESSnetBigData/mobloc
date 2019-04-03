@@ -6,6 +6,7 @@
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param priorlist list of priors
+#' @param param parameter list created with \code{prop_param}
 #' @param filter bounding box of the filter of the visualized raster. If not specified, the whole raster is shown, which could be very slow. Therefore, we recommand to use a filter when the raster covers a large area (say 30 by 30 kilometers).
 #' @param coverage_map_dBm coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "dBm"}). If not specified, it will be created (which takes some time).
 #' @param coverage_map_s coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "s"}). If not specified, it will be created (which takes some time).
@@ -18,7 +19,7 @@
 #' @example ./examples/explore_mobloc.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
+explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
 
     crs <- st_crs(raster)
 
@@ -123,10 +124,14 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
                                      conditionalPanel(
                                          condition = "(input.var == 'pga') || (input.var == 'pg')",
                                          sliders)),
-                                 checkboxInput("TA", "Enable Timing Advance", value = FALSE),
                                  conditionalPanel(
-                                     condition = "input.TA",
-                                     sliderInput("TAvalue", "Timing Advance", min = 0, max = 63, value = 0, step = 1)),
+                                     condition = "input.var == 'pga'",
+                                     checkboxInput("TA", "Enable Timing Advance", value = FALSE),
+                                     conditionalPanel(
+                                         condition = "input.TA",
+                                         sliderInput("TAvalue", "Timing Advance", min = 0, max = param$TA_max, value = 0, step = 1),
+                                         shiny::htmlOutput("TAband")
+                                         )),
                                  sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
                                  checkboxInput("offset", "Antenna offset", value = TRUE)),
                         tabPanel("Antenna data",
@@ -195,6 +200,29 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
                 HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
             })
 
+            output$TAband <- renderUI({
+                TA  <- input$TAvalue
+                TA_buffer <- param$TA_buffer
+                TA_step <- param$TA_step
+
+                TA_min <- TA * TA_step
+                TA_max <- (TA+1) * TA_step
+
+
+                TA_min_band <- (max(0, TA-TA_buffer)) * TA_step
+                TA_max_band <- (TA+TA_buffer+1) * TA_step
+
+                if (TA_buffer > 0) {
+                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] meter, without band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                } else {
+                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                }
+
+                #HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
+            })
+
+
+
             output$map <- renderLeaflet({
                 base_map(cp, offset_value, epsg)
             })
@@ -225,7 +253,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, filter = NULL, coverage_
                         composition <- get_composition()
                         psel <- prop %>% filter(antenna == sel)
 
-                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta)
+                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
                     }
                 }
 
@@ -283,21 +311,21 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
     raster::trim(r)
 }
 
-create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta) {
+create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta, param) {
     dBm <- s <- pag <- pg <- NULL
 
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
 
 
-    if (!is.na(ta)) {
-        ppr <- ppr %>%
-            filter(TA == ta)
-    }
+    # if (!is.na(ta)) {
+    #     ppr <- ppr %>%
+    #         filter(TA == ta)
+    # }
 
-    if (nrow(ppr) == 0) {
-        return(r)
-    }
+    # if (nrow(ppr) == 0) {
+    #     return(r)
+    # }
 
 
     if (type == "dBm") {
@@ -324,9 +352,22 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
             ppr <- ppr %>%
                 mutate(x = pg)
         } else {
-            ppr <- ppr %>%
-                mutate(x = pag * pg) %>%
-                mutate(x = x / sum(x))
+            ppr <- calculate_mobloc(ppr %>% rename(p = pg), timing.advance = !is.na(ta), param = param) %>%
+                rename(x = pga)
+
+
+            if (!is.na(ta)) {
+                ppr <- ppr %>%
+                    filter(TA == ta)
+            }
+
+            if (nrow(ppr) == 0) {
+                return(r)
+            }
+
+            # ppr <- ppr %>%
+            #     mutate(x = pag * pg) %>%
+            #     mutate(x = x / sum(x))
 
         }
     }
@@ -342,4 +383,11 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
     r[r==0] <- NA
     r
 }
+
+
+fN <- function(x) {
+    formatC(x, big.mark = ",", format = "f", digits = 0)
+}
+
+
 
