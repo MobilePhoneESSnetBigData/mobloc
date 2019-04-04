@@ -8,7 +8,7 @@
 \usage{
 distance_plot(W, ple, range, base_size = 11, show_classes = TRUE)
 
-signal_quality_plot(dBm_mid, dBm_width, base_size = 11,
+signal_quality_plot(midpoint, steepness, base_size = 11,
   show_classes = TRUE)
 
 radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
@@ -24,9 +24,9 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 
 \item{show_classes}{show the class colors}
 
-\item{dBm_mid}{middle point in the logistic function to map signal strength to probability}
+\item{midpoint}{middle point in the logistic function to map signal strength to probability}
 
-\item{dBm_width}{width of the logistic function to map signal strength to probability}
+\item{steepness}{width of the logistic function to map signal strength to probability}
 
 \item{type}{\code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane}
 

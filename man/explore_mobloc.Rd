@@ -4,7 +4,7 @@
 \alias{explore_mobloc}
 \title{Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile}
 \usage{
-explore_mobloc(cp, raster, prop, priorlist, filter = NULL,
+explore_mobloc(cp, raster, prop, priorlist, param, filter = NULL,
   coverage_map_dBm = NULL, coverage_map_s = NULL,
   best_server_map = NULL)
 }
@@ -16,6 +16,8 @@ explore_mobloc(cp, raster, prop, priorlist, filter = NULL,
 \item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
 \item{priorlist}{list of priors}
+
+\item{param}{parameter list created with \code{prop_param}}
 
 \item{filter}{bounding box of the filter of the visualized raster. If not specified, the whole raster is shown, which could be very slow. Therefore, we recommand to use a filter when the raster covers a large area (say 30 by 30 kilometers).}
 
@@ -58,7 +60,7 @@ Note that duo to the reprojection of the raster to the web mercator projection (
     ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 
     # explore the results
-    explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior))
+    explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior), param = ZL_param)
 }
 }
 \seealso{

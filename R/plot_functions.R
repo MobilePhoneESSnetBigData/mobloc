@@ -28,8 +28,8 @@ heatmap_ground <- function(param_model, param_plots, param) {
 
     lh <- x <- y <- db <- NULL
     if (length(param_plots$enable)) {
-        param$dBm_mid <- param_model$dBm_mid
-        param$dBm_width <- param_model$dBm_width
+        param$midpoint <- param_model$midpoint
+        param$steepness <- param_model$steepness
 
         co2 <- cbind(co, signal_strength(0,0, param_model$height, direction = param_model$direction, tilt = param_model$tilt, beam_h = param_model$h3dB, beam_v =  param_model$v3dB, W = param_model$W, co = co, ple = param_model$ple, param = param, enable = param_plots$enable))
 
@@ -122,14 +122,14 @@ distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {
 
 #' @name signal_quality_plot
 #' @rdname plot_functions
-#' @param dBm_mid middle point in the logistic function to map signal strength to probability
-#' @param dBm_width width of the logistic function to map signal strength to probability
-signal_quality_plot <- function(dBm_mid, dBm_width, base_size = 11, show_classes = TRUE) {
+#' @param midpoint middle point in the logistic function to map signal strength to probability
+#' @param steepness width of the logistic function to map signal strength to probability
+signal_quality_plot <- function(midpoint, steepness, base_size = 11, show_classes = TRUE) {
     dBm <- likelihood <- rsig <- fill <- xmin <- xmax <- ymin <- ymax <- NULL
 
 
   df <- data.frame(dBm = seq(-130, -50, length.out = 100))
-  df$rsig <- db2s(df$dBm, dBm_mid, dBm_width)
+  df$rsig <- db2s(df$dBm, midpoint, steepness)
 
   if (show_classes) {
       brks <- qty_classes$breaks

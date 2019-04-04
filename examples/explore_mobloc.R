@@ -24,5 +24,5 @@
     ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 
     # explore the results
-    explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior))
+    explore_mobloc(ZL_cellplan, ZL_raster, ZL_prop, list(landuse = ZL_landuse_prior, network = ZL_network_prior, uniform = ZL_uniform_prior), param = ZL_param)
 }

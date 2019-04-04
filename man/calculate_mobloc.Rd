@@ -4,7 +4,8 @@
 \alias{calculate_mobloc}
 \title{Calculate the estimated location of mobile devices}
 \usage{
-calculate_mobloc(prop, prior, raster, timing.advance = FALSE)
+calculate_mobloc(prop, prior = NULL, raster = NULL,
+  timing.advance = FALSE, param = NULL)
 }
 \arguments{
 \item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
@@ -14,6 +15,8 @@ calculate_mobloc(prop, prior, raster, timing.advance = FALSE)
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
 \item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band).}
+
+\item{param}{parameter list created with \code{prop_param}}
 }
 \description{
 Calculate the estimated location of mobile devices, i.e. the location posterior probabilities. This is the final step of the mobloc process (see \href{../doc/mobloc.html}{\code{vignette("mobloc")}}).
@@ -51,7 +54,7 @@ Calculate the estimated location of mobile devices, i.e. the location posterior 
     ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
 
     # same calculations, but this time with Timing Advance
-    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster, timing.advance = TRUE)
+    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster, timing.advance = TRUE, param = ZL_param)
 }
 }
 \seealso{

@@ -111,7 +111,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         filter(s >= param$sig_q_th) %>%
         filter(order(s)<=param$max_overlapping_antennas) %>%
         mutate(pag = s / sum(s)) %>%
-        add_timing_advance() %>%
+        add_timing_advance(param = param) %>%
         ungroup() %>%
         dplyr::select(antenna=antenna, TA=TA, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
         attach_class("mobloc_prop")
