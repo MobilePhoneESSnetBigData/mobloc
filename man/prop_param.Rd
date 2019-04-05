@@ -59,7 +59,7 @@ prop_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
 
 \item{TA_max}{maximum Timing Advance (TA) value (integer). In other words, TA can have a value between 0 and \code{TA_max}. In GSM it is 63, and in LTE 1282.}
 
-\item{TA_buffer}{buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when \code{TA_step} is similar or smaller than the width of a grid tile. \code{TA_buffer} is an integer that determines the number of TA steps that are added in front of behind the actual TA band}
+\item{TA_buffer}{buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when \code{TA_step} is similar or smaller than the width of a grid tile. \code{TA_buffer} is an integer that determines the number of TA steps that are added in front of behind the actual TA band.}
 }
 \value{
 parameter list

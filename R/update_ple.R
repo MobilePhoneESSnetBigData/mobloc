@@ -7,7 +7,7 @@
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param envir raster object that contains per grid tile an indicator of the objects that block the propagation, e.g. buildings and trees.
 #' @param ple_0 lowest path loss exponent value. This value is mapped to \code{envir} raster tile values of 0.
-#' @param ple_0 highest loss exponent value. This value is mapped to \code{envir} raster tile values of 1.
+#' @param ple_1 highest loss exponent value. This value is mapped to \code{envir} raster tile values of 1.
 #' @param ple_small the path loss exponent of small cells. If \code{NA} (default), the small cells are considered as normal antennas. Otherwise, this value will be used for path loss exponent values of small cells.
 #' @return cellplan (\code{data.frame}) with imputed values for the variable \code{ple}
 #' @example ./examples/update_ple.R

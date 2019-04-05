@@ -16,7 +16,7 @@
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
-    x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- antenna <- dist <- pag <- NULL
+    x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- antenna <- dist <- pag <- TA <- NULL
 
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 

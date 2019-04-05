@@ -78,7 +78,7 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     }
 
     numpal <- ifelse(var %in% c("dBm", "s"), "Blues",
-                     ifelse(var == "pga", "Purples",
+                     ifelse(var == "pga", "viridis",
                             ifelse(var == "pag", "Greens", "Blues")))
 
     if (var %in% c("dBm", "s")) {
@@ -104,7 +104,7 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
 
         rst2[] <- values
         rng <- range(values, na.rm = TRUE)
-        pal2 <- colorNumeric(palette = numpal, rng,
+        pal2 <- colorNumeric(palette = numpal, rng, reverse = (numpal != "viridis"),
                      na.color = "transparent")
     }
 

@@ -14,7 +14,7 @@ calculate_mobloc(prop, prior = NULL, raster = NULL,
 
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band).}
+\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band). Note that when the parameter \code{TA_buffer > 0}, the TA band will be made broader. See the documentation of \code{\link{prop_param}} for details.}
 
 \item{param}{parameter list created with \code{prop_param}}
 }
@@ -36,13 +36,11 @@ Calculate the estimated location of mobile devices, i.e. the location posterior 
     ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni, envir = ZL_envir, elevation = ZL_elevation)
 
     # create raster
-    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
+    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = sf::st_crs(3035))
     ZL_raster <- create_raster(ZL_bbox)
 
     # process cellplan (result is propagation model and connection likelihood)
     ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
-
-    ZL_prop <- add_timing_advance(ZL_prop)
 
     # create priors
     ZL_uniform_prior <- create_uniform_prior(ZL_raster)

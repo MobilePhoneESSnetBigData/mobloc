@@ -46,8 +46,8 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                            column(3,
                                   wellPanel(
                                       shiny::HTML("<h3>Signal quality configuration</h3>"),
-                                      sliderInput("midpoint", "midpoint", -120, -70, value = -92.5, step = 2.5),
-                                      sliderInput("steepness", "steepness", 0, 1, value = 0.05, step = 0.05)),
+                                      sliderInput("midpoint", "Midpoint", -120, -70, value = -92.5, step = 2.5),
+                                      sliderInput("steepness", "Steepness", 0, 1, value = 0.05, step = 0.05)),
                                   wellPanel(
                                       shiny::HTML("<h3>Heatmap setup</h3>"),
                                       radioButtons("type", "Output type", choices = c("Signal strength (dBm)" = "dBm", "Signal quality" = "quality"), selected = "dBm"),

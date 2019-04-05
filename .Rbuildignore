@@ -4,3 +4,5 @@
 ^\.Rproj\.user$
 sandbox
 data_generation
+.travis.yml
+.appveyor.yml

@@ -27,7 +27,7 @@
 #' @param max_overlapping_antennas maximum number of antennas that may overlap per raster tile. If the actual number exceeds this parameter, the \code{max_overlapping_antennas} cells with the highest signal strength are selected
 #' @param TA_step meters that correspond to one Timing Advance (TA) step. This parameter depends on the network technology and psychical properties such as air pressure. In GSM networks it is approximately 554 meters \url{https://people.csail.mit.edu/bkph/cellular_repeater_TA.shtml}, and LTE (4G) networks 78.12 meters.\url{https://www.scribd.com/doc/290553975/Timing-Advance-TA-in-LTE}
 #' @param TA_max maximum Timing Advance (TA) value (integer). In other words, TA can have a value between 0 and \code{TA_max}. In GSM it is 63, and in LTE 1282.
-#' @param TA_buffer buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when \code{TA_step} is similar or smaller than the width of a grid tile. \code{TA_buffer} is an integer that determines the number of TA steps that are added in front of behind the actual TA band
+#' @param TA_buffer buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when \code{TA_step} is similar or smaller than the width of a grid tile. \code{TA_buffer} is an integer that determines the number of TA steps that are added in front of behind the actual TA band.
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @example ./examples/prop_param.R
 #' @return parameter list

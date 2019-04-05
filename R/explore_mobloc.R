@@ -213,9 +213,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 TA_max_band <- (TA+TA_buffer+1) * TA_step
 
                 if (TA_buffer > 0) {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] meter, without band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] m, without buffer: [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 } else {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 }
 
                 #HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
@@ -312,7 +312,7 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 }
 
 create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta, param) {
-    dBm <- s <- pag <- pg <- NULL
+    dBm <- s <- pag <- pg <- pga <- TA <- NULL
 
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
@@ -380,7 +380,7 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 
     raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
     r <- raster::trim(r)
-    r[r==0] <- NA
+    #r[r==0] <- NA
     r
 }
 

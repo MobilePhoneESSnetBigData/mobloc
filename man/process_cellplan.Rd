@@ -38,7 +38,7 @@ Process cellplan. The propagation is modelled based on the physical properties o
     ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni, envir = ZL_envir, elevation = ZL_elevation)
 
     # create raster
-    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
+    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = sf::st_crs(3035))
     ZL_raster <- create_raster(ZL_bbox)
 
     # process cellplan (result is propagation model and connection likelihood)

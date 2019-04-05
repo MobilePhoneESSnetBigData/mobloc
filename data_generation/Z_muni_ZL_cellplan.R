@@ -50,6 +50,9 @@ gem_ZL <- gem[ids, ]
 ZL_muni <- gem_ZL %>% select(GM_CODE, GM_NAAM, AANT_INW) %>%
     rename(muni_code = GM_CODE, muni_name = GM_NAAM, population = AANT_INW)
 
+# Manual edit
+levels(ZL_muni$muni_name)[300] <- "Sudwest-Fryslan"
+
 
 wijk_ZL <- wijk %>%
     filter(GM_CODE %in% gem_ZL$GM_CODE)
