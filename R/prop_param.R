@@ -10,8 +10,6 @@
 #' @param ple_small path loss exponent for small cells
 #' @param ple_0 path loss exponent for free space
 #' @param ple_1 path loss exponent for dense environments
-#' @param dBm_mid middle point in the logistic function to map signal strength to probability
-#' @param dBm_width width of the logistic function to map signal strength to probability
 #' @param midpoint midpoint of the logistic function used to map signal strength to signal quality
 #' @param steepness steepness of the logistic function used to map signal strength to signal quality
 #' @param range maximum range of normal antennas
@@ -39,8 +37,6 @@ prop_param <- function(
     ple_small = 6,
     ple_0 = 3.5,
     ple_1 = 4,
-    dBm_mid = -92.5,
-    dBm_width = 5,
     midpoint = -92.5,
     steepness = 1/5,
     range = 10000,

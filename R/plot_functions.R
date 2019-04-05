@@ -1,6 +1,6 @@
 get_grid_coor <- function(range) {
 
-    as.data.frame(expand.grid(x=seq(-range/2, range, by = range / 100), y=seq(-range/2, range/2, by = range/100), z=0))
+    as.data.frame(expand.grid(x=seq(-range/4, range, by = range / 100), y=seq(-range/2, range/2, by = range/100), z=0))
 }
 
 dBm_classes <- list(breaks = c(-Inf, seq(-120, -70, by = 10), Inf),
@@ -21,7 +21,7 @@ qty_classes <- list(breaks = seq(0, 1, by = .1),
 
 
 
-heatmap_ground <- function(param_model, param_plots, param) {
+heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
     valueCat <- value <- NULL
 
     co <- get_grid_coor(range  = param_plots$range)
@@ -65,11 +65,14 @@ heatmap_ground <- function(param_model, param_plots, param) {
 
 
         #gg + geom_point(aes(x=x,y=y, color = col, fill=NA), data = data.frame(x=0, y=0, col="black")) + scale_color_manual("trfsdgsdgsfgdsfa", values = 1)
-
-        if (is.na(param_model$direction)) {
-            gg + ggtitle("Top view of a small cell antenna")
+        if (title) {
+            if (is.na(param_model$direction)) {
+                gg + ggtitle("Top view of a small cell antenna")
+            } else {
+                gg + ggtitle("Top view of an antenna directed eastwards")
+            }
         } else {
-            gg + ggtitle("Top view of an antenna directed eastwards")
+            gg
         }
     }
 
