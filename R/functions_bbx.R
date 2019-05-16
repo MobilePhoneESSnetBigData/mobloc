@@ -28,12 +28,12 @@ raster2bbx <- function(raster) {
 mobloc_crop_raster <- function(r, bbx) {
     raster::crop(r, extent(as.vector(bbx)[c(1,3,2,4)]))
 }
-mobloc_find_antennas <- function(prop, raster) {
-    unique(prop$antenna[prop$rid %in% raster[]])
+mobloc_find_cells <- function(prop, raster) {
+    unique(prop$cell[prop$rid %in% raster[]])
 }
-mobloc_filter_antenna <- function(x, a, raster = NULL) {
-    antenna <- rid <- NULL
-    y <- x %>% filter(antenna %in% a)
+mobloc_filter_cell <- function(x, a, raster = NULL) {
+    cell <- rid <- NULL
+    y <- x %>% filter(cell %in% a)
     if (!missing(raster)) {
         y %>% filter(rid %in% raster[])
     } else {

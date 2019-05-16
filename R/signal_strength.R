@@ -140,9 +140,9 @@ project_to_e_plane <- function(b, c, beta) {
   lambda <- ATAN2(c, abs(b))
   d <- sqrt(b^2 + c^2)
 
-  cases <- ifelse(b > 0, # in front of antenna?
+  cases <- ifelse(b > 0, # in front of cell?
                   ifelse(beta < lambda, 1, 2), # below elevation plane?
-                  ifelse(lambda + beta < 90, 3, 4)) # projected point in front of antenna (=rare case)
+                  ifelse(lambda + beta < 90, 3, 4)) # projected point in front of cell (=rare case)
 
   e <- rep(0, length.out = length(b))
 

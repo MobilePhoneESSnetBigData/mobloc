@@ -1,6 +1,6 @@
 #' Process cellplan
 #'
-#' Process cellplan. The propagation is modelled based on the physical properties of the antennas. Also, the likelihood distribution is calculated, which takes the overlap of antennas into account.
+#' Process cellplan. The propagation is modelled based on the physical properties of the cells. Also, the likelihood distribution is calculated, which takes the overlap of cells into account.
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
@@ -11,12 +11,12 @@
 #' @import parallel
 #' @import doParallel
 #' @import foreach
-#' @return a data.frame is return with the following colums: antenna (antenna id), rid (raster tile id), dist (distance between antenna and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
+#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
 #' @example ./examples/process_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
-    x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- antenna <- dist <- pag <- TA <- NULL
+    x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- cell <- dist <- pag <- TA <- NULL
 
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 
@@ -51,11 +51,11 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         rdf$z <- elevation[]
     }
 
-    message("Determining coverage area per antenna")
+    message("Determining coverage area per cell")
 
-    # for each antenna determine range for which signal strength is within param$sig_q_th (start at +/- range, calculate signal strength and stop when it reached sig_q_th)
+    # for each cell determine range for which signal strength is within param$sig_q_th (start at +/- range, calculate signal strength and stop when it reached sig_q_th)
     cpsellist <- as.list(cpsel)
-    names(cpsellist$x) <- cp$antenna
+    names(cpsellist$x) <- cp$cell
     res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres, rids = raster[]), USE.NAMES = TRUE), cpsellist))
 
 
@@ -69,7 +69,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         qtm(r2) + qtm(cp[52,])
     }
 
-    # create data.frame for each antenna of selected rids
+    # create data.frame for each cell of selected rids
     res2 <- mclapply(res, function(rs) {
         rdf[rdf$rid %in% rs, ]
     })
@@ -85,7 +85,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     }
 
     # calculate signal strength
-    message("Determine signal strength per antenna for raster tiles inside coverage area")
+    message("Determine signal strength per cell for raster tiles inside coverage area")
     df3 <- do.call(mcmapply, c(list(FUN = function(df, x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, param) {
         df2 <- signal_strength(cx=x, cy=y, cz=z,
                                direction = direction,
@@ -99,21 +99,21 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         cbind(df, as.data.frame(df2))
     }, df = res2, MoreArgs = list(param = param), SIMPLIFY = FALSE, USE.NAMES = TRUE), as.list(cpsel)))
 
-    # attach antenna name and put in one data.frame
+    # attach cell name and put in one data.frame
     message("Creating data.frame and compute pag values")
-    antennas <- cp$antenna
+    cells <- cp$cell
 
-    df4 <- bind_rows(df3, .id = "antenna")
+    df4 <- bind_rows(df3, .id = "cell")
 
-    # select top [param$max_overlapping_antennas] antennas for each rid, and calculate pag
+    # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
     df5 <- df4 %>%
         group_by(rid) %>%
         filter(s >= param$sig_q_th) %>%
-        filter(order(s)<=param$max_overlapping_antennas) %>%
+        filter(order(s)<=param$max_overlapping_cells) %>%
         mutate(pag = s / sum(s)) %>%
         add_timing_advance(param = param) %>%
         ungroup() %>%
-        dplyr::select(antenna=antenna, TA=TA, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
+        dplyr::select(cell=cell, TA=TA, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
         attach_class("mobloc_prop")
 }
 

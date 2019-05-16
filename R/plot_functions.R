@@ -67,9 +67,9 @@ heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
         #gg + geom_point(aes(x=x,y=y, color = col, fill=NA), data = data.frame(x=0, y=0, col="black")) + scale_color_manual("trfsdgsdgsfgdsfa", values = 1)
         if (title) {
             if (is.na(param_model$direction)) {
-                gg + ggtitle("Top view of a small cell antenna")
+                gg + ggtitle("Top view of a small cell")
             } else {
-                gg + ggtitle("Top view of an antenna directed eastwards")
+                gg + ggtitle("Top view of a normal cell directed eastwards")
             }
         } else {
             gg
@@ -84,7 +84,7 @@ heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
 #'
 #' @name distance_plot
 #' @rdname plot_functions
-#' @param W power of an antenna
+#' @param W power of an cell
 #' @param ple path loss exponent
 #' @param range range
 #' @param base_size base size of the plot
@@ -168,7 +168,7 @@ signal_quality_plot <- function(midpoint, steepness, base_size = 11, show_classe
 #' @rdname plot_functions
 #' @param type \code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane
 #' @param beam_width beam width
-#' @param db_back difference in signal strength between the propagation direction of the antenna and the opposite direction
+#' @param db_back difference in signal strength between the propagation direction of the cell and the opposite direction
 #' @export
 radiation_plot <- function(type = "a", beam_width, db_back = -30, base_size = 11) {
     deg <- dbLoss <- x <- y <- NULL

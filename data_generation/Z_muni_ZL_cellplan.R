@@ -104,7 +104,7 @@ buurt_ZL <- buurt %>%
 save(ZL_muni, file = "../mobloc/data/ZL_muni.rda", compress = "xz")
 
 
-####### Generate normal antenna locations
+####### Generate normal cell locations
 
 set.seed(1234)
 wijk_ZL$pop <- round(wijk_ZL$AANT_INW / 6000)
@@ -127,7 +127,7 @@ if (FALSE) {
 ZL_small_cells_manual <- readRDS("data_generation/ZL_small_cells_manual.rds")
 ZL_cellplan_small <- st_transform(ZL_small_cells_manual, crs = 3035) %>% st_geometry()
 
-#######  Create antenna data
+#######  Create cell data
 
 get_gamma_sample <- function(n, shape, rate, min, max, digits = 0) {
     set.seed(round(rnorm(n + shape * rate))) # to make sure the same sample is generated
@@ -210,15 +210,15 @@ ZL_cellplan_normal_sf <- st_sf(geometry = ZL_cellplan_normal,
                             #beam_v = sample_beam_v,
                             site = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_normal, gem_ZL))], 1, 3)), sample(100:999, size = nn), "N", sep = "_"),
                             small = FALSE) %>%
-    mutate(antenna = paste0(site, 1))
+    mutate(cell = paste0(site, 1))
 
 ZL_cellplan_normal_sf2 <- ZL_cellplan_normal_sf %>%
     mutate(direction = direction + dir_diff1,
-           antenna = paste0(site, 2))
+           cell = paste0(site, 2))
 
 ZL_cellplan_normal_sf3 <- ZL_cellplan_normal_sf %>%
     mutate(direction = direction + dir_diff1 + dir_diff2,
-           antenna = paste0(site, 3))
+           cell = paste0(site, 3))
 
 ZL_cellplan_normal_sf_v2 <- rbind(ZL_cellplan_normal_sf, ZL_cellplan_normal_sf2, ZL_cellplan_normal_sf3) %>%
     mutate(direction = direction %% 360,
@@ -249,15 +249,15 @@ ZL_cellplan_small_sf <- st_sf(geometry = ZL_cellplan_small,
                               height = sample_heights_s,
                               tilt = NA,
                               small = TRUE,
-                              antenna = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_small, gem_ZL))], 1, 3)), round(runif(ns, min = 100, max = 999)), "S1", sep = "_"),
+                              cell = paste(toupper(substr(gem_ZL$GM_NAAM[unlist(st_intersects(ZL_cellplan_small, gem_ZL))], 1, 3)), round(runif(ns, min = 100, max = 999)), "S1", sep = "_"),
                               beam_h = NA,
                               beam_v = NA)
 
 ZL_cellplan <- rbind(ZL_cellplan_normal_sf_v2, ZL_cellplan_small_sf) %>%
-    select(antenna, small, height, direction, tilt, beam_h, beam_v) %>%
-    arrange(antenna)
+    select(cell, small, height, direction, tilt, beam_h, beam_v) %>%
+    arrange(cell)
 
-# filter antennas that are inside land
+# filter cells that are inside land
 water <- raster::extract(ZL_landuse[[4]], ZL_cellplan)
 
 ZL_cellplan <- ZL_cellplan[water <= .75, ]
