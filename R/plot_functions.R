@@ -14,7 +14,7 @@ qty_classes <- list(breaks = seq(0, 1, by = .1),
                     labels = paste(sprintf("%.1f", seq(0, 1, by = .1)[1:10]), "to", sprintf("%.1f", seq(0, 1, by = .1)[2:11])),
                     colors = RColorBrewer::brewer.pal(10, "Spectral"),
                     lims = c(0, 1),
-                    tit = "Signal quality              ")
+                    tit = "Signal dominance            ")
 
 
 
@@ -34,7 +34,7 @@ heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
         co2 <- cbind(co, signal_strength(0,0, param_model$height, direction = param_model$direction, tilt = param_model$tilt, beam_h = param_model$h3dB, beam_v =  param_model$v3dB, W = param_model$W, co = co, ple = param_model$ple, param = param, enable = param_plots$enable))
 
 
-        if (param_plots$type == "quality") {
+        if (param_plots$type == "dominance") {
             co2$value <- co2$s
             cls <- qty_classes
             mr <- param_plots$maskrangelh
@@ -80,7 +80,7 @@ heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
 
 #' Plot of the propagation model
 #'
-#' The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_quality} plots the relation between signal stregth and signal quality, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_prop_model}}.
+#' The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_dominance} plots the relation between signal stregth and signal dominance, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_prop_model}}.
 #'
 #' @name distance_plot
 #' @rdname plot_functions
@@ -123,11 +123,11 @@ distance_plot <- function(W, ple, range, base_size = 11, show_classes = TRUE) {
 
 }
 
-#' @name signal_quality_plot
+#' @name signal_dominance_plot
 #' @rdname plot_functions
 #' @param midpoint middle point in the logistic function to map signal strength to probability
 #' @param steepness width of the logistic function to map signal strength to probability
-signal_quality_plot <- function(midpoint, steepness, base_size = 11, show_classes = TRUE) {
+signal_dominance_plot <- function(midpoint, steepness, base_size = 11, show_classes = TRUE) {
     dBm <- likelihood <- rsig <- fill <- xmin <- xmax <- ymin <- ymax <- NULL
 
 
@@ -153,14 +153,14 @@ signal_quality_plot <- function(midpoint, steepness, base_size = 11, show_classe
       ggplot(df, aes(x=dBm, y=rsig)) + geom_line() +
           geom_rect(data = df3, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
           geom_rect(data = df2, aes(fill = I(fill), xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, x = NULL, y = NULL)) +
-          scale_y_continuous("Signal quality", limits = c(-.1, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
+          scale_y_continuous("Signal dominance", limits = c(-.1, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
           scale_x_continuous("Signal strength (dBm)", limits = c(-134, -50), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) +
-          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal quality")
+          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal dominance")
   } else {
       ggplot(df, aes(x=dBm, y=rsig)) + geom_line() +
-          scale_y_continuous("Signal quality", limits = c(0, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
+          scale_y_continuous("Signal dominance", limits = c(0, 1), breaks = qty_classes$breaks, minor_breaks = NULL) +
           scale_x_continuous("Signal strength (dBm)", limits = c(-130, -50), breaks = seq(-130, 0, by = 10), minor_breaks = NULL) +
-          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal quality")
+          theme_bw(base_size = base_size) + theme(panel.grid.major = element_line("grey85")) + ggtitle("Signal dominance")
   }
 }
 

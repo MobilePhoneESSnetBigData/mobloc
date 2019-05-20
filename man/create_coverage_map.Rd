@@ -5,22 +5,21 @@
 \alias{create_best_server_map}
 \title{Create a best server map and a coverage map.}
 \usage{
-create_coverage_map(prop, raster, type = c("dBm", "s"),
-  antennas = NULL)
+create_coverage_map(prop, raster, type = c("dBm", "s"), cells = NULL)
 
-create_best_server_map(prop, raster, antennas = NULL)
+create_best_server_map(prop, raster, cells = NULL)
 }
 \arguments{
 \item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
 
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{type}{either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal quality values}
+\item{type}{either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal dominance values}
 
-\item{antennas}{selection of antennas}
+\item{cells}{selection of cells}
 }
 \description{
-The function \code{create_coverage_map} to create a coverage map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_best_server_map} is used to create a best (area) server map. It shows the best antenna per raster tile.
+The function \code{create_coverage_map} to create a coverage map. It shows the best signal strength per raster tile (either in dBm or in signal dominance). The function \code{create_best_server_map} is used to create a best (area) server map. It shows the best cell per raster tile.
 }
 \seealso{
 \href{../doc/mobloc.html}{\code{vignette("mobloc")}}

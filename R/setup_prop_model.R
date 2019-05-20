@@ -57,12 +57,12 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                            ),
                            column(3,
                                   wellPanel(
-                                      shiny::HTML("<h3>Signal quality configuration</h3>"),
+                                      shiny::HTML("<h3>Signal dominance configuration</h3>"),
                                       sliderInput("midpoint", "Midpoint", -120, -70, value = param$midpoint, step = 2.5),
                                       sliderInput("steepness", "Steepness", 0, 1, value = param$steepness, step = 0.05)),
                                   wellPanel(
                                       shiny::HTML("<h3>Heatmap setup</h3>"),
-                                      radioButtons("type", "Output type", choices = c("Signal strength (dBm)" = "dBm", "Signal quality" = "quality"), selected = "dBm"),
+                                      radioButtons("type", "Output type", choices = c("Signal strength (dBm)" = "dBm", "Signal dominance" = "dominance"), selected = "dBm"),
                                       checkboxGroupInput("enable", "Signal loss components", choices = c("Distance" =  "d", "Horizontal offset" = "h", "Vertical offset" = "v"), selected = c("d", "h", "v")),
                                       sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250, ticks = FALSE),
                                       # conditionalPanel("!input.small", sliderInput("range", "Heatmap range (m)", 250, 30000, value = 20000, step = 250, ticks = FALSE)),
@@ -72,7 +72,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                                                        checkboxInput("mask", "Enable mask", value = FALSE),
                                                        conditionalPanel("input.mask && input.type == 'dBm'",
                                                                         sliderInput("maskrangedb", "Mask range", min = -130, max = -50, value = c(-100, -50))),
-                                                       conditionalPanel("input.mask && input.type == 'quality'",
+                                                       conditionalPanel("input.mask && input.type == 'dominance'",
                                                                         sliderInput("maskrangelh", "Mask range", min = 0, max = 1, value = c(.8, 1), step = .05))))
                            ),
                            column(6,
@@ -164,7 +164,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
                 param_plots <- get_param_plots()
                 g1 <- distance_plot(W = param_model$W, ple = param_model$ple, range = param_plots$range)
 
-                g2 <- signal_quality_plot(midpoint = param_model$midpoint, steepness = param_model$steepness)
+                g2 <- signal_dominance_plot(midpoint = param_model$midpoint, steepness = param_model$steepness)
 
                 grid.arrange(g1, g2, ncol = 2)
             })

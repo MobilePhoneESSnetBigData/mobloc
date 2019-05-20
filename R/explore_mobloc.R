@@ -62,7 +62,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
 
     choices <- c("Signal strength - dBm" = "dBm",
-                  "Signal quality - s" = "s",
+                  "Signal dominance - s" = "s",
                   "Best server map" = "bsm",
                  "Connection likelihood - P(a|g)" = "pag",
                   choices_prior,

@@ -8,17 +8,17 @@ validate_cellplan(cp, param, elevation = NULL, region = NULL,
   envir = NULL, fix = TRUE)
 }
 \arguments{
-\item{cp}{cellplan \code{sf} object containing the antenna data. Each data record should be a point (i.e., \code{st_geometry_type(cp)} should return \code{POINT}s). The optional variables are:
+\item{cp}{cellplan \code{sf} object containing the cell data. Each data record should be a point (i.e., \code{st_geometry_type(cp)} should return \code{POINT}s). The optional variables are:
 \itemize{
-\item \code{height}. Height of the antenna. If omitted, it will be derived from variable \code{z} if specified and otherwise, the default value \code{height} from the parameter list \code{param} will be used.
+\item \code{height}. Height of the cell. If omitted, it will be derived from variable \code{z} if specified and otherwise, the default value \code{height} from the parameter list \code{param} will be used.
 \item \code{z}. Note that \code{z = elevation + height}. Elevation is taken from the argument \code{elevation}. If this is not specified, it will be assumed 0.
-\item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional antennas.
-\item \code{tilt}. Tilt of the antennas in degrees. Only applicable for directional antennas If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
+\item \code{direction}. Direction of the antanna in degrees. Use \code{NA} for omnidirectional cells.
+\item \code{tilt}. Tilt of the cells in degrees. Only applicable for directional cells If omitted, the default value \code{tilt} from the parameter list \code{param} will be used.
 \item \code{beam_h}. Horizontal beam width in degrees. The signal loss at \code{-beam_h/2} and \code{+beam_h/2} degrees is 3 dB. Run \code{radiation_plot(beam_width = 65, db_back = -30)}. If omitted, the default value \code{beam_h} from the parameter list \code{param} will be used.
 \item \code{beam_v}. Vertical beam width in degrees. The signal loss at \code{-beam_v/2} and \code{+beam_v/2} degrees is 3 dB. Run \code{radiation_plot(type = "e", beam_width = 9, db_back = -30)}. If omitted, the default value \code{beam_v} from the parameter list \code{param} will be used.
-\item \code{W}. Power of the antenna in Watt.
-\item \code{small}. Logical value that determines whether the antenna is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
-\item \code{range}. The maximum range of the antenna. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each antenna for which \code{small == TRUE}.
+\item \code{W}. Power of the cell in Watt.
+\item \code{small}. Logical value that determines whether the cell is a 'small cell'. If omitted, it will be set to \code{FALSE}. In the \code{mobloc} package, small cells have different default values for a couple of parameters (i.e. the \code{"_small"} parameters in \code{param}).
+\item \code{range}. The maximum range of the cell. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each cell for which \code{small == TRUE}.
 \item \code{ple}. The path loss exponent, which is an approximation of the level of reflection: 2 is open field, 4 is urban area, 6 is inside buildings. It can be derived when \code{envir} is specific.
 }}
 
@@ -26,14 +26,14 @@ validate_cellplan(cp, param, elevation = NULL, region = NULL,
 
 \item{elevation}{see argument \code{cp} (variable \code{z})}
 
-\item{region}{polygon shape. If specified, it checks if all antennas are contained inside it}
+\item{region}{polygon shape. If specified, it checks if all cells are contained inside it}
 
 \item{envir}{raster layer that specifies the environment. For each raster tile, an indicator between 0 and 1 is required (open space is 0 and dense environment is 1). These values are scaled to the parameters \code{ple_0} and \code{ple_1}.}
 
 \item{fix}{should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})}
 }
 \description{
-Validate the cellplan. The cellplan is made valid whenever possible. It checks the format and whether are all required variables present. When \code{land}, a mutlipolygon object that defines the region of interest, is specified, it checks whether all antennas are inside this region.
+Validate the cellplan. The cellplan is made valid whenever possible. It checks the format and whether are all required variables present. When \code{land}, a mutlipolygon object that defines the region of interest, is specified, it checks whether all cells are inside this region.
 }
 \examples{
 \dontrun{

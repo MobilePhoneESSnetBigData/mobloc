@@ -11,7 +11,7 @@
 #' @import parallel
 #' @import doParallel
 #' @import foreach
-#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal quality), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
+#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
 #' @example ./examples/process_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
@@ -53,7 +53,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
     message("Determining coverage area per cell")
 
-    # for each cell determine range for which signal strength is within param$sig_q_th (start at +/- range, calculate signal strength and stop when it reached sig_q_th)
+    # for each cell determine range for which signal strength is within param$sig_d_th (start at +/- range, calculate signal strength and stop when it reached sig_d_th)
     cpsellist <- as.list(cpsel)
     names(cpsellist$x) <- cp$cell
     res <- do.call(mcmapply, c(list(FUN = find_raster_ids, MoreArgs = list(param = param, rext = rext, rres = rres, rids = raster[]), USE.NAMES = TRUE), cpsellist))
@@ -108,7 +108,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
     df5 <- df4 %>%
         group_by(rid) %>%
-        filter(s >= param$sig_q_th) %>%
+        filter(s >= param$sig_d_th) %>%
         filter(order(s)<=param$max_overlapping_cells) %>%
         mutate(pag = s / sum(s)) %>%
         add_timing_advance(param = param) %>%

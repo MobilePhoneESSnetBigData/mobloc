@@ -1,12 +1,12 @@
 #' Create a best server map and a coverage map.
 #'
-#' The function \code{create_coverage_map} to create a coverage map. It shows the best signal strength per raster tile (either in dBm or in signal quality). The function \code{create_best_server_map} is used to create a best (area) server map. It shows the best cell per raster tile.
+#' The function \code{create_coverage_map} to create a coverage map. It shows the best signal strength per raster tile (either in dBm or in signal dominance). The function \code{create_best_server_map} is used to create a best (area) server map. It shows the best cell per raster tile.
 #'
 #' @name create_coverage_map
 #' @rdname create_coverage_map
 #' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
-#' @param type either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal quality values
+#' @param type either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal dominance values
 #' @param cells selection of cells
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export

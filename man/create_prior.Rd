@@ -34,7 +34,7 @@ prior_filter(prior, region)
 data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.
 }
 \description{
-Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place antennas where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
+Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place cells where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
 }
 \examples{
 \dontrun{

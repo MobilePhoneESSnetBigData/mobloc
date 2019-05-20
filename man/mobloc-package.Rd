@@ -6,7 +6,7 @@
 \alias{mobloc}
 \title{Mobile location algorithms and tools}
 \description{
-CDR and signalling data contain mobile phone events logged at specific cells (antennae). This package provides algorithms and tools to translate antennae properties to gespatial distributions. Depending on the availability of the antenna properties, such as coordinates, direction, and height, different algorithms can be used.
+CDR and signalling data contain mobile phone events logged at specific cells. This package provides algorithms and tools to translate cell properties to gespatial distributions. Depending on the availability of the cell properties, such as coordinates, direction, and height, different algorithms can be used.
 }
 \author{
 Martijn Tennekes \email{mtennekes@gmail.com}

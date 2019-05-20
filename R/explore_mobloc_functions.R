@@ -62,7 +62,7 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
 
     title <- switch(var,
                     dBm = "Signal strength in dBm",
-                    s = "Signal quality - s",
+                    s = "Signal dominance - s",
                     bsm = "Best server map",
                     #lu = "Land use prior (in %)",
                     pag = "Connection likelihood - P(a|g)<br>(in 1 / 1,000)",

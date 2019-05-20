@@ -122,7 +122,7 @@ attach_mapping <- function(param) {
 #     (dnorm(a, 0, sd) - dens_max) * inflate
 # }
 
-# transform dBm to signal quality (s)
+# transform dBm to signal dominance (s)
 db2s <- function(dBm, midpoint, steepness) {
     scale <- (dBm - midpoint) * steepness
     1 / (1 + exp(1)^(-scale))

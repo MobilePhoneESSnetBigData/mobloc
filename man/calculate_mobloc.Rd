@@ -14,7 +14,7 @@ calculate_mobloc(prop, prior = NULL, raster = NULL,
 
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band). Note that when the parameter \code{TA_buffer > 0}, the TA band will be made broader. See the documentation of \code{\link{prop_param}} for details.}
+\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each cell TA combination (with the condition that there is signal within the TA band). Note that when the parameter \code{TA_buffer > 0}, the TA band will be made broader. See the documentation of \code{\link{prop_param}} for details.}
 
 \item{param}{parameter list created with \code{prop_param}}
 }

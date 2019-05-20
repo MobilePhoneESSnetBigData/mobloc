@@ -23,7 +23,7 @@ determine_range <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
                            co = co,
                            ple = ple,
                            param = param)$s
-    w1 <- which(ss1 > param$sig_q_th)[1]
+    w1 <- which(ss1 > param$sig_d_th)[1]
 
     if (is.na(w1)) w1 <- length(ss1)
 
