@@ -1,6 +1,6 @@
 get_grid_coor <- function(range) {
 
-    as.data.frame(expand.grid(x=seq(-range/2, range, by = range / 100), y=seq(-range/2, range/2, by = range/100), z=0))
+    as.data.frame(expand.grid(x=seq(-range/4, range, by = range / 100), y=seq(-range/2, range/2, by = range/100), z=0))
 }
 
 dBm_classes <- list(breaks = c(-Inf, seq(-120, -70, by = 10), Inf),
@@ -21,7 +21,7 @@ qty_classes <- list(breaks = seq(0, 1, by = .1),
 
 
 
-heatmap_ground <- function(param_model, param_plots, param) {
+heatmap_ground <- function(param_model, param_plots, param, title = TRUE) {
     valueCat <- value <- NULL
 
     co <- get_grid_coor(range  = param_plots$range)
@@ -65,11 +65,14 @@ heatmap_ground <- function(param_model, param_plots, param) {
 
 
         #gg + geom_point(aes(x=x,y=y, color = col, fill=NA), data = data.frame(x=0, y=0, col="black")) + scale_color_manual("trfsdgsdgsfgdsfa", values = 1)
-
-        if (is.na(param_model$direction)) {
-            gg + ggtitle("Top view of a small cell antenna")
+        if (title) {
+            if (is.na(param_model$direction)) {
+                gg + ggtitle("Top view of a small cell")
+            } else {
+                gg + ggtitle("Top view of a normal cell directed eastwards")
+            }
         } else {
-            gg + ggtitle("Top view of an antenna directed eastwards")
+            gg
         }
     }
 
@@ -81,7 +84,7 @@ heatmap_ground <- function(param_model, param_plots, param) {
 #'
 #' @name distance_plot
 #' @rdname plot_functions
-#' @param W power of an antenna
+#' @param W power of an cell
 #' @param ple path loss exponent
 #' @param range range
 #' @param base_size base size of the plot
@@ -165,7 +168,7 @@ signal_quality_plot <- function(midpoint, steepness, base_size = 11, show_classe
 #' @rdname plot_functions
 #' @param type \code{"a"} for azimuth (horizontal) plane and \code{"e"} for elevation/vertical plane
 #' @param beam_width beam width
-#' @param db_back difference in signal strength between the propagation direction of the antenna and the opposite direction
+#' @param db_back difference in signal strength between the propagation direction of the cell and the opposite direction
 #' @export
 radiation_plot <- function(type = "a", beam_width, db_back = -30, base_size = 11) {
     deg <- dbLoss <- x <- y <- NULL

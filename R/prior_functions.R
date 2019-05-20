@@ -1,6 +1,6 @@
 #' Create a prior distribution
 #'
-#' Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place antennas where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
+#' Functions to create a prior distribution. A prior distribution is a raster layer where all values add up to 1. The function \code{create_prior} creates a prior using one or more raster layers. The function \code{create_uniform_prior} creates a uniform prior. The function \code{create_network_prior} extracts a prior from the propagation model. This is based on the assumption that an MNO will place cells where they expect people. The function \code{prior_filter} can be used to filter a prior raster using a polygons object (for instance, the administrative region of interest).
 #' @rdname create_prior
 #' @name create_prior
 #' @param ... one of more raster objects, or a list of it. When multiple raster layers are used, these are first combined using a weighed sum (see argument \code{weights} and the underlying function \code{\link{combine_raster_layers}}). After that, these values are normalised such that the values add up to 1

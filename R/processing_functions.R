@@ -37,7 +37,7 @@ circle_coords <- function(cx, cy, rad) {
          y = cy + sin(a) * rad)
 }
 
-find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, antenna, param, rext, rres, rids) {
+find_raster_ids <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple, cell, param, rext, rres, rids) {
 
 
     if (!is.na(direction)) {

@@ -14,7 +14,7 @@ calculate_mobloc(prop, prior = NULL, raster = NULL,
 
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band).}
+\item{timing.advance}{logical that determines whether timing advance is enabled. If \code{TRUE}, the location posterior probabilities will add up to 1 for each antenna TA combination (with the condition that there is signal within the TA band). Note that when the parameter \code{TA_buffer > 0}, the TA band will be made broader. See the documentation of \code{\link{prop_param}} for details.}
 
 \item{param}{parameter list created with \code{prop_param}}
 }
@@ -23,38 +23,40 @@ Calculate the estimated location of mobile devices, i.e. the location posterior 
 }
 \examples{
 \dontrun{
-    # set parameters
-    ZL_param <- prop_param()
+# set parameters
+ZL_param <- prop_param()
 
-    # load data
-    data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
+# load data
+data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
 
-    # create environment layer (needed to calculate path loss exponent (ple))
-    ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
+# create environment layer (needed to calculate path loss exponent (ple))
+ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
 
-    # validate cellplan
-    ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni, envir = ZL_envir, elevation = ZL_elevation)
+# validate cellplan
+ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni,
+    envir = ZL_envir, elevation = ZL_elevation)
 
-    # create raster
-    ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000), crs = st_crs(3035))
-    ZL_raster <- create_raster(ZL_bbox)
+# create raster
+ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000),
+    crs = sf::st_crs(3035))
+ZL_raster <- create_raster(ZL_bbox)
 
-    # process cellplan (result is propagation model and connection likelihood)
-    ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster, elevation = ZL_elevation, param = ZL_param)
+# process cellplan (result is propagation model and connection likelihood)
+ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster,
+    elevation = ZL_elevation, param = ZL_param)
 
-    ZL_prop <- add_timing_advance(ZL_prop)
+# create priors
+ZL_uniform_prior <- create_uniform_prior(ZL_raster)
+ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
+ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
+ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
 
-    # create priors
-    ZL_uniform_prior <- create_uniform_prior(ZL_raster)
-    ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
-    ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
-    ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
+# calculate the mobile phone locations, i.e. the location posterior.
+ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
 
-    # calculate the mobile phone locations, i.e. the location posterior.
-    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
-
-    # same calculations, but this time with Timing Advance
-    ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster, timing.advance = TRUE, param = ZL_param)
+# same calculations, but this time with Timing Advance
+ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster,
+    timing.advance = TRUE, param = ZL_param)
 }
 }
 \seealso{

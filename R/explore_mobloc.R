@@ -38,9 +38,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
         raster <- mobloc_crop_raster(raster, bbx = filter)
 
-        a <- mobloc_find_antennas(prop, raster)
-        prop <- mobloc_filter_antenna(prop, a, raster)
-        cp <- mobloc_filter_antenna(cp, a)
+        a <- mobloc_find_cells(prop, raster)
+        prop <- mobloc_filter_cell(prop, a, raster)
+        cp <- mobloc_filter_cell(cp, a)
 
         priorlist <- lapply(priorlist, mobloc_crop_raster, bbx = filter)
     }
@@ -50,7 +50,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
 
 
-    antenna <- NULL
+    cell <- NULL
 
     pnames <- names(priorlist)
 
@@ -72,7 +72,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
     #https://stackoverflow.com/questions/34733147/unable-to-disable-a-shiny-app-radio-button-using-shinyjs
 
-    cells <- as.character(cp$antenna)
+    cells <- as.character(cp$cell)
     #names(cells) <- paste("Cell", 1L:n)
 
 
@@ -118,7 +118,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 sidebarPanel(
                     tabsetPanel(
                         tabPanel("Map setup",
-                                 radioButtons("show", "Selection",  c("All antennas" = "grid", "Single antenna" = "ant"), selected = "grid"),
+                                 radioButtons("show", "Selection",  c("All cells" = "grid", "Single cell" = "ant"), selected = "grid"),
                                  radioButtons("var", "Show", choices, selected = "s"),
                                  wellPanel(
                                      conditionalPanel(
@@ -133,10 +133,10 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                                          shiny::htmlOutput("TAband")
                                          )),
                                  sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
-                                 checkboxInput("offset", "Antenna offset", value = TRUE)),
-                        tabPanel("Antenna data",
-                                 selectInput("sel", "Antenna", cells, selected = cells[1]),
-                                 dataTableOutput("antennainfo"))
+                                 checkboxInput("offset", "Cell offset", value = TRUE)),
+                        tabPanel("Cell data",
+                                 selectInput("sel", "Cell", cells, selected = cells[1]),
+                                 dataTableOutput("cellinfo"))
                     )),
                 mainPanel(
                     leafletOutput("map", height=1000)
@@ -213,9 +213,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 TA_max_band <- (TA+TA_buffer+1) * TA_step
 
                 if (TA_buffer > 0) {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] meter, without band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] m, without buffer: [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 } else {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] meter"))
+                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 }
 
                 #HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
@@ -228,8 +228,8 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
             })
 
 
-            output$antennainfo <- renderDataTable({
-                cpant <- as.list(cp[cp$antenna == input$sel, ] %>% st_set_geometry(NULL))
+            output$cellinfo <- renderDataTable({
+                cpant <- as.list(cp[cp$cell == input$sel, ] %>% st_set_geometry(NULL))
                 cpant$x <- sprintf("%.2f", cpant$x)
                 cpant$y <- sprintf("%.2f", cpant$y)
                 cpant$z <- sprintf("%.2f", cpant$z)
@@ -242,16 +242,16 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 sel <- input$sel
                 ta <- if (input$TA) input$TAvalue else NA
                 cp$sel <- 1L
-                cp$sel[cp$antenna %in% sel] <- 2L
+                cp$sel[cp$cell %in% sel] <- 2L
                 if (input$show == "grid") {
                     composition <- get_composition()
                     rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, coverage_map_dBm, coverage_map_s, best_server_map)
                 } else {
                     if (type == "bsm") {
-                        rst <- create_best_server_map(prop, raster, antennas = sel)
+                        rst <- create_best_server_map(prop, raster, cells = sel)
                     } else {
                         composition <- get_composition()
-                        psel <- prop %>% filter(antenna == sel)
+                        psel <- prop %>% filter(cell == sel)
 
                         rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
                     }
@@ -312,7 +312,7 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 }
 
 create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta, param) {
-    dBm <- s <- pag <- pg <- NULL
+    dBm <- s <- pag <- pg <- pga <- TA <- NULL
 
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
@@ -380,7 +380,7 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 
     raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
     r <- raster::trim(r)
-    r[r==0] <- NA
+    #r[r==0] <- NA
     r
 }
 

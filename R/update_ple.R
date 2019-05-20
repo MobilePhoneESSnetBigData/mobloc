@@ -1,3 +1,17 @@
+#' Update path loss exponent values
+#'
+#' Update path loss exponent values. This function estimates the path loss exponent using a raster object that contains information about the environment. Buildings and trees are notorious propapation blockers. Therefore, this raster object should contain an indicator for the amount of buildings, trees and other obstacles per grid tile. This function is called from \code{\link{validate_cellplan}}.
+#'
+#' Method: the values of \code{envir} is taken at a couple of points near the cell. The mean value is computed, and linearly transformed from the range [0, 1] to the range [\code{ple_0}, \code{ple_1}]. The method to select the sample point is the following. For omnidirectional cells, points are taken at 0, 90, 180 and 270 degrees. For directional cells, points are taken at the propatation direction plus -1, -.5, -.25, 0, .25, .5, and 1 times the horizontal beam width. For each direction, points are taken at 50, 150, 250, 500, and 1000 meter distance.
+#'
+#' @param cp cellplan, validated with \code{\link{validate_cellplan}}
+#' @param envir raster object that contains per grid tile an indicator of the objects that block the propagation, e.g. buildings and trees.
+#' @param ple_0 lowest path loss exponent value. This value is mapped to \code{envir} raster tile values of 0.
+#' @param ple_1 highest loss exponent value. This value is mapped to \code{envir} raster tile values of 1.
+#' @param ple_small the path loss exponent of small cells. If \code{NA} (default), the small cells are considered as normal cells. Otherwise, this value will be used for path loss exponent values of small cells.
+#' @return cellplan (\code{data.frame}) with imputed values for the variable \code{ple}
+#' @example ./examples/update_ple.R
+#' @export
 update_ple <- function(cp, envir, ple_0 = 2.5, ple_1 = 4, ple_small = NA) {
     if (!is_cellplan_valid(cp)) stop("cp is not a validated cellplan. Please validate it with validate_cellplan.")
 
@@ -37,5 +51,5 @@ sample_envir_points <- function(cp, envir, omnidir_angles = c(0, 90, 180, 270), 
             st_as_sf(coords = c("x", "y"), crs = st_crs(cp))
         x <- raster::extract(envir, df)
         mean(x, na.rm = TRUE)
-    }, cp$x, cp$y, angles, cp$range, cp$antenna, SIMPLIFY = TRUE)
+    }, cp$x, cp$y, angles, cp$range, cp$cell, SIMPLIFY = TRUE)
 }
