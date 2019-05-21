@@ -5,7 +5,7 @@ setup_prop_model()
 
 distance_plot(10, 4, 10000)
 
-g <- mobloc:::signal_quality_plot(param$dBm_mid, param$dBm_width, show_classes = FALSE)
+g <- mobloc:::signal_dominance_plot(param$midpoint, param$steepness, show_classes = FALSE)
 
 ggsave(g, filename = "s_plot.png", width = 3, height = 1.5, scale = 2)
 
@@ -28,9 +28,9 @@ param_model$vback <- param$elev_dB_back
 gm <- theme_grey(base_size = 25) + theme(plot.margin = unit(c(0.1,0,0.1,0), "cm"))
 
 
-param_plots1 <- list(enable = c("d", "h", "v"), range = 5500, mask = FALSE, colors = "discrete", type = "quality")
+param_plots1 <- list(enable = c("d", "h", "v"), range = 5500, mask = FALSE, colors = "discrete", type = "dominance")
 g1 <- heatmap_ground(param_model, param_plots1, param, title = FALSE) + gm
-param_plots2 <- list(enable = c("d", "h", "v"), range = 5500, mask = FALSE, colors = "cont", type = "quality")
+param_plots2 <- list(enable = c("d", "h", "v"), range = 5500, mask = FALSE, colors = "cont", type = "dominance")
 g2 <- heatmap_ground(param_model, param_plots2, param, title = FALSE) + gm
 
 
