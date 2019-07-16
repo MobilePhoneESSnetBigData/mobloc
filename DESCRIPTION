@@ -2,11 +2,13 @@ Package: mobloc
 Type: Package
 Title: Mobile phone location algorithms and tools
 Version: 0.2.0
-Authors@R: person("Martijn", "Tennekes", email="mtennekes@gmail.com", role=c("aut", "cre"))
+Authors@R: c(person("Martijn", "Tennekes", email="mtennekes@gmail.com", role=c("aut", "cre")),
+             person("Yvonne", "Gootzen", email = "y.a.p.m.gootzen@cbs.nl", role = "ctb"),
+             person("Shan", "Shah", email = "s.h.shan@cbs.nl", role = "ctb"))
 Description: CDR and signalling data contain mobile phone events logged at specific cells (antennae). This package provides algorithms and tools to translate antennae properties to gespatial distributions. Depending on the availability of the antenna properties, such as coordinates, direction, and height, different algorithms can be used.
 License: EUPL
 LazyData: true
-Date: 2019-01-04
+Date: 2019-07-16
 Depends:
     R (>= 3.3)
 Imports:
