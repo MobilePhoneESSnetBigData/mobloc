@@ -42,10 +42,10 @@ create_network_prior <- function(prop, raster) {
     rid <- s <- NULL
     check_raster(raster)
     totals <- sum(prop$s)
-    z <- prop %>%
-        group_by(rid) %>%
-        summarize(p = sum(s) / totals) %>%
-        ungroup()
+
+    prop <- copy(prop)
+
+    z <- prop[, p:=sum(s)/totals, by = rid]
 
     y <- raster::raster(raster)
     y[] <- 0

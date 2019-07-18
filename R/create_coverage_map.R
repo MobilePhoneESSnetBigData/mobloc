@@ -15,14 +15,14 @@ create_coverage_map <- function(prop, raster, type = c("dBm", "s"), cells = NULL
 
     check_raster(raster)
     if (!missing(cells)) {
-        prop <- prop %>% filter(cell %in% cells)
+        prop <- copy(prop[cell %chin% cells])
+    } else {
+        prop <- copy(prop)
     }
     type <- match.arg(type)
-    z <- prop %>%
-        group_by(rid) %>%
-        rename_("x" = type) %>%
-        summarize(x = max(x)) %>%
-        ungroup()
+
+
+    z <- prop[, x:=get(type)][, by = rid, .(x = max(x))]
 
     y <- raster::raster(raster)
     y[][match(z$rid, raster[])] <- z$x
@@ -37,21 +37,21 @@ create_best_server_map <- function(prop, raster, cells = NULL) {
     rid <- cell <- dBm <- NULL
 
     check_raster(raster)
+
     if (!missing(cells)) {
         rids <- unique(prop$rid[prop$cell %in% cells])
-        prop <- prop %>% filter(rid %in% rids)
+        prop <- copy(prop[rid %in% rids])
+    } else {
+        prop <- copy(prop)
     }
 
-    z <- prop %>%
-        group_by(rid) %>%
-        summarize(cell = cell[which.max(dBm)[1]])
+    z <- prop[, cell:= cell[which.max(dBm)[1]], by = rid]
 
     if (!missing(cells)) {
-        z <- z %>% filter(cell %in% cells)
+        z <- z[cell %chin% cells]
     }
 
-
-    z <- z %>% mutate(cell = factor(cell))
+    z <- z[, cell:= factor(cell)]
     ants <- levels(z$cell)
 
     y <- raster::raster(raster)

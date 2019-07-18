@@ -251,7 +251,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                         rst <- create_best_server_map(prop, raster, cells = sel)
                     } else {
                         composition <- get_composition()
-                        psel <- prop %>% filter(cell == sel)
+                        psel <- prop[cell == sel]
 
                         rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
                     }
@@ -336,29 +336,24 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
             mutate(x = s)
     } else if (type %in% choices_prior) {
         priordf <- prior_to_df(priorlist[[as.integer(substr(type, 2, 2))]], rst)
-        ppr <- ppr %>%
-            mutate(x = priordf$p[match(ppr$rid, priordf$rid)])
+        ppr <- ppr[, x:= priordf$p[match(ppr$rid, priordf$rid)]]
     } else if (type == "pag") {
-        ppr <- ppr %>%
-            mutate(x = pag)
+        ppr <- ppr[, x := pag]
     } else {
         #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
 
         priordf <- prior_to_df(do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition))), rst)
-        ppr <- ppr %>%
-            mutate(pg = priordf$p[match(ppr$rid, priordf$rid)])
+        ppr <- ppr[, pg:= priordf$p[match(ppr$rid, priordf$rid)]]
 
         if (type == "pg") {
-            ppr <- ppr %>%
-                mutate(x = pg)
+            ppr <- ppr[, x:= pg]
         } else {
-            ppr <- calculate_mobloc(ppr %>% rename(p = pg), timing.advance = !is.na(ta), param = param) %>%
-                rename(x = pga)
-
+            setnames(ppr, "pg", "p")
+            ppr <- calculate_mobloc(ppr, timing.advance = !is.na(ta), param = param)
+            setnames(ppr, "pga", "x")
 
             if (!is.na(ta)) {
-                ppr <- ppr %>%
-                    filter(TA == ta)
+                ppr <- ppr[TA == ta]
             }
 
             if (nrow(ppr) == 0) {

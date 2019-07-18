@@ -11,6 +11,7 @@
 #' @import parallel
 #' @import doParallel
 #' @import foreach
+#' @import data.table
 #' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
 #' @example ./examples/process_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
@@ -31,9 +32,9 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
 
 
     # select required cp variables
-    cpsel <- cp %>%
+    cpsel <- (cp %>%
         st_set_geometry(NULL) %>%
-        dplyr::select(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple)
+        as.data.table())[, list(x, y, z, height, direction, tilt, beam_h, beam_v, W, range, ple)]
 
     # determine raster specs
     rext <- raster::extent(raster)
@@ -46,7 +47,7 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
         rdf <- get_raster_ids(raster, region)
         rdf$z <- elevation[][rdf$rid]
     } else {
-        rdf <- as.data.frame(coordinates(raster))
+        rdf <- as.data.table(coordinates(raster))
         rdf$rid <- raster[]
         rdf$z <- elevation[]
     }
@@ -96,24 +97,22 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
                                co = df[, c("x", "y", "z")],
                                ple = ple,
                                param = param)
-        cbind(df, as.data.frame(df2))
+        cbind(df, as.data.table(df2))
     }, df = res2, MoreArgs = list(param = param), SIMPLIFY = FALSE, USE.NAMES = TRUE), as.list(cpsel)))
 
     # attach cell name and put in one data.frame
     message("Creating data.frame and compute pag values")
     cells <- cp$cell
 
-    df4 <- bind_rows(df3, .id = "cell")
+    df4 <- rbindlist(df3, idcol = "cell")
 
-    # select top [param$max_overlapping_cells] cells for each rid, and calculate pag
-    df5 <- df4 %>%
-        group_by(rid) %>%
-        filter(s >= param$sig_d_th) %>%
-        filter(order(s)<=param$max_overlapping_cells) %>%
-        mutate(pag = s / sum(s)) %>%
-        add_timing_advance(param = param) %>%
-        ungroup() %>%
-        dplyr::select(cell=cell, TA=TA, rid=rid, dist=dist, dBm = dBm, s = s, pag = pag) %>%
+    setkey(df4, rid)
+
+    df4[s >= param$sig_d_th][
+        , by = rid, .(os = order(s), cell, dist, dBm, s)][
+            os <=param$max_overlapping_cells, pag:= s / sum(s), by = rid][
+                , TA:=dist %/% param$TA_step][
+                    TA <= param$TA_max, .(cell, TA, rid, dist, dBm, s, pag)] %>%
         attach_class("mobloc_prop")
 }
 

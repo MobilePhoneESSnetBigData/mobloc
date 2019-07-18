@@ -20,6 +20,7 @@ Imports:
     RColorBrewer,
     shiny,
     shinyjs,
+    data.table,
     dplyr,
     parallel,
     doParallel,

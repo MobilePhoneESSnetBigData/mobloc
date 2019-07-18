@@ -33,9 +33,9 @@ mobloc_find_cells <- function(prop, raster) {
 }
 mobloc_filter_cell <- function(x, a, raster = NULL) {
     cell <- rid <- NULL
-    y <- x %>% filter(cell %in% a)
+    y <- x[cell %chin% a]
     if (!missing(raster)) {
-        y %>% filter(rid %in% raster[])
+        y[rid %in% raster[]]
     } else {
         y
     }
