@@ -13,12 +13,14 @@
 calculate_mobloc <- function(prop, prior = NULL, raster = NULL, timing.advance = FALSE, param = NULL) {
     pag <- cell <- pga <- rid <- TA <- NULL
 
+    prop <- copy(prop)
+
     if (!missing(prior) && !missing(raster)) {
         check_raster(raster)
         priordf <- prior_to_df(prior, raster)
 
-        prop <- prop %>%
-            left_join(priordf, by = 'rid')
+
+        prop <- priordf[prop, on = "rid"]
     } else {
         if (!("p" %in% names(prop))) stop("prior/raster not specified, and variable 'p' is missing in the data.frame prop.")
     }
@@ -27,31 +29,18 @@ calculate_mobloc <- function(prop, prior = NULL, raster = NULL, timing.advance =
         if (missing(param)) stop("param is missing")
         ids <- -param$TA_buffer:param$TA_buffer
 
-        prop2 <- prop %>%
-            #left_join(priordf, by = 'rid') %>%
-            mutate(pga = pag * p) %>%
-            select(cell, TA, rid, pga)
+        prop <- prop[, list(cell, TA, rid, pga = pag * p)]
 
-
-        prop3 <- bind_rows(lapply(ids, function(id) {
-             prop2$TA <- pmax(0, prop2$TA + id)
-             prop2
+        prop2 <- rbindlist(lapply(ids, function(id) {
+            dt <- copy(prop)
+            dt[, TA:= pmax(0, dt$TA + id)]
+            dt
         }))
 
-        prop3 %>%
-            group_by(cell, TA) %>%
-            mutate(pga = pga / sum(pga)) %>%
-            ungroup() %>%
-            select(cell, TA, rid, pga)
-
+        prop2[, list(rid, pga = pga / sum(pga)), by = c("cell", "TA")]
     } else {
-        prop %>%
-            #left_join(priordf, by = 'rid') %>%
-            mutate(pga = pag * p) %>%
-            group_by(cell) %>%
-            mutate(pga = pga / sum(pga)) %>%
-            ungroup() %>%
-            select(cell, rid, pga)
+        prop[, pga:= pag * p]
+        prop[, list(rid, pga = pga / sum(pga, na.rm = TRUE)), by = cell]
     }
 
 }

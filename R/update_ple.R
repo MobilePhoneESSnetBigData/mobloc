@@ -45,10 +45,12 @@ sample_envir_points <- function(cp, envir, omnidir_angles = c(0, 90, 180, 270), 
     mapply(function(x, y, a, rng, ant) {
         rs <- radius[radius < rng]
 
-        df <- expand.grid(a = a, rd = rs, ant = ant, x = x, y = y) %>%
-            mutate(x = x + SIN(a) * rd,
-                   y = y + COS(a) * rd) %>%
-            st_as_sf(coords = c("x", "y"), crs = st_crs(cp))
+        df <- expand.grid(a = a, rd = rs, ant = ant, x = x, y = y)
+
+        df$x <- df$x + SIN(df$a) * df$rd
+        df$y <- df$y + COS(df$a) * df$rd
+
+        df <- st_as_sf(df, coords = c("x", "y"), crs = st_crs(cp))
         x <- raster::extract(envir, df)
         mean(x, na.rm = TRUE)
     }, cp$x, cp$y, angles, cp$range, cp$cell, SIMPLIFY = TRUE)

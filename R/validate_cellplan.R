@@ -39,7 +39,7 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})
 #' @import sf
 #' @import sp
-#' @import dplyr
+#' @importFrom magrittr '%>%'
 #' @importFrom methods as
 #' @example ./examples/validate_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}

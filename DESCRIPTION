@@ -1,7 +1,7 @@
 Package: mobloc
 Type: Package
 Title: Mobile phone location algorithms and tools
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(person("Martijn", "Tennekes", email="mtennekes@gmail.com", role=c("aut", "cre")),
              person("Yvonne", "Gootzen", email = "y.a.p.m.gootzen@cbs.nl", role = "ctb"),
              person("Shan", "Shah", email = "s.h.shan@cbs.nl", role = "ctb"))
@@ -21,7 +21,7 @@ Imports:
     shiny,
     shinyjs,
     data.table,
-    dplyr,
+    magrittr,
     parallel,
     doParallel,
     foreach,

@@ -127,9 +127,8 @@ set_mobloc_prior <- function(x, name) {
 }
 
 prior_to_df <- function(prior, raster) {
-    tibble(rid = raster[],
-           p = prior[]) %>%
-        filter(!is.na(p))
+    data.table(rid = raster[],
+               p = prior[])[!is.na(p)]
 }
 
 attach_class <- function(x, cls) {

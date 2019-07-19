@@ -329,11 +329,9 @@ create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
 
 
     if (type == "dBm") {
-        ppr <- ppr %>%
-            mutate(x = dBm)
+        ppr <- ppr[, x:= dBm]
     } else if (type == "s") {
-        ppr <- ppr %>%
-            mutate(x = s)
+        ppr <- ppr[, x:=s]
     } else if (type %in% choices_prior) {
         priordf <- prior_to_df(priorlist[[as.integer(substr(type, 2, 2))]], rst)
         ppr <- ppr[, x:= priordf$p[match(ppr$rid, priordf$rid)]]

@@ -1,0 +1,11 @@
+version 0.3.0
+- improved computation speed (migration dplyr -> data.table)
+
+version 0.2.0
+- improved terminology
+- improved dashboards
+- added timing advance
+
+version 0.1.0
+- initial version
+- part of ESSnet Big Data project on mobile phone data (WP5)
