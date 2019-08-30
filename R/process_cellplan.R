@@ -16,7 +16,7 @@
 #' @example ./examples/process_cellplan.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
+compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
     x <- y <- z <- height <- direction <- tilt <- beam_h <- beam_v <- W <- ple <- rid <- dBm <- s <- cell <- dist <- pag <- TA <- NULL
 
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
@@ -107,16 +107,60 @@ process_cellplan <- function(cp, raster, elevation, param, region = NULL) {
     df4 <- rbindlist(df3, idcol = "cell")
 
     setkey(df4, rid)
-
-    df4[s >= param$sig_d_th][
-        , by = rid, .(os = order(s), cell, dist, dBm, s)][
-            os <=param$max_overlapping_cells, pag:= s / sum(s), by = rid][
-                , TA:=dist %/% param$TA_step][
-                    TA <= param$TA_max, .(cell, TA, rid, dist, dBm, s, pag)] %>%
-        attach_class("mobloc_prop")
+    df4[, list(cell, rid, s, dist, dBm)] %>%
+        attach_class("mobloc_strength")
 }
 
 
+calculate_dist <- function(llh, cp, raster, elev = NULL) {
+    if (!inherits(llh, "mobloc_llh")) stop("llh is not a mobloc_llh")
+    if (!is_cellplan_valid(cp)) stop("cellplan has not been not validated")
+    check_raster(raster)
+
+
+    rdf <- as.data.table(coordinates(raster))
+    rdf$rid <- raster[]
+    if (!is.null(elev)) rdf$z <- elev[]
+
+    setkey(rdf, rid)
+
+    cpsel <- (cp %>%
+        sf::st_set_geometry(NULL) %>%
+        as.data.table())[, list(cell, cx=x,cy=y, cz=z)]
+
+    llh2 <- rdf[llh]
+
+    df <- cpsel[llh2, on = "cell"]
+
+    if (!is.null(elev)) {
+        df[, dist:= sqrt((x - cx)^2 + (y - cy)^2)]
+    } else {
+        df[, dist:= sqrt((x - cx)^2 + (y - cy)^2 + (z - cz)^2)]
+    }
+
+    df[, `:=`(cx = NULL, cy = NULL, cz = NULL)]
+}
+
+create_strength_llh <- function(strength, param) {
+    strength[s >= param$sig_d_th][
+        , by = rid, .(os = order(s), cell, dist, dBm, s)][
+            os <=param$max_overlapping_cells, pag:= s / sum(s), by = rid][
+                , list(cell, rid, dist, pag)] %>%
+    attach_class("mobloc_llh")
+}
+
+
+create_TA <- function(llh){
+    llh[, TA:=dist %/% param$TA_step][
+        TA <= param$TA_max, .(cell, TA, rid, dist, dBm, s, pag)] %>%
+        attach_class("mobloc_prop")
+
+}
+
+
+# setkey(df4, rid)
+#
+#
 
 
 

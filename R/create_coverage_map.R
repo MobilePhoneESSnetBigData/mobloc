@@ -4,25 +4,25 @@
 #'
 #' @name create_coverage_map
 #' @rdname create_coverage_map
-#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
+#' @param strength a propagation object, which is the result of \code{\link{process_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param type either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal dominance values
 #' @param cells selection of cells
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-create_coverage_map <- function(prop, raster, type = c("dBm", "s"), cells = NULL) {
+create_coverage_map <- function(strength, raster, type = c("dBm", "s"), cells = NULL) {
     rid <- cell <- x <- NULL
 
     check_raster(raster)
     if (!missing(cells)) {
-        prop <- copy(prop[cell %chin% cells])
+        strength <- copy(strength[cell %chin% cells])
     } else {
-        prop <- copy(prop)
+        strength <- copy(strength)
     }
     type <- match.arg(type)
 
 
-    z <- prop[, x:=get(type)][, by = rid, .(x = max(x))]
+    z <- strength[, x:=get(type)][, by = rid, .(x = max(x))]
 
     y <- raster::raster(raster)
     y[][match(z$rid, raster[])] <- z$x
@@ -33,19 +33,19 @@ create_coverage_map <- function(prop, raster, type = c("dBm", "s"), cells = NULL
 #' @name create_best_server_map
 #' @rdname create_coverage_map
 #' @export
-create_best_server_map <- function(prop, raster, cells = NULL) {
-    rid <- cell <- dBm <- NULL
+create_best_server_map <- function(llh, raster, cells = NULL) {
+    rid <- cell <- pag <- NULL
 
     check_raster(raster)
 
     if (!missing(cells)) {
-        rids <- unique(prop$rid[prop$cell %in% cells])
-        prop <- copy(prop[rid %in% rids])
+        rids <- unique(llh$rid[llh$cell %in% cells])
+        llh <- copy(llh[rid %in% rids])
     } else {
-        prop <- copy(prop)
+        llh <- copy(llh)
     }
 
-    z <- prop[, cell:= cell[which.max(dBm)[1]], by = rid]
+    z <- llh[, cell:= cell[which.max(pag)[1]], by = rid]
 
     if (!missing(cells)) {
         z <- z[cell %chin% cells]

@@ -1,9 +1,9 @@
-#' Set the propagation model parameters
+#' Set the mobloc parameters
 #'
-#' Set the propagation model parameters. The result is a list.
+#' Set the parameters used for the signal strength model and timing advance. The result is a list.
 #'
-#' @name prop_param
-#' @rdname prop_param
+#' @name sig_strength_param
+#' @rdname sig_strength_param
 #' @param W default power in Watt of a normal cell (placed in a cell tower or rooftop site)
 #' @param W_small default power in Watt of a small cell (omnidirectional)
 #' @param ple default path loss exponent
@@ -30,7 +30,7 @@
 #' @example ./examples/prop_param.R
 #' @return parameter list
 #' @export
-prop_param <- function(
+mobloc_param <- function(
     W = 10,
     W_small = 5,
     ple = 3.75,
@@ -55,8 +55,8 @@ prop_param <- function(
     TA_buffer = 1
     ) {
 
-    nms <- names(formals(prop_param))
+    nms <- names(formals(mobloc_param))
     lst <- sapply(nms, get, envir=environment(), simplify = FALSE)
-    class(lst) <- "prop_param"
+    class(lst) <- "mobloc_param"
     lst
 }

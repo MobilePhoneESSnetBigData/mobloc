@@ -19,7 +19,7 @@
 #' @example ./examples/explore_mobloc.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
+explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL, best_server_map = NULL) {
 
     crs <- st_crs(raster)
 
@@ -38,11 +38,15 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
         raster <- mobloc_crop_raster(raster, bbx = filter)
 
-        a <- mobloc_find_cells(prop, raster)
-        prop <- mobloc_filter_cell(prop, a, raster)
+        a <- local({
+            cells <- do.call(c, lapply(llhlist, function(llh) llh$cell))
+            rids <- do.call(c, lapply(llhlist, function(llh) llh$rid))
+            unique(cells[rids %in% raster[]])
+        })
         cp <- mobloc_filter_cell(cp, a)
 
         priorlist <- lapply(priorlist, mobloc_crop_raster, bbx = filter)
+        llhlist <- lapply(llhlist, mobloc_filter_cell, a = a)
     }
 
 
@@ -52,21 +56,24 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
     cell <- NULL
 
-    pnames <- names(priorlist)
-
+    pnames <- c(names(priorlist), "composite")
     nprior <- length(pnames)
     choices_prior <- paste0("p", 1L:nprior)
-    names(choices_prior) <- paste0("Prior ", pnames, " - P(g)")
+    names(choices_prior) <- paste0("Prior ", pnames)
     names(pnames) <- choices_prior
 
+    lnames <- names(llhlist)
+    nllh <- length(lnames)
+    choices_llh <- paste0("l", 1L:nllh)
+    names(choices_llh) <- paste0("Likelihood ", lnames)
+    names(lnames) <- choices_llh
 
 
     choices <- c("Signal strength - dBm" = "dBm",
-                  "Signal dominance - s" = "s",
-                  "Best server map" = "bsm",
+                 "Signal dominance - s" = "s",
+                 "Best server map" = "bsm",
+                 "Location prior - P(g)" = "pg",
                  "Connection likelihood - P(a|g)" = "pag",
-                  choices_prior,
-                  "Composite prior - P(g) (see slider below)" = "pg",
                  "Location posterior - P(g|a)" = "pga")
 
 
@@ -78,33 +85,33 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 
     if (missing(coverage_map_dBm)) {
         message("Creating coverage maps (dBm)...")
-        coverage_map_dBm <- create_coverage_map(prop, raster, type = "dBm") # cm_dBm
+        coverage_map_dBm <- create_coverage_map(strength, raster, type = "dBm") # cm_dBm
     }
     if (missing(coverage_map_s)) {
         message("Creating coverage maps (s)...")
-        coverage_map_s <- create_coverage_map(prop, raster, type = "s") #cm_s
+        coverage_map_s <- create_coverage_map(strength, raster, type = "s") #cm_s
     }
     if (missing(best_server_map)) {
         message("Creating best server maps...")
-        best_server_map <- create_best_server_map(prop, raster) #bsm
+        best_server_maps <- lapply(llhlist, create_best_server_map, raster = raster)
+        #best_server_map <- create_best_server_map(strength, raster) #bsm
     }
 
     offset_value <- 150
 
 
     sliders <- mapply(function(i, nm) {
-        if (i == choices_prior[length(choices_prior)]) {
+        if (i == choices_prior[nprior - 1]) {
             shiny::htmlOutput("plast")
         } else {
             sliderInput(i, paste("Faction", nm), min = 0, max = 1, value = 1/nprior, step  = 0.01)
         }
 
-    }, choices_prior, pnames, SIMPLIFY = FALSE)
+    }, choices_prior[-nprior], pnames[-nprior], SIMPLIFY = FALSE)
 
     app <- shinyApp(
         ui = fluidPage(
             useShinyjs(),
-
             tags$head(
                 tags$style(HTML("
                   .disabled {
@@ -112,18 +119,17 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                   }
                 "))
             ),
-
             titlePanel("Mobile location exploration"),
             sidebarLayout(
                 sidebarPanel(
                     tabsetPanel(
                         tabPanel("Map setup",
                                  radioButtons("show", "Selection",  c("All cells" = "grid", "Single cell" = "ant"), selected = "grid"),
-                                 radioButtons("var", "Show", choices, selected = "s"),
-                                 wellPanel(
-                                     conditionalPanel(
-                                         condition = "(input.var == 'pga') || (input.var == 'pg')",
-                                         sliders)),
+                                 radioButtons("varP", "Location Prior", choices_prior, selected = "p1"),
+                                 conditionalPanel(condition = paste0("(input.varP == 'p", nprior, "')"),
+                                                  wellPanel(sliders)),
+                                 radioButtons("varL", "Connection Likelihood", choices_llh, selected = "l1"),
+                                 radioButtons("var", "Show", choices, selected = "dBm"),
                                  conditionalPanel(
                                      condition = "input.var == 'pga'",
                                      checkboxInput("TA", "Enable Timing Advance", value = FALSE),
@@ -143,22 +149,9 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 ))
         ),
         server = function(input, output, session) {
-
-            # observe({
-            #     show <- input$show
-            #     var <- input$var
-            #     if (!is.null(show)) {
-            #         #choices <- if (show == "grid") choices1 else c(choices1, choices2)
-            #         #selected <- if (var %in% choices) var else choices[1]
-            #         selected <- if (show == "grid") cho
-            #         updateRadioButtons(session, "var", choices = choices, selected = selected)
-            #     }
-            # })
-
             get_var <- reactive({
                 show <- input$show
                 var <- input$var
-
                 if (show == "grid" && var %in% c("pag", "pga")) choices[1] else var
             })
 
@@ -166,7 +159,6 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
             observe({
                 show <- input$show
                 var <- get_var()
-
                 if (show == "grid") {
                     if (var != input$var) updateRadioButtons(session, "var", choices = choices, selected = var)
                     shinyjs::runjs("$('#var input[value=pag]').parent().parent().addClass('disabled')")
@@ -174,25 +166,47 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 } else {
                     shinyjs::runjs("$('#var input[value=pag]').parent().parent().removeClass('disabled')")
                     shinyjs::runjs("$('#var input[value=pga]').parent().parent().removeClass('disabled')")
-
                 }
             })
-
 
             get_composition <- reactive({
-                values <- sapply(choices_prior[-nprior], function(x) {
-                    input[[x]]
-                })
-                if (sum(values) > 1) {
-                    showW <- TRUE
-                    values <- values / sum(values)
+                varP <- input$varP
+                if (varP != paste0("p", nprior)) {
+                    composition <- rep(0, nprior-1)
+                    composition[as.integer(substr(varP, 2, nchar(varP)))] <- 1
+                    attr(composition, "showW") <- FALSE
                 } else {
-                    showW <- FALSE
+                    values <- sapply(choices_prior[1:(nprior-2)], function(x) {
+                        input[[x]]
+                    })
+                    if (sum(values) > 1) {
+                        showW <- TRUE
+                        values <- values / sum(values)
+                    } else {
+                        showW <- FALSE
+                    }
+                    composition <- c(values, 1-sum(values))
+                    attr(composition, "showW") <- showW
                 }
-                composition <- c(values, 1-sum(values))
-                attr(composition, "showW") <- showW
                 composition
             })
+
+            get_prior <- reactive({
+                composition <- get_composition()
+                do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition)))
+            })
+
+
+            get_llh <- reactive({
+                varL <- input$varL
+                llhlist[[as.integer(substr(varL, 2, nchar(varL)))]]
+            })
+
+            get_bsm <- reactive({
+                varL <- input$varL
+                best_server_maps[[as.integer(substr(varL, 2, nchar(varL)))]]
+            })
+
 
             output$plast <- renderUI({
                 composition <- get_composition()
@@ -243,17 +257,19 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
                 ta <- if (input$TA) input$TAvalue else NA
                 cp$sel <- 1L
                 cp$sel[cp$cell %in% sel] <- 2L
+
+                if (type %in% c("bsm", "pag", "pga")) llh <- get_llh() else llh <- NULL
+                if (type == "bsm") bsm <- get_bsm() else bsm <- NULL
+                if (type %in% c("pg", "pga")) prior <- get_prior() else prior <- NULL
+
                 if (input$show == "grid") {
-                    composition <- get_composition()
-                    rst <- create_q_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, coverage_map_dBm, coverage_map_s, best_server_map)
+                    rst <- create_q_raster(raster, type = type, prior = prior, coverage_map_dBm, coverage_map_s, bsm)
                 } else {
                     if (type == "bsm") {
-                        rst <- create_best_server_map(prop, raster, cells = sel)
+                        rst <- create_best_server_map(strength, raster, cells = sel)
                     } else {
-                        composition <- get_composition()
-                        psel <- prop[cell == sel]
-
-                        rst <- create_p_raster(raster, psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
+                        strength_psel <- strength[cell == sel]
+                        rst <- create_p_raster(raster, strength_psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
                     }
                 }
 
@@ -283,7 +299,7 @@ explore_mobloc <- function(cp, raster, prop, priorlist, param, filter = NULL, co
 }
 
 
-create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, cm_dBm, cm_s, bsm) {
+create_q_raster <- function(rst, type, prior, cm_dBm, cm_s, bsm) {
     #rindex <- raster::getValues(rst)
     #r <- raster::raster(rst)
 
@@ -293,21 +309,12 @@ create_q_raster <- function(rst, ppr, type, choices_prior, composition, priorlis
         r <- cm_s
     } else if (type == "bsm") {
         r <- bsm
-    } else if (type %in% choices_prior) {
-        r <- priorlist[[as.integer(substr(type, 2, 2))]]
     } else if (type == "pg") {
         #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
-        r <- do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition)))
+        r <- prior
     }
 
-    # if (type != "dBm") {
-    #     ppr <- ppr %>%
-    #         mutate(x = x / sum(x) * 100)
-    # }
 
-    # raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
-    # r <- raster::trim(r)
-    # r[r==0] <- NA
     raster::trim(r)
 }
 

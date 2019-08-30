@@ -117,7 +117,7 @@ get_raster_ids <- function(r, region) {
     rco_cnk <- split(rco, ceiling((1:nr)/100))
 
     raster_id_fun <- function(df, region) {
-        dfsf <- st_as_sf(df, coords = c("x", "y"), crs = 28992)
+        dfsf <- st_as_sf(df, coords = c("x", "y"), crs = st_crs(region))
         sel <- which_inside(dfsf, region)
         df$rid[sel]
     }

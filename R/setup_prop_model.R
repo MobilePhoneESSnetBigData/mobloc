@@ -10,7 +10,7 @@
 #' @example ./examples/setup_prop_model.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-setup_prop_model <- function(param = prop_param(), plot.height=800) {
+setup_sig_strength_model <- function(param = sig_strength_param(), plot.height=800) {
 
 
     SliderInput <- function(...) {
@@ -21,7 +21,7 @@ setup_prop_model <- function(param = prop_param(), plot.height=800) {
         ui = fluidPage(
             #shinyjs::useShinyjs(),
             shiny::div(style = "font-size:75%;",
-                       titlePanel("Propagation model setup"),
+                       titlePanel("Signal strength model setup"),
                        fluidRow(
                            column(3,
                                   wellPanel(

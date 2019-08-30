@@ -38,14 +38,14 @@ create_uniform_prior <- function(raster) {
 
 #' @rdname create_prior
 #' @export
-create_network_prior <- function(prop, raster) {
+create_network_prior <- function(strength, raster) {
     rid <- s <- NULL
     check_raster(raster)
-    totals <- sum(prop$s)
+    totals <- sum(strength$s)
 
-    prop <- copy(prop)
+    strength <- copy(strength)
 
-    z <- prop[, p:=sum(s)/totals, by = rid]
+    z <- strength[, p:=sum(s)/totals, by = rid]
 
     y <- raster::raster(raster)
     y[] <- 0

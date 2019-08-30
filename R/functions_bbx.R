@@ -28,9 +28,10 @@ raster2bbx <- function(raster) {
 mobloc_crop_raster <- function(r, bbx) {
     raster::crop(r, extent(as.vector(bbx)[c(1,3,2,4)]))
 }
-mobloc_find_cells <- function(prop, raster) {
-    unique(prop$cell[prop$rid %in% raster[]])
-}
+
+
+
+
 mobloc_filter_cell <- function(x, a, raster = NULL) {
     cell <- rid <- NULL
     y <- x[cell %chin% a]
