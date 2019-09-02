@@ -93,7 +93,13 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
         bsm_sel <- which(cp$sel == "Selected")
 
         cols[bsm_sel] <- rep(RColorBrewer::brewer.pal(8, "Dark2"), length.out = nrow(lvls))[bsm_sel]
-        pal2 <- colorFactor(palette = cols, domain = lvls$ID, na.color = "transparent")
+
+        if (length(na.omit(unique(rst2[])))==1) {
+            cols2 <- cols[bsm_sel]
+        } else {
+            cols2 <- cols
+        }
+        #pal2 <- colorFactor(palette = cols, domain = lvls$ID, na.color = "transparent")
     } else if (var != "empty") {
         rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string, method = "bilinear")
         if (any(is.nan(rst2[]))) {
@@ -135,7 +141,7 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
             addLegend(colors = cls$colors, labels = cls$labels, opacity = trans, title = title)
 
     } else if (var == "bsm") {
-        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols) %>%
+        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols2) %>%
             leaflet::addLayersControl(overlayGroups = c("Cell locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
             addLegend(colors = cols, labels = as.character(lvls$cell), opacity = trans, title = title)
     } else if (var == "empty") {

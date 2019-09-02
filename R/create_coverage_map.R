@@ -48,7 +48,7 @@ create_best_server_map <- function(llh, raster, cells = NULL) {
     z <- llh[, cell:= cell[which.max(pag)[1]], by = rid]
 
     if (!missing(cells)) {
-        z <- z[cell %chin% cells]
+        z <- z[cell %in% cells]
     }
 
     #z <- z[, cell:= factor(cell)]

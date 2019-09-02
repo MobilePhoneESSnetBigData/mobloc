@@ -269,11 +269,20 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                 if (input$show == "grid") {
                     rst <- create_q_raster(raster, type = type, prior = prior, coverage_map_dBm, coverage_map_s, bsm)
                 } else {
+                    if (type %in% c("bsm", "pg", "pag", "pga")) {
+                        llh <- get_llh()
+                    }
+
                     if (type == "bsm") {
-                        rst <- create_best_server_map(strength, raster, cells = sel)
+                        rst <- create_best_server_map(llh, raster, cells = sel)
                     } else {
-                        strength_psel <- strength[cell == sel]
-                        rst <- create_p_raster(raster, strength_psel, type = type, choices_prior, composition = composition, priorlist, ta, param)
+                        if (type %in% c("dBm", "s")) {
+                            dt <- strength[cell == sel]
+                        } else {
+                            dt <- llh[cell == sel]
+                        }
+
+                        rst <- create_p_raster(raster, dt, type = type, prior = prior, ta, param)
                     }
                 }
 
@@ -322,69 +331,41 @@ create_q_raster <- function(rst, type, prior, cm_dBm, cm_s, bsm) {
     raster::trim(r)
 }
 
-create_p_raster <- function(rst, ppr, type, choices_prior, composition, priorlist, ta, param) {
+create_p_raster <- function(rst, dt, type, prior, ta, param) {
     dBm <- s <- pag <- pg <- pga <- TA <- NULL
 
     rindex <- raster::getValues(rst)
     r <- raster::raster(rst)
 
-
-    # if (!is.na(ta)) {
-    #     ppr <- ppr %>%
-    #         filter(TA == ta)
-    # }
-
-    # if (nrow(ppr) == 0) {
-    #     return(r)
-    # }
-
-
     if (type == "dBm") {
-        ppr <- ppr[, x:= dBm]
+        dt <- dt[, x:= dBm]
     } else if (type == "s") {
-        ppr <- ppr[, x:=s]
-    } else if (type %in% choices_prior) {
-        priordf <- prior_to_df(priorlist[[as.integer(substr(type, 2, 2))]], rst)
-        ppr <- ppr[, x:= priordf$p[match(ppr$rid, priordf$rid)]]
+        dt <- dt[, x:=s]
+    } else if (type == "pg") {
+        priordf <- prior_to_df(prior, rst)
+        dt <- dt[, x:= priordf$p[match(dt$rid, priordf$rid)]]
     } else if (type == "pag") {
-        ppr <- ppr[, x := pag]
+        dt <- dt[, x := pag]
     } else {
-        #composition <- c(priormix[1], (priormix[2] - priormix[1]), (1 - priormix[2]))
+        priordf <- prior_to_df(prior, rst)
+        dt <- dt[, p:= priordf$p[match(dt$rid, priordf$rid)]]
 
-        priordf <- prior_to_df(do.call(create_prior, c(unname(priorlist), list(name = "composite", weights = composition))), rst)
-        ppr <- ppr[, pg:= priordf$p[match(ppr$rid, priordf$rid)]]
+        #setnames(dt, "pg", "p")
+        dt <- calculate_mobloc(dt, timing.advance = !is.na(ta), param = param)
+        setnames(dt, "pga", "x")
 
-        if (type == "pg") {
-            ppr <- ppr[, x:= pg]
-        } else {
-            setnames(ppr, "pg", "p")
-            ppr <- calculate_mobloc(ppr, timing.advance = !is.na(ta), param = param)
-            setnames(ppr, "pga", "x")
+        if (!is.na(ta)) {
+            dt <- dt[TA == ta]
+        }
 
-            if (!is.na(ta)) {
-                ppr <- ppr[TA == ta]
-            }
-
-            if (nrow(ppr) == 0) {
-                return(r)
-            }
-
-            # ppr <- ppr %>%
-            #     mutate(x = pag * pg) %>%
-            #     mutate(x = x / sum(x))
-
+        if (nrow(dt) == 0) {
+            return(r)
         }
     }
 
-#
-#     if (type != "dBm") {
-#         ppr <- ppr %>%
-#             mutate(x = x / sum(x) * 100)
-#     }
 
-    raster::values(r)[match(ppr$rid, rindex)] <- ppr$x
+    raster::values(r)[match(dt$rid, rindex)] <- dt$x
     r <- raster::trim(r)
-    #r[r==0] <- NA
     r
 }
 
