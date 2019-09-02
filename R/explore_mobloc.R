@@ -123,23 +123,28 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
             sidebarLayout(
                 sidebarPanel(
                     tabsetPanel(
-                        tabPanel("Map setup",
-                                 radioButtons("show", "Selection",  c("All cells" = "grid", "Single cell" = "ant"), selected = "grid"),
-                                 radioButtons("varP", "Location Prior", choices_prior, selected = "p1"),
-                                 conditionalPanel(condition = paste0("(input.varP == 'p", nprior, "')"),
-                                                  wellPanel(sliders)),
-                                 radioButtons("varL", "Connection Likelihood", choices_llh, selected = "l1"),
-                                 radioButtons("var", "Show", choices, selected = "dBm"),
-                                 conditionalPanel(
-                                     condition = "input.var == 'pga'",
-                                     checkboxInput("TA", "Enable Timing Advance", value = FALSE),
-                                     conditionalPanel(
-                                         condition = "input.TA",
-                                         sliderInput("TAvalue", "Timing Advance", min = 0, max = param$TA_max, value = 0, step = 1),
-                                         shiny::htmlOutput("TAband")
-                                         )),
-                                 sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
-                                 checkboxInput("offset", "Cell offset", value = TRUE)),
+                        tabPanel("Setup",
+                                 fluidRow(
+                                     column(6,
+                                            h3("Map Setup"),
+                                            radioButtons("show", "Selection",  c("All cells" = "grid", "Single cell" = "ant"), selected = "grid"),
+                                            radioButtons("var", "Show", choices, selected = "dBm"),
+                                            conditionalPanel(
+                                                condition = "input.var == 'pga'",
+                                                checkboxInput("TA", "Enable Timing Advance", value = FALSE),
+                                                conditionalPanel(
+                                                    condition = "input.TA",
+                                                    sliderInput("TAvalue", "Timing Advance", min = 0, max = param$TA_max, value = 0, step = 1),
+                                                    shiny::htmlOutput("TAband")
+                                                )),
+                                            sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
+                                            checkboxInput("offset", "Move cells into propagation direction", value = TRUE)),
+                                     column(6,
+                                            h3("Module Setup"),
+                                            radioButtons("varP", "Location Prior", choices_prior, selected = "p1"),
+                                            conditionalPanel(condition = paste0("(input.varP == 'p", nprior, "')"),
+                                                             sliders),
+                                            radioButtons("varL", "Connection Likelihood", choices_llh, selected = "l1")))),
                         tabPanel("Cell data",
                                  selectInput("sel", "Cell", cells, selected = cells[1]),
                                  dataTableOutput("cellinfo"))

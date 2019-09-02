@@ -60,15 +60,6 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     if (all(is.na(rst[]))) var <- "empty"
 
 
-    title <- switch(var,
-                    dBm = "Signal strength in dBm",
-                    s = "Signal dominance - s",
-                    bsm = "Best server map",
-                    #lu = "Land use prior (in %)",
-                    pag = "Connection likelihood - P(a|g)<br>(in 1 / 1,000)",
-                    pg = "Composite prior - P(g)<br>(in 1/1,000,000)",
-                    pga = "Location posterior - P(g|a)<br>(in 1/1,000,000)",
-                    paste("Prior", pnames[var], " - P(g)<br>(in 1/1,000,000)"))
 
 
     cls <- if (var == "dBm")  {
@@ -107,7 +98,12 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
         }
 
         if (var == "pag") {
-            values <- pmin(pmax(rst2[] * 1000, 0), 1000)
+            allOnes <- (min(rst2[], na.rm = TRUE) > .9)
+            if (allOnes) {
+                values <- pmin(pmax(rst2[], 0), 1)
+            } else {
+                values <- pmin(pmax(rst2[] * 1000, 0), 1000)
+            }
         } else {
             values <- pmin(pmax(rst2[] * 1000000, 0), 1000000)
         }
@@ -130,6 +126,19 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
 
 
     }
+
+
+    title <- switch(var,
+                    dBm = "Signal strength in dBm",
+                    s = "Signal dominance - s",
+                    bsm = "Best server map",
+                    #lu = "Land use prior (in %)",
+                    pag = paste0("Connection likelihood - P(a|g)", ifelse(allOnes, "", "<br>(in 1 / 1,000)")),
+                    pg = "Composite prior - P(g)<br>(in 1/1,000,000)",
+                    pga = "Location posterior - P(g|a)<br>(in 1/1,000,000)",
+                    paste("Prior", pnames[var], " - P(g)<br>(in 1/1,000,000)"))
+
+
 
     lf <- leafletProxy("map") %>%
         clearMarkers() %>%
