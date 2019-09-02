@@ -114,8 +114,21 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
 
         rst2[] <- values
         rng <- range(values, na.rm = TRUE)
-        pal2 <- colorNumeric(palette = numpal, rng, reverse = (numpal != "viridis"),
-                     na.color = "transparent")
+
+        var_as_discrete <- ((rng[2]- rng[1]) < 1e-9)
+
+        if (var_as_discrete) {
+            rng_value <- round(rng[1], 8)
+            rst2[!is.na(rst2[])] <- rng_value
+            cols2 <- if (numpal == c("viridis")) viridis::viridis(7)[4] else RColorBrewer::brewer.pal(7, numpal)[6]
+            labels2 <- format(rng_value)
+        } else {
+            pal2 <- colorNumeric(palette = numpal, rng, reverse = (numpal != "viridis"),
+                                 na.color = "transparent")
+        }
+
+
+
     }
 
     lf <- leafletProxy("map") %>%
@@ -147,9 +160,19 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     } else if (var == "empty") {
         lf <- lf %>% leaflet::addLayersControl(overlayGroups = c("Cell locations"), position = "topleft")
     } else {
-        lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
-            leaflet::addLayersControl(overlayGroups = c("Cell locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
-            addLegend(pal = pal2, values = rng, opacity = trans, title = title)
+
+
+        if (var_as_discrete) {
+            lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = cols2) %>%
+                leaflet::addLayersControl(overlayGroups = c("Cell locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>%
+                addLegend(colors = cols2, labels = labels2, opacity = trans, title = title)
+        } else {
+            lf <- lf %>% addRasterImage(x = rst2, opacity = trans, group = title, colors = pal2) %>%
+                leaflet::addLayersControl(overlayGroups = c("Cell locations", title), position = "topleft", options = layersControlOptions(collapsed = FALSE)) %>% addLegend(pal = pal2, values = rng, opacity = trans, title = title)
+
+        }
+
+
     }
 
     lf %>% addPolygons(data = rect, color = "#000000", weight = 1, fill = FALSE)
