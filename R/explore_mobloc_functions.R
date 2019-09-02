@@ -88,7 +88,11 @@ viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     } else if (var == "bsm") {
         rst2 <- raster::projectRaster(rst, crs = st_crs(3857)$proj4string, method = "ngb")
         lvls <- raster::levels(rst)[[1]]
-        cols <- rep(RColorBrewer::brewer.pal(8, "Dark2"), length.out = nrow(lvls))
+        cols <- rep(RColorBrewer::brewer.pal(8, "Set2"), length.out = nrow(lvls))
+
+        bsm_sel <- which(cp$sel == "Selected")
+
+        cols[bsm_sel] <- rep(RColorBrewer::brewer.pal(8, "Dark2"), length.out = nrow(lvls))[bsm_sel]
         pal2 <- colorFactor(palette = cols, domain = lvls$ID, na.color = "transparent")
     } else if (var != "empty") {
         rst2 <- raster::projectRaster(rst, crs = st_crs(4326)$proj4string, method = "bilinear")

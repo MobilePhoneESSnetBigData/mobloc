@@ -37,8 +37,6 @@ create_voronoi_llh <- function(cp, raster, offset = 100) {
 
     dt <- rbindlist(dts)
 
-    dt[, cell:=cp$cell[cellid]][, list(cell, rid, pag = 1)] %>%
+    dt[, cell:=factor(cp$cell[cellid], levels = cp$cell)][, list(cell, rid, pag = 1)] %>%
         attach_class("mobloc_llh")
 }
-
-

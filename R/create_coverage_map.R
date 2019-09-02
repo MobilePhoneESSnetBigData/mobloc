@@ -51,7 +51,7 @@ create_best_server_map <- function(llh, raster, cells = NULL) {
         z <- z[cell %chin% cells]
     }
 
-    z <- z[, cell:= factor(cell)]
+    #z <- z[, cell:= factor(cell)]
     ants <- levels(z$cell)
 
     y <- raster::raster(raster)
@@ -59,7 +59,7 @@ create_best_server_map <- function(llh, raster, cells = NULL) {
     if (nrow(z) != 0) {
         y[][match(z$rid, raster[])] <- as.integer(z$cell)
         y <- raster::ratify(y)
-        levels(y) <- list(data.frame(ID = 1L:length(ants), cell = ants))
+        suppressWarnings({levels(y) <- list(data.frame(ID = 1L:length(ants), cell = ants))})
         names(y) <- "cell"
     }
 

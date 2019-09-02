@@ -104,7 +104,10 @@ compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
     message("Creating data.frame and compute pag values")
     cells <- cp$cell
 
+
     df4 <- rbindlist(df3, idcol = "cell")
+
+    df4[, cell:=factor(cell, levels = cp$cell)]
 
     setkey(df4, rid)
     df4[, list(cell, rid, s, dist, dBm)] %>%

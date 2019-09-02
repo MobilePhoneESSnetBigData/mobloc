@@ -259,7 +259,11 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                 cp$sel[cp$cell %in% sel] <- 2L
 
                 if (type %in% c("bsm", "pag", "pga")) llh <- get_llh() else llh <- NULL
-                if (type == "bsm") bsm <- get_bsm() else bsm <- NULL
+                if (type == "bsm") {
+                    bsm <- get_bsm()
+                } else {
+                    bsm <- NULL
+                }
                 if (type %in% c("pg", "pga")) prior <- get_prior() else prior <- NULL
 
                 if (input$show == "grid") {
