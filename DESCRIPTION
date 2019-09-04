@@ -32,7 +32,8 @@ Imports:
 Suggests:
     lwgeom,
 	rmarkdown,
-    knitr
+    knitr,
+    tmap
 URL: https://github.com/MobilePhoneESSnetBigData/mobloc
 BugReports: https://github.com/MobilePhoneESSnetBigData/mobloc/issues
 VignetteBuilder: knitr

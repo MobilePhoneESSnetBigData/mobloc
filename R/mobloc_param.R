@@ -27,7 +27,7 @@
 #' @param TA_max maximum Timing Advance (TA) value (integer). In other words, TA can have a value between 0 and \code{TA_max}. In GSM it is 63, and in LTE 1282.
 #' @param TA_buffer buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when \code{TA_step} is similar or smaller than the width of a grid tile. \code{TA_buffer} is an integer that determines the number of TA steps that are added in front of behind the actual TA band.
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
-#' @example ./examples/prop_param.R
+#' @example ./examples/mobloc_param.R
 #' @return parameter list
 #' @export
 mobloc_param <- function(

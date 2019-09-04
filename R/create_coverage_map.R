@@ -4,10 +4,12 @@
 #'
 #' @name create_coverage_map
 #' @rdname create_coverage_map
-#' @param strength a propagation object, which is the result of \code{\link{process_cellplan}}
+#' @param strength a signal strength model object, which is the result of \code{\link{compute_sig_strength}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param type either \code{"dBm"} for absolute signal strength values and \code{"s"} for signal dominance values
+#' @param llh a likelihood object, e.g. the result of \code{\link{create_voronoi_llh}} and \code{\link{create_strength_llh}}
 #' @param cells selection of cells
+#' @example ./examples/create_best_server_map.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 create_coverage_map <- function(strength, raster, type = c("dBm", "s"), cells = NULL) {

@@ -4,9 +4,10 @@
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
-#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
+#' @param strength a signal strength model object, which is the result of \code{\link{compute_sig_strength}}
 #' @param priorlist list of priors
-#' @param param parameter list created with \code{prop_param}
+#' @param llhlist list of likelihoods
+#' @param param parameter list created with \code{mobloc_param}
 #' @param filter bounding box of the filter of the visualized raster. If not specified, the whole raster is shown, which could be very slow. Therefore, we recommand to use a filter when the raster covers a large area (say 30 by 30 kilometers).
 #' @param coverage_map_dBm coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "dBm"}). If not specified, it will be created (which takes some time).
 #' @param coverage_map_s coverage map, created with \code{\link{create_coverage_map}} (with \code{type = "s"}). If not specified, it will be created (which takes some time).
@@ -129,22 +130,22 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                                             h3("Map Setup"),
                                             radioButtons("show", "Selection",  c("All cells" = "grid", "Single cell" = "ant"), selected = "grid"),
                                             radioButtons("var", "Show", choices, selected = "dBm"),
-                                            conditionalPanel(
-                                                condition = "input.var == 'pga'",
-                                                checkboxInput("TA", "Enable Timing Advance", value = FALSE),
-                                                conditionalPanel(
-                                                    condition = "input.TA",
-                                                    sliderInput("TAvalue", "Timing Advance", min = 0, max = param$TA_max, value = 0, step = 1),
-                                                    shiny::htmlOutput("TAband")
-                                                )),
                                             sliderInput("trans", "Transparency", min = 0, max = 1, value = 1, step = 0.1),
                                             checkboxInput("offset", "Move cells into propagation direction", value = TRUE)),
                                      column(6,
                                             h3("Module Setup"),
                                             radioButtons("varP", "Location Prior", choices_prior, selected = "p1"),
                                             conditionalPanel(condition = paste0("(input.varP == 'p", nprior, "')"),
-                                                             sliders),
-                                            radioButtons("varL", "Connection Likelihood", choices_llh, selected = "l1")))),
+                                                             wellPanel(sliders)),
+                                            radioButtons("varL", "Connection Likelihood", choices_llh, selected = "l1"),
+                                            HTML("<b>Timing Advance</b>"),
+                                            checkboxInput("TA", "Enable Timing Advance", value = FALSE),
+                                            conditionalPanel(
+                                                condition = "input.TA",
+                                                sliderInput("TAvalue", "Value", min = 0, max = param$TA_max, value = 0, step = 1),
+                                                HTML(paste0("Each step corresponds to ", param$TA_step, " m")),
+                                                shiny::htmlOutput("TAband")
+                                            )))),
                         tabPanel("Cell data",
                                  selectInput("sel", "Cell", cells, selected = cells[1]),
                                  dataTableOutput("cellinfo"))
@@ -216,7 +217,7 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
             output$plast <- renderUI({
                 composition <- get_composition()
                 showW <- attr(composition, "showW")
-                HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
+                HTML(paste0("<b>Faction ", pnames[nprior-1], ": ", round(composition[nprior-1], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
             })
 
             output$TAband <- renderUI({
@@ -232,9 +233,9 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                 TA_max_band <- (TA+TA_buffer+1) * TA_step
 
                 if (TA_buffer > 0) {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min_band), ", ", fN(TA_max_band), "] m, without buffer: [", fN(TA_min), ", ", fN(TA_max), "] m"))
+                    HTML(paste0("TA band (with buffer): [", fN(TA_min_band), ", ", fN(TA_max_band), "] m<br>TA band (without buffer): [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 } else {
-                    HTML(paste0("Timing Advance band: [", fN(TA_min), ", ", fN(TA_max), "] m"))
+                    HTML(paste0("TA band: [", fN(TA_min), ", ", fN(TA_max), "] m"))
                 }
 
                 #HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
@@ -259,7 +260,6 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
             observe({
                 type <- get_var()
                 sel <- input$sel
-                ta <- if (input$TA) input$TAvalue else NA
                 cp$sel <- 1L
                 cp$sel[cp$cell %in% sel] <- 2L
 
@@ -278,6 +278,13 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                         llh <- get_llh()
                     }
 
+                    ta <- NA
+                    if (type == "pga") {
+                        if (input$TA) {
+                            ta <- input$TAvalue
+                        }
+                    }
+
                     if (type == "bsm") {
                         rst <- create_best_server_map(llh, raster, cells = sel)
                     } else {
@@ -286,8 +293,8 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                         } else {
                             dt <- llh[cell == sel]
                         }
-
-                        rst <- create_p_raster(raster, dt, type = type, prior = prior, ta, param)
+                        cpsel <- cp[cp$sel == 2L, ]
+                        rst <- create_p_raster(raster, dt, type = type, prior = prior, ta, param, cpsel)
                     }
                 }
 
@@ -336,7 +343,7 @@ create_q_raster <- function(rst, type, prior, cm_dBm, cm_s, bsm) {
     raster::trim(r)
 }
 
-create_p_raster <- function(rst, dt, type, prior, ta, param) {
+create_p_raster <- function(rst, dt, type, prior, ta, param, cpsel) {
     dBm <- s <- pag <- pg <- pga <- TA <- NULL
 
     rindex <- raster::getValues(rst)
@@ -356,12 +363,17 @@ create_p_raster <- function(rst, dt, type, prior, ta, param) {
         dt <- dt[, p:= priordf$p[match(dt$rid, priordf$rid)]]
 
         #setnames(dt, "pg", "p")
-        dt <- calculate_mobloc(dt, timing.advance = !is.na(ta), param = param)
-        setnames(dt, "pga", "x")
+
+        dt <- calculate_posterior(prior, dt, rst)
+        #dt <- calculate_mobloc(dt, timing.advance = !is.na(ta), param = param)
 
         if (!is.na(ta)) {
-            dt <- dt[TA == ta]
+            dt <- update_posterior_TA(dt, raster = rst, cp = cpsel, param = param)[TA==ta, ]
         }
+        setnames(dt, "pga", "x")
+
+
+        #if (!is.na(ta)) browser()
 
         if (nrow(dt) == 0) {
             return(r)

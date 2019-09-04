@@ -35,8 +35,8 @@ radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 \item{db_back}{difference in signal strength between the propagation direction of the cell and the opposite direction}
 }
 \description{
-The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_dominance} plots the relation between signal stregth and signal dominance, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_prop_model}}.
+The \code{radiation_plot} plots the radiation in the horizontal (azimuth) or vertical (elevation) plane, the \code{distance_plot} the relation between distance and signal loss, and the \code{signal_dominance} plots the relation between signal stregth and signal dominance, which is modelled as a logistic function. These plots are embedded in the interactive tool \code{\link{setup_sig_strength_model}}.
 }
 \seealso{
-\code{\link{setup_prop_model}}
+\code{\link{setup_sig_strength_model}}
 }

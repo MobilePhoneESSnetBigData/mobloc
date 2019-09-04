@@ -1,7 +1,9 @@
-# cp <- ZL_cellplan
-# raster <- ZL_raster
-
-
+#' Create Voronoi likelihood
+#'
+#' @param cp cellplan, validated with \code{\link{validate_cellplan}}
+#' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
+#' @param offset offset in meters of the cells in the direction of progagation
+#' @export
 create_voronoi_llh <- function(cp, raster, offset = 100) {
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 
@@ -11,13 +13,8 @@ create_voronoi_llh <- function(cp, raster, offset = 100) {
     names(raster_ext) <- c("xmin", "ymin", "xmax", "ymax")
     bbx_poly <- create_bbx_rect(sf::st_bbox(raster_ext, crs = st_crs(cp)))
 
-    cp$x2 <- cp$x + ifelse(cp$small | is.na(cp$direction), 0, (SIN(cp$direction) * offset))
-    cp$y2 <- cp$y + ifelse(cp$small | is.na(cp$direction), 0, (COS(cp$direction) * offset))
 
-    cp2 <- st_set_geometry(cp, NULL)
-
-    cp2 <- st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
-
+    cp2 <- move_cells_into_prop_direction(cp, offset)
 
     v <- st_sf(geometry=st_cast(st_voronoi(st_union(cp2), bbx_poly)))
 

@@ -5,15 +5,15 @@
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param elevation raster with elevation data
-#' @param param parameter list created with \code{prop_param}
+#' @param param parameter list created with \code{mobloc_param}
 #' @param region polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons
 #' @importFrom stats dnorm
 #' @import parallel
 #' @import doParallel
 #' @import foreach
 #' @import data.table
-#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the location posterior with \code{\link{calculate_mobloc}}.
-#' @example ./examples/process_cellplan.R
+#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the connection likelihood with \code{\link{create_strength_llh}}.
+#' @example ./examples/compute_sig_strength.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
@@ -115,8 +115,8 @@ compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
 }
 
 
-calculate_dist <- function(llh, cp, raster, elev = NULL) {
-    if (!inherits(llh, "mobloc_llh")) stop("llh is not a mobloc_llh")
+calculate_dist <- function(df, cp, raster, elev = NULL) {
+    if (!inherits(df, c("mobloc_llh", "mobloc_post"))) stop("x is not a mobloc_llh nor mobloc_post")
     if (!is_cellplan_valid(cp)) stop("cellplan has not been not validated")
     check_raster(raster)
 
@@ -131,40 +131,17 @@ calculate_dist <- function(llh, cp, raster, elev = NULL) {
         sf::st_set_geometry(NULL) %>%
         as.data.table())[, list(cell, cx=x,cy=y, cz=z)]
 
-    llh2 <- rdf[llh]
+    df2 <- rdf[df, on = "rid"]
 
-    df <- cpsel[llh2, on = "cell"]
+    df3 <- cpsel[df2, on = "cell"]
 
-    if (!is.null(elev)) {
-        df[, dist:= sqrt((x - cx)^2 + (y - cy)^2)]
+    if (is.null(elev)) {
+        df3[, dist:= sqrt((x - cx)^2 + (y - cy)^2)]
     } else {
-        df[, dist:= sqrt((x - cx)^2 + (y - cy)^2 + (z - cz)^2)]
+        df3[, dist:= sqrt((x - cx)^2 + (y - cy)^2 + (z - cz)^2)]
     }
 
-    df[, `:=`(cx = NULL, cy = NULL, cz = NULL)]
+    df3[, `:=`(cx = NULL, cy = NULL, cz = NULL)]
 }
-
-create_strength_llh <- function(strength, param) {
-    strength[s >= param$sig_d_th][
-        , by = rid, .(os = order(s), cell, dist, dBm, s)][
-            os <=param$max_overlapping_cells, pag:= s / sum(s), by = rid][
-                , list(cell, rid, dist, pag)] %>%
-    attach_class("mobloc_llh")
-}
-
-
-create_TA <- function(llh){
-    llh[, TA:=dist %/% param$TA_step][
-        TA <= param$TA_max, .(cell, TA, rid, dist, dBm, s, pag)] %>%
-        attach_class("mobloc_prop")
-
-}
-
-
-# setkey(df4, rid)
-#
-#
-
-
 
 

@@ -22,7 +22,7 @@ validate_cellplan(cp, param, elevation = NULL, region = NULL,
 \item \code{ple}. The path loss exponent, which is an approximation of the level of reflection: 2 is open field, 4 is urban area, 6 is inside buildings. It can be derived when \code{envir} is specific.
 }}
 
-\item{param}{parameter list created with \code{prop_param}}
+\item{param}{parameter list created with \code{mobloc_param}}
 
 \item{elevation}{see argument \code{cp} (variable \code{z})}
 

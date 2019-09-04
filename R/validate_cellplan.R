@@ -32,7 +32,7 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' \item \code{range}. The maximum range of the cell. If omitted, the value \code{max_range} from the parameter list \code{param} will be used. If \code{small} is defined, the value \code{max_range_small} is used for each cell for which \code{small == TRUE}.
 #' \item \code{ple}. The path loss exponent, which is an approximation of the level of reflection: 2 is open field, 4 is urban area, 6 is inside buildings. It can be derived when \code{envir} is specific.
 #' }
-#' @param param parameter list created with \code{prop_param}
+#' @param param parameter list created with \code{mobloc_param}
 #' @param region polygon shape. If specified, it checks if all cells are contained inside it
 #' @param envir raster layer that specifies the environment. For each raster tile, an indicator between 0 and 1 is required (open space is 0 and dense environment is 1). These values are scaled to the parameters \code{ple_0} and \code{ple_1}.
 #' @param elevation see argument \code{cp} (variable \code{z})

@@ -1,12 +1,3 @@
-move_cp_to_direction <- function(cp, distance = 100) {
-    cp$x2 <- cp$x + ifelse(cp$small | is.na(cp$direction), 0, (SIN(cp$direction) * distance))
-    cp$y2 <- cp$y + ifelse(cp$small | is.na(cp$direction), 0, (COS(cp$direction) * distance))
-
-    cp2 <- st_set_geometry(cp, NULL)
-
-    st_as_sf(cp2, coords = c("x2", "y2"), crs = st_crs(cp))
-}
-
 create_connection_lines <- function(cp1, cp2) {
     c1 <- st_coordinates(cp1)
     c2 <- st_coordinates(cp2)
@@ -39,7 +30,7 @@ get_epsg_tiles <- function(map, epsg) {
 
 
 base_map <- function(cp, offset, epsg) {
-    cp2 <- move_cp_to_direction(cp, offset)
+    cp2 <- move_cells_into_prop_direction(cp, offset)
     cp_lines <- create_connection_lines(cp, cp2)
 
     lf <- leaflet(options = leafletOptions(crs = get_leafletCRS(epsg))) %>%
@@ -51,7 +42,7 @@ base_map <- function(cp, offset, epsg) {
 viz_p <- function(cp, rst, var, trans, pnames, offset, rect) {
     cp$sel <- factor(ifelse(cp$sel == 2, "Selected", ifelse(cp$small, "Small cell", "Normal cell")), levels = c("Selected", "Small cell", "Normal cell"))
 
-    cp2 <- move_cp_to_direction(cp, offset)
+    cp2 <- move_cells_into_prop_direction(cp, offset)
     cp_lines <- create_connection_lines(cp, cp2)
 
 

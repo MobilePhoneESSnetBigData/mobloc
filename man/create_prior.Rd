@@ -11,7 +11,7 @@ create_prior(..., name = "composite", weights = NULL)
 
 create_uniform_prior(raster)
 
-create_network_prior(prop, raster)
+create_network_prior(strength, raster)
 
 prior_filter(prior, region)
 }
@@ -24,7 +24,7 @@ prior_filter(prior, region)
 
 \item{raster}{raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})}
 
-\item{prop}{a propagation object, which is the result of \code{\link{process_cellplan}}}
+\item{strength}{a signal strength model object, which is the result of \code{\link{compute_sig_strength}}}
 
 \item{prior}{object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}}
 

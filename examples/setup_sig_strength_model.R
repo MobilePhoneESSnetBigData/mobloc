@@ -1,4 +1,4 @@
 # explore parameters
 \dontrun{
-    setup_prop_model()
+    setup_sig_strength_model()
 }

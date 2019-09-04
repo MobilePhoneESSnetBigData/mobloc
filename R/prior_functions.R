@@ -7,7 +7,7 @@
 #' @param weights The weights of the raster objects, which should be a vector of the same length as the number of specified raster layers. See also the underlying function \code{\link{combine_raster_layers}}.
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
 #' @param region a polygons object (class \code{sf}) that specifies a region. If the object contains multiple polygons, they are considered as one.
-#' @param prop a propagation object, which is the result of \code{\link{process_cellplan}}
+#' @param strength a signal strength model object, which is the result of \code{\link{compute_sig_strength}}
 #' @param name name of the prior
 #' @param prior object created with \code{create_prior}, \code{create_network_prior} or \code{create_uniform_prior}
 #' @return data frame with two columns, raster id number \code{rid} and probability \code{p}. These probabilities will add up to 1.

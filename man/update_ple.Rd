@@ -45,9 +45,11 @@ table(ZL_cellplan$ple)
 ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
 
 # inspect this raster object
-library(tmap)
-tmap_mode("view")
-qtm(ZL_envir)
+if (requireNamespace("tmap")) {
+    library(tmap)
+    tmap_mode("view")
+    qtm(ZL_envir)
+}
 
 # impute the path loss exponent (ple) values using the ZL_envir object
 ZL_cellplan <- update_ple(ZL_cellplan, ZL_envir, ple_0 = 2, ple_1 = 4, ple_small = 6)

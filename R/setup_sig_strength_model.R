@@ -2,15 +2,15 @@
 #'
 #' Tool to setup the propagation model parameters
 #'
-#' @param param parameter list created with \code{prop_param}
+#' @param param parameter list created with \code{mobloc_param}
 #' @param plot.height heigth of the plots in the tool (in pixels)
 #' @import shiny
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
-#' @example ./examples/setup_prop_model.R
+#' @example ./examples/setup_sig_strength_model.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
-setup_sig_strength_model <- function(param = sig_strength_param(), plot.height=800) {
+setup_sig_strength_model <- function(param = mobloc_param(), plot.height=800) {
 
 
     SliderInput <- function(...) {

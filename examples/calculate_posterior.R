@@ -1,6 +1,6 @@
 \dontrun{
 # set parameters
-ZL_param <- prop_param()
+ZL_param <- mobloc_param()
 
 # load data
 data("ZL_cellplan", "ZL_muni", "ZL_elevation", "ZL_landuse")
@@ -10,27 +10,31 @@ ZL_envir <- combine_raster_layers(ZL_landuse, weights = c(1, 1, 1, 0, 0))
 
 # validate cellplan
 ZL_cellplan <- validate_cellplan(ZL_cellplan, param = ZL_param, region = ZL_muni,
-    envir = ZL_envir, elevation = ZL_elevation)
+                                 envir = ZL_envir, elevation = ZL_elevation)
 
 # create raster
 ZL_bbox <- sf::st_bbox(c(xmin = 4012000, ymin = 3077000, xmax = 4048000, ymax = 3117000),
-    crs = sf::st_crs(3035))
+                       crs = sf::st_crs(3035))
 ZL_raster <- create_raster(ZL_bbox)
 
-# process cellplan (result is propagation model and connection likelihood)
-ZL_prop <- process_cellplan(cp = ZL_cellplan, raster = ZL_raster,
-    elevation = ZL_elevation, param = ZL_param)
+# compute the signal strength model
+ZL_strength <- compute_sig_strength(cp = ZL_cellplan, raster = ZL_raster,
+                                    elevation = ZL_elevation, param = ZL_param)
+
+# create likelihoods
+ZL_strength_llh <- create_strength_llh(ZL_strength, param = ZL_param)
+ZL_voronoi_llh <- create_voronoi_llh(ZL_cellplan, ZL_raster)
 
 # create priors
 ZL_uniform_prior <- create_uniform_prior(ZL_raster)
-ZL_network_prior <- create_network_prior(ZL_prop, ZL_raster)
+ZL_network_prior <- create_network_prior(ZL_strength, ZL_raster)
 ZL_landuse_prior <- create_prior(ZL_landuse, weights = c(1, 1, .1, 0, .5))
 ZL_comp_prior <- create_prior(ZL_network_prior, ZL_landuse_prior, weights = c(.25, .75))
 
 # calculate the mobile phone locations, i.e. the location posterior.
-ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster)
+ZL_post <- calculate_posterior(prior = ZL_comp_prior, llh = ZL_strength_llh, raster = ZL_raster)
 
-# same calculations, but this time with Timing Advance
-ZL_pga <- calculate_mobloc(ZL_prop, prior = ZL_comp_prior, raster = ZL_raster,
-    timing.advance = TRUE, param = ZL_param)
+# update posterior with timing advance (TA).
+ZL_post_TA <- update_posterior_TA(ZL_post, ZL_raster, ZL_cellplan, ZL_param, ZL_elevation)
+
 }
