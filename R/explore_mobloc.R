@@ -143,7 +143,7 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                                             conditionalPanel(
                                                 condition = "input.TA",
                                                 sliderInput("TAvalue", "Value", min = 0, max = param$TA_max, value = 0, step = 1),
-                                                HTML(paste0("Each step corresponds to ", param$TA_step, " m")),
+                                                HTML(paste0("<span style='font-size:70%'>Each step corresponds to ", param$TA_step, " m</span>")),
                                                 shiny::htmlOutput("TAband")
                                             )))),
                         tabPanel("Cell data",
@@ -151,7 +151,7 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                                  dataTableOutput("cellinfo"))
                     )),
                 mainPanel(
-                    leafletOutput("map", height=1000)
+                    leafletOutput("map", height=600)
                 ))
         ),
         server = function(input, output, session) {
@@ -233,9 +233,9 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
                 TA_max_band <- (TA+TA_buffer+1) * TA_step
 
                 if (TA_buffer > 0) {
-                    HTML(paste0("TA band (with buffer): [", fN(TA_min_band), ", ", fN(TA_max_band), "] m<br>TA band (without buffer): [", fN(TA_min), ", ", fN(TA_max), "] m"))
+                    HTML(paste0("<span style='font-size:70%'>TA band (with buffer): [", fN(TA_min_band), ", ", fN(TA_max_band), "] m<br>TA band (w.o. buffer): [", fN(TA_min), ", ", fN(TA_max), "] m</span>"))
                 } else {
-                    HTML(paste0("TA band: [", fN(TA_min), ", ", fN(TA_max), "] m"))
+                    HTML(paste0("<span style='font-size:70%'>TA band: [", fN(TA_min), ", ", fN(TA_max), "] m</span>"))
                 }
 
                 #HTML(paste0("<b>Faction ", pnames[nprior], ": ", round(composition[nprior], 2), ifelse(showW, " (warning: the sum of slider values is greater than 1)", ""),  "</b>"))
