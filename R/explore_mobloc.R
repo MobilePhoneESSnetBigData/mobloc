@@ -42,7 +42,7 @@ explore_mobloc <- function(cp, raster, strength, priorlist, llhlist, param, filt
         a <- local({
             cells <- do.call(c, lapply(llhlist, function(llh) llh$cell))
             rids <- do.call(c, lapply(llhlist, function(llh) llh$rid))
-            unique(cells[rids %in% raster[]])
+            cp$cell[unique(cells[rids %in% raster[]])]
         })
         cp <- mobloc_filter_cell(cp, a)
 
@@ -380,6 +380,9 @@ create_p_raster <- function(rst, dt, type, prior, ta, param, cpsel) {
         }
     }
 
+    dt <- dt[rid %in% rindex, ]
+
+    if (nrow(dt)==0) return(r)
 
     raster::values(r)[match(dt$rid, rindex)] <- dt$x
     r <- raster::trim(r)

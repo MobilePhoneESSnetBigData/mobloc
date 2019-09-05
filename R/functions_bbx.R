@@ -34,9 +34,19 @@ mobloc_crop_raster <- function(r, bbx) {
 
 mobloc_filter_cell <- function(x, a, raster = NULL) {
     cell <- rid <- NULL
-    y <- x[cell %chin% a]
+
+    if (inherits(x, "data.table")) {
+        y <- x[cell %in% a]
+    } else {
+        y <- x[x$cell %in% a, ]
+    }
+
     if (!missing(raster)) {
-        y[rid %in% raster[]]
+        if (inherits(x, "data.table")) {
+            y[rid %in% raster[]]
+        } else {
+            y[y$rid %in% raster[], ]
+        }
     } else {
         y
     }

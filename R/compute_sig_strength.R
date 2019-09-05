@@ -110,7 +110,7 @@ compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
     df4[, cell:=factor(cell, levels = cp$cell)]
 
     setkey(df4, rid)
-    df4[, list(cell, rid, s, dist, dBm)] %>%
+    df4[, list(cell, rid, dist, dBm, s)] %>%
         attach_class("mobloc_strength")
 }
 

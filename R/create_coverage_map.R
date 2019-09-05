@@ -17,17 +17,19 @@ create_coverage_map <- function(strength, raster, type = c("dBm", "s"), cells = 
 
     check_raster(raster)
     if (!missing(cells)) {
-        strength <- copy(strength[cell %chin% cells])
+        strength <- copy(strength[cell %in% cells])
     } else {
         strength <- copy(strength)
     }
     type <- match.arg(type)
 
-
     z <- strength[, x:=get(type)][, by = rid, .(x = max(x))]
 
     y <- raster::raster(raster)
-    y[][match(z$rid, raster[])] <- z$x
+    rids <- raster[]
+    zsel <- z[rid %in% rids]
+
+    y[][match(zsel$rid, raster[])] <- zsel$x
     names(y) <- type
     y
 }
@@ -58,8 +60,12 @@ create_best_server_map <- function(llh, raster, cells = NULL) {
 
     y <- raster::raster(raster)
 
-    if (nrow(z) != 0) {
-        y[][match(z$rid, raster[])] <- as.integer(z$cell)
+    rids <- raster[]
+    zsel <- z[rid %in% rids]
+
+
+    if (nrow(zsel) != 0) {
+        y[][match(zsel$rid, raster[])] <- as.integer(zsel$cell)
         y <- raster::ratify(y)
         suppressWarnings({levels(y) <- list(data.frame(ID = 1L:length(ants), cell = ants))})
         names(y) <- "cell"
