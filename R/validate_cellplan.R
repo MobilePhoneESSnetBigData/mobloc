@@ -62,7 +62,7 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
         cp$y <- unname(coor[,2])
     }
 
-    if ("small" %in% names(cp)) {
+    if ("small" %in% nms) {
         if (!fix && !is.logical(cp$small)) stop("The variable 'small' should be a logical. Set fix = TRUE to fix this issue.")
         if (is.numeric(cp$small)) cp$small <- as.logical(cp$small)
         if (!is.logical(cp$small)) stop("The variable 'small' should be a logical")
