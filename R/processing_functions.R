@@ -4,8 +4,9 @@ determine_range <- function(x, y, z, height, direction, tilt, beam_h, beam_v, W,
 
     steps1 <- ceiling(range / 100)
 
-    x1s <- seq(x1, x, length.out = steps1)[-steps1]
-    y1s <- seq(y1, y, length.out = steps1)[-steps1]
+
+    x1s <- seq(x1, x, length.out = steps1)[1:(steps1-1)]
+    y1s <- seq(y1, y, length.out = steps1)[1:(steps1-1)]
 
 
 
