@@ -52,6 +52,11 @@ compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
         rdf$z <- elevation[]
     }
 
+    if (any(is.na(rdf$z))) {
+        warning("elevation contains NAs: these are replaced by 0")
+        rdf[is.na(z), z := 0]
+    }
+
     message("Determining coverage area per cell")
 
     # for each cell determine range for which signal strength is within param$sig_d_th (start at +/- range, calculate signal strength and stop when it reached sig_d_th)
