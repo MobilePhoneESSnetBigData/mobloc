@@ -82,6 +82,8 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
         cpsp <- as(cp, "Spatial")
         cp$elev <- as.vector(extract(elevation, cpsp))
 
+        if (any(is.na(cp$elev))) stop("elevation has NA value for at least one cell location")
+
         if (all(c("z", "height") %in% nms)) {
             if (!all(cp$z == cp$elev + cp$height)) {
                 stop("Inconsistencies found. ")
