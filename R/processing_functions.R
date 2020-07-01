@@ -108,25 +108,43 @@ calculate_rid <- function(colid, rowid, nc, nr) {
 }
 
 
-
 ##### intersection raster land
 get_raster_ids <- function(r, region) {
+    raster_df <- as.data.table(rasterToPoints(r))
+    # If a raster contains only one layer, the values in that layer will be
+    # automatically placed in a column called "layer" by rasterToPoints(). We
+    # want this column to be named "rid" instead.
+    setnames(raster_df, "layer", "rid")
 
-    rco <- as.data.frame(coordinates(r))
-    nr <- nrow(rco)
-    rco$rid <- r[]
-    rco_cnk <- split(rco, ceiling((1:nr)/100))
-
-    raster_id_fun <- function(df, region) {
-        dfsf <- st_as_sf(df, coords = c("x", "y"), crs = st_crs(region))
-        sel <- which_inside(dfsf, region)
-        df$rid[sel]
-    }
+    region_union <- region %>%
+        st_geometry() %>%
+        st_union()
 
 
-    res <- parallel::mclapply(rco_cnk, FUN = raster_id_fun, region = region)
+    raster_mask_in_region <-
+        raster_df %>%
 
-    res2 <- unname(sort(unlist(res)))
+        # Convert each record into an sf Point object.
+        st_as_sf(
+            coords = c("x", "y"),
+            crs = st_crs(region)
+        ) %>%
 
-    rco[res2, ]
+        # Determine the raster tiles whose centroids lie in the polygon region.
+        # This will be a matrix with one boolean column.
+        #
+        # This step is the bottleneck in this function. It takes less than four
+        # minutes.
+        st_intersects(
+            region_union,
+            sparse = FALSE
+        ) %>%
+
+        # Convert the one-column matrix to a vector.
+        as.logical()
+
+    raster_df_in_region <- raster_df[raster_mask_in_region]
+
+    return(raster_df_in_region)
 }
+
