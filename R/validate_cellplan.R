@@ -38,7 +38,6 @@ check_cp_var <- function(x, small, param_small, param_normal, name, fix) {
 #' @param elevation see argument \code{cp} (variable \code{z})
 #' @param fix should the cellplan that is not yet valid be made valid? If \code{FALSE}, only errors, warnings, and messages regarding the validation will be returned. If \code{TRUE}, the cellplan will be returned with a validation stamp (specifically, the attribute \code{valid_cellplan} is set to code{TRUE})
 #' @import sf
-#' @import sp
 #' @importFrom magrittr '%>%'
 #' @importFrom methods as
 #' @example ./examples/validate_cellplan.R
@@ -79,8 +78,7 @@ validate_cellplan <- function(cp, param, elevation=NULL, region=NULL, envir = NU
 
 
     if (!missing(elevation)) {
-        cpsp <- as(cp, "Spatial")
-        cp$elev <- as.vector(extract(elevation, cpsp))
+        cp$elev <- suppressWarnings(raster::extract(elevation, cp))
 
         if (any(is.na(cp$elev))) stop("elevation has NA value for at least one cell location")
 

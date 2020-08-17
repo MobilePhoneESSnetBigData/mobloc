@@ -4,9 +4,18 @@
 \alias{explore_mobloc}
 \title{Explore the visualize propagation, prior, connection likelihood and location posterior probabilities per raster tile}
 \usage{
-explore_mobloc(cp, raster, strength, priorlist, llhlist, param,
-  filter = NULL, coverage_map_dBm = NULL, coverage_map_s = NULL,
-  best_server_map = NULL)
+explore_mobloc(
+  cp,
+  raster,
+  strength,
+  priorlist,
+  llhlist,
+  param,
+  filter = NULL,
+  coverage_map_dBm = NULL,
+  coverage_map_s = NULL,
+  best_server_map = NULL
+)
 }
 \arguments{
 \item{cp}{cellplan, validated with \code{\link{validate_cellplan}}}

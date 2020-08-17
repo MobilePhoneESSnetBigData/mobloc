@@ -5,8 +5,7 @@
 \alias{create_best_server_map}
 \title{Create a best server map and a coverage map.}
 \usage{
-create_coverage_map(strength, raster, type = c("dBm", "s"),
-  cells = NULL)
+create_coverage_map(strength, raster, type = c("dBm", "s"), cells = NULL)
 
 create_best_server_map(llh, raster, cells = NULL)
 }

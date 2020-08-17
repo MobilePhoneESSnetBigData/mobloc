@@ -8,8 +8,7 @@
 \usage{
 distance_plot(W, ple, range, base_size = 11, show_classes = TRUE)
 
-signal_dominance_plot(midpoint, steepness, base_size = 11,
-  show_classes = TRUE)
+signal_dominance_plot(midpoint, steepness, base_size = 11, show_classes = TRUE)
 
 radiation_plot(type = "a", beam_width, db_back = -30, base_size = 11)
 }

@@ -51,7 +51,7 @@ sample_envir_points <- function(cp, envir, omnidir_angles = c(0, 90, 180, 270), 
         df$y <- df$y + COS(df$a) * df$rd
 
         df <- st_as_sf(df, coords = c("x", "y"), crs = st_crs(cp))
-        x <- raster::extract(envir, df)
+        x <- suppressWarnings(raster::extract(envir, df))
         mean(x, na.rm = TRUE)
     }, cp$x, cp$y, angles, cp$range, cp$cell, SIMPLIFY = TRUE)
 }

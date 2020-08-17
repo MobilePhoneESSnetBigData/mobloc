@@ -5,12 +5,30 @@
 \alias{mobloc_param}
 \title{Set the mobloc parameters}
 \usage{
-mobloc_param(W = 10, W_small = 5, ple = 3.75, ple_small = 6,
-  ple_0 = 3.5, ple_1 = 4, midpoint = -92.5, steepness = 1/5,
-  range = 10000, range_small = 1000, height = 30, height_small = 8,
-  tilt = 5, beam_v = 9, beam_h = 65, azim_dB_back = -30,
-  elev_dB_back = -30, sig_d_th = 0.005, max_overlapping_cells = 100,
-  TA_step = 78.12, TA_max = 1282, TA_buffer = 1)
+mobloc_param(
+  W = 10,
+  W_small = 5,
+  ple = 3.75,
+  ple_small = 6,
+  ple_0 = 3.5,
+  ple_1 = 4,
+  midpoint = -92.5,
+  steepness = 1/5,
+  range = 10000,
+  range_small = 1000,
+  height = 30,
+  height_small = 8,
+  tilt = 5,
+  beam_v = 9,
+  beam_h = 65,
+  azim_dB_back = -30,
+  elev_dB_back = -30,
+  sig_d_th = 0.005,
+  max_overlapping_cells = 100,
+  TA_step = 78.12,
+  TA_max = 1282,
+  TA_buffer = 1
+)
 }
 \arguments{
 \item{W}{default power in Watt of a normal cell (placed in a cell tower or rooftop site)}

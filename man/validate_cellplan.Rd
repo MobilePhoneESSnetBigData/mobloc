@@ -4,8 +4,14 @@
 \alias{validate_cellplan}
 \title{Validate cellplan}
 \usage{
-validate_cellplan(cp, param, elevation = NULL, region = NULL,
-  envir = NULL, fix = TRUE)
+validate_cellplan(
+  cp,
+  param,
+  elevation = NULL,
+  region = NULL,
+  envir = NULL,
+  fix = TRUE
+)
 }
 \arguments{
 \item{cp}{cellplan \code{sf} object containing the cell data. Each data record should be a point (i.e., \code{st_geometry_type(cp)} should return \code{POINT}s). The optional variables are:
