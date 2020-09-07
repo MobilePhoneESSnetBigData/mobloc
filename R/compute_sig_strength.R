@@ -1,6 +1,6 @@
-#' Process cellplan
+#' Compute signal strength
 #'
-#' Process cellplan. The propagation is modelled based on the physical properties of the cells. Also, the likelihood distribution is calculated, which takes the overlap of cells into account.
+#' Compute signal strength (propagation). The propagation is modelled based on the physical properties of the cells. Also, the likelihood distribution is calculated, which takes the overlap of cells into account.
 #'
 #' @param cp cellplan, validated with \code{\link{validate_cellplan}}
 #' @param raster raster object that contains the raster tile index numbers (e.g. created with \code{\link{create_raster}})
@@ -12,7 +12,7 @@
 #' @import doParallel
 #' @import foreach
 #' @import data.table
-#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the connection likelihood with \code{\link{create_strength_llh}}.
+#' @return a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{explore_mobloc} from the \code{mobvis} package and to compute the connection likelihood with \code{\link{create_strength_llh}}.
 #' @example ./examples/compute_sig_strength.R
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export

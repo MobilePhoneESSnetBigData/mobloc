@@ -1,5 +1,12 @@
-# borrowed from tmaptools:::create_sf_rect
-create_bbx_rect <- function (bbx, steps = 100, stepsize = 10)
+
+#' Create a bounding box rectangle
+#'
+#' Create a bounding box rectangle. Code borrowed from \code{tmaptools:::create_sf_rect}
+#'
+#' @param bbx bounding box
+#' @param stepsize stepsize
+#' @export
+create_bbx_rect <- function (bbx, stepsize = 10)
 {
     projection <- st_crs(bbx)
     x1 <- bbx[1]

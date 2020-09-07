@@ -40,6 +40,7 @@ create_TA <- function(llh){
 #' @param cp cellplan
 #' @param param parameter list created with \code{mobloc_param}
 #' @param elev elevation data. If specified, it is used to calculate the distance using the z coordinate as well.
+#' @export
 #' @seealso \code{\link{calculate_posterior}} for examples
 update_posterior_TA <- function(post, raster, cp, param, elev = NULL) {
     if (!inherits(post, "mobloc_post")) stop("post is not a mobloc_post object")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_sig_strength.R
 \name{compute_sig_strength}
 \alias{compute_sig_strength}
-\title{Process cellplan}
+\title{Compute signal strength}
 \usage{
 compute_sig_strength(cp, raster, elevation, param, region = NULL)
 }
@@ -18,10 +18,10 @@ compute_sig_strength(cp, raster, elevation, param, region = NULL)
 \item{region}{polygon shape. If specified, only the signal strength will be calculated for raster tiles inside the polygons}
 }
 \value{
-a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{\link{explore_mobloc}} and to compute the connection likelihood with \code{\link{create_strength_llh}}.
+a data.frame is return with the following colums: cell (cell id), rid (raster tile id), dist (distance between cell and grid tile), dBm (signal strength), s (signal dominance), pag (likelihood probability). This data.frame is required to run the interactive tool \code{explore_mobloc} from the \code{mobvis} package and to compute the connection likelihood with \code{\link{create_strength_llh}}.
 }
 \description{
-Process cellplan. The propagation is modelled based on the physical properties of the cells. Also, the likelihood distribution is calculated, which takes the overlap of cells into account.
+Compute signal strength (propagation). The propagation is modelled based on the physical properties of the cells. Also, the likelihood distribution is calculated, which takes the overlap of cells into account.
 }
 \examples{
 \dontrun{

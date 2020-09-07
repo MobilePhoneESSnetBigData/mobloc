@@ -1,7 +1,7 @@
 Package: mobloc
 Type: Package
 Title: Mobile phone location algorithms and tools
-Version: 0.4.1
+Version: 0.5
 Authors@R: c(person("Martijn", "Tennekes", email="mtennekes@gmail.com", role=c("aut", "cre")),
              person("Yvonne", "Gootzen", email = "y.a.p.m.gootzen@cbs.nl", role = "ctb"),
              person("Shan", "Shah", email = "s.h.shan@cbs.nl", role = "ctb"))
@@ -10,12 +10,11 @@ License: EUPL
 LazyData: true
 Date: 2020-08-17
 Depends:
-    R (>= 3.3)
+    R (>= 3.5)
 Imports:
     methods,
     stats,
     graphics,
-    sp,
     sf (>= 0.6-3),
     RColorBrewer,
     shiny,

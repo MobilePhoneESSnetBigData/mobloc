@@ -28,53 +28,94 @@ ATAN2 <- function(y, x) r2d(atan2(y, x))
 
 
 # https://www.rapidtables.com/electric/dBW.html
+
+#' Converter functions
+#'
+#' Converter functions between W, dBW, and dBm.
+#'
+#' @param W watt
+#' @param dBW decibelwatt
+#' @param dBm decibel-milliwatts, a unit of level used to indicate that a power ratio is expressed in decibels (dB) with reference to one milliwatt (mW)
+#' @export
+#' @rdname dBW2dBm
 dBW2dBm <- function(dBW) {
     dBW + 30
 }
 
+#' @export
+#' @rdname dBW2dBm
+dBW2W <- function(dBW) {
+  10^(dBW / 10)
+}
+
+#' @export
+#' @rdname dBW2dBm
 W2dBW <- function(W) {
     10 * log10(W)
 }
 
-dBW2W <- function(dBW) {
-    10^(dBW / 10)
-}
-
-dBm2dBW <- function(dBm) {
-    dBm - 30
-}
-
+#' @export
+#' @rdname dBW2dBm
 W2dBm <- function(W) {
-    dBW2dBm(W2dBW(W))
+  dBW2dBm(W2dBW(W))
+}
+
+#' @export
+#' @rdname dBW2dBm
+dBm2dBW <- function(dBm) {
+  dBm - 30
+}
+
+#' @export
+#' @rdname dBW2dBm
+dBm2W <- function(dBm) {
+  dBW2W(dBm - 30)
 }
 
 
-distance2dB <- function(r, ple, W) {
-    #-75 - 10 * log10(r/1)
 
-    db0 <- W2dBm(W)
-
-    db0 - ple * 10 * log10(r)
-    #db0 - .05 * r
-}
 
 normalize_angle <- function(a) {
   a <- abs(a) %% 360
   a[a>180] <- 360 - a[a>180]
   a
 }
-#
-# el_dBloss <- function(a, db_back = -30) {
-#   a <- normalize_angle(a)
-#   (dbeta(a/pi, 1,4) - 4) * (-db_back/4)
-# }
 
+#' Signal strength model functions
+#'
+#' Signal strength model functions. \code{norm_dBloss} approximates the dB loss at a certain direction using normal distributions. \code{distance2dB} approximates the signal strength in dB as a function of distance, given the power of the cell and the path loss exponent. \code{db2s} transforms dBm to signal dominance (s) using a sigmoid function.
+#'
+#' @param a angle of direction (in degrees)
+#' @param db_back difference in signal strength between front and back (in dB)
+#' @param sd standard deviation of the normal distribution that is used to model the radiation pattern, such that at 180 degrees, the dB loss is db_back and at beam_width degrees the dB loss is 3dB.
+#' @param beam_width beam width
+#' @param r distance
+#' @param ple path loss exponent
+#' @param W watt
+#' @param dBm dBm to convert
+#' @param midpoint which dBm value corresponds to the mid point of the distribution (0.5)
+#' @param steepness steepness of the fitted curve
+#' @export
+#' @rdname norm_dBloss
 norm_dBloss <- function(a, db_back = -30, sd = 90, beam_width = NULL) {
   if (!is.null(beam_width)) sd <- find_sd(beam_width = beam_width, db_back = db_back)
   a <- normalize_angle(a)
   inflate <- -db_back / (dnorm(0, 0, sd) - dnorm(180, 0, sd))
   (dnorm(a, mean = 0, sd = sd) - dnorm(0, 0, sd)) * inflate
 }
+
+#' @export
+#' @rdname norm_dBloss
+distance2dB <- function(r, ple, W) {
+  #-75 - 10 * log10(r/1)
+
+  db0 <- W2dBm(W)
+
+  db0 - ple * 10 * log10(r)
+  #db0 - .05 * r
+}
+
+
 get_min3db <- function(sd, db_back) {
   df <- data.frame(a = seq(0, 180, length.out = 720))
   df$dbLoss <- norm_dBloss(df$a, db_back = db_back, sd = sd)
@@ -122,7 +163,9 @@ attach_mapping <- function(param) {
 #     (dnorm(a, 0, sd) - dens_max) * inflate
 # }
 
-# transform dBm to signal dominance (s)
+
+#' @export
+#' @rdname norm_dBloss
 db2s <- function(dBm, midpoint, steepness) {
     scale <- (dBm - midpoint) * steepness
     1 / (1 + exp(1)^(-scale))
@@ -156,7 +199,23 @@ project_to_e_plane <- function(b, c, beta) {
 
 
 
-
+#' Signal strength
+#'
+#' Low-level function to calculate signal strength. Used by compute_sig_strength.
+#'
+#' @param cx The x-coordinate of the source
+#' @param cy The y-coordinate of the source
+#' @param cz The z-coordinate of the source
+#' @param direction The propagation direction
+#' @param tilt The propagation tilt
+#' @param beam_h The propagation horizontal beam width
+#' @param beam_v The propagation vertical beam width
+#' @param W The power (Watt) of the source
+#' @param co The coordinates and id numbers of the tiles for which the signal strength should be calculated. Should be a data.frame with the variables \code{x}, \code{y}, \code{z}, \code{rid}
+#' @param ple Path loss exponent
+#' @param param mobloc parameters
+#' @param enable character vector that determines which components are enabled for the calculation of signal strength. More specifically, these components determine whether to include signal loss as a function of distance (\code{"d"}), horizontal deviation (\code{"h"}) and vertical deviation (\code{"v"}) of the main direction.
+#' @export
 signal_strength <- function(cx, cy, cz, direction, tilt, beam_h, beam_v, W, co, ple, param, enable = c("d", "h", "v")) {
 
     # tilt was assumed to be negative?

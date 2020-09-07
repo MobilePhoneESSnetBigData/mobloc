@@ -1,3 +1,6 @@
+version 0.5
+- migrated visualization functions to mobvis
+
 version 0.4.1
 - removed sp dependency
 - fixed a few minor bugs (see gitlab)
