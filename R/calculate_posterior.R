@@ -9,7 +9,7 @@
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 calculate_posterior <- function(prior, llh, raster) {
-    pag <- cell <- pga <- rid <- TA <- NULL
+    pag <- cell <- pga <- rid <- TA <- p <- NULL
 
     x <- copy(llh)
 
@@ -24,14 +24,6 @@ calculate_posterior <- function(prior, llh, raster) {
 }
 
 
-create_TA <- function(llh){
-    llh[, TA:=dist %/% param$TA_step][
-        TA <= param$TA_max, .(cell, TA, rid, dist, dBm, s, pag)] %>%
-        attach_class("mobloc_llh")
-
-}
-
-
 #' Update posterior with Timing Advance
 #'
 #' Update posterior with Timing Advance. The posterior created with \code{\link{calculate_posterior}} will be used as a prior. The likelihood will be 1 if the grid call is contained in a specific TA band and 0 otherwise. When the parameter \code{TA_buffer > 0}, the TA band will be made broader. See the documentation of \code{\link{mobloc_param}} for details
@@ -43,13 +35,15 @@ create_TA <- function(llh){
 #' @export
 #' @seealso \code{\link{calculate_posterior}} for examples
 update_posterior_TA <- function(post, raster, cp, param, elev = NULL) {
+    cell <- rid <- pga <- dist <- TA <- . <- pg <- TA <- NULL
+
     if (!inherits(post, "mobloc_post")) stop("post is not a mobloc_post object")
     check_raster(raster)
     if (!is_cellplan_valid(cp)) stop("cp is not a valid cell plan")
     if (missing(param)) stop("param is missing")
 
 
-    prior <- calculate_dist(post, cp = ZL_cellplan, raster = raster, elev)[, list(cell, rid, pg=pga, dist)]
+    prior <- calculate_dist(post, cp = cp, raster = raster, elev)[, list(cell, rid, pg=pga, dist)]
 
     prior <- prior[, TA:=dist %/% param$TA_step][
         TA <= param$TA_max, .(cell, TA, rid, pg)]

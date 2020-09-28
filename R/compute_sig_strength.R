@@ -121,6 +121,8 @@ compute_sig_strength <- function(cp, raster, elevation, param, region = NULL) {
 
 
 calculate_dist <- function(df, cp, raster, elev = NULL) {
+    rid <- cell <- x <- y <- z <- dist <- cx <- cy <- cz <- NULL
+
     if (!inherits(df, c("mobloc_llh", "mobloc_post"))) stop("x is not a mobloc_llh nor mobloc_post")
     if (!is_cellplan_valid(cp)) stop("cellplan has not been not validated")
     check_raster(raster)

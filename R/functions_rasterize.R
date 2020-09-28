@@ -6,7 +6,7 @@
 #' @param tile.size cell size (which is both the width and the height) in meters (assuming the coordinate system is specified in meters)
 #' @return raster layer
 #' @import sf
-#' @importFrom raster raster setValues brick extent crop extract coordinates
+#' @importFrom raster raster setValues brick extent crop extract coordinates rasterToPoints
 #' @example ./examples/create_raster.R
 #' @export
 create_raster <- function(x, tile.size = 100) {

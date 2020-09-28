@@ -13,7 +13,7 @@
 #' @seealso \href{../doc/mobloc.html}{\code{vignette("mobloc")}}
 #' @export
 create_coverage_map <- function(strength, raster, type = c("dBm", "s"), cells = NULL) {
-    rid <- cell <- x <- NULL
+    rid <- cell <- x <- . <- NULL
 
     check_raster(raster)
     if (!missing(cells)) {

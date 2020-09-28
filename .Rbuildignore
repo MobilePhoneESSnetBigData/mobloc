@@ -5,4 +5,6 @@
 sandbox
 data_generation
 .travis.yml
-.appveyor.yml
+appveyor.yml
+examples
+tic.R

@@ -5,6 +5,8 @@
 #' @param offset offset in meters of the cells in the direction of progagation
 #' @export
 create_voronoi_llh <- function(cp, raster, offset = 100) {
+    cell <- cellid <- rid <- NULL
+
     if (!is_cellplan_valid(cp)) stop("Cellplan (cp) is not valid yet. Please validate it with validate_cellplan")
 
     check_raster(raster)

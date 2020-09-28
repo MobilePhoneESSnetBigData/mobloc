@@ -4,6 +4,7 @@
 #' @param param parameter list created with \code{mobloc_param}
 #' @export
 create_strength_llh <- function(strength, param) {
+    s <- rid <- . <- cell <- dist <- dBm <- os <- pag <- NULL
     strength[s >= param$sig_d_th][
         , by = rid, .(os = order(s), cell, dist, dBm, s)][
             os <=param$max_overlapping_cells, pag:= s / sum(s), by = rid][

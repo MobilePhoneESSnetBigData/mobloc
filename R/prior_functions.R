@@ -39,7 +39,7 @@ create_uniform_prior <- function(raster) {
 #' @rdname create_prior
 #' @export
 create_network_prior <- function(strength, raster) {
-    rid <- s <- NULL
+    rid <- s <- p <- NULL
     check_raster(raster)
     totals <- sum(strength$s)
 
@@ -127,6 +127,7 @@ set_mobloc_prior <- function(x, name) {
 }
 
 prior_to_df <- function(prior, raster) {
+    p <- NULL
     data.table(rid = raster[],
                p = prior[])[!is.na(p)]
 }
