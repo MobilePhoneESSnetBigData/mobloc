@@ -18,23 +18,38 @@ create_voronoi_llh <- function(cp, raster, offset = 100) {
 
     cp2 <- move_cells_into_prop_direction(cp, offset)
 
-    v <- st_sf(geometry=st_cast(st_voronoi(st_union(cp2), bbx_poly)))
+    id_norm <- which(!cp$small)
+    id_small <- which(cp$small)
+    c_norm <- cp2[id_norm, ]
+    c_small <- cp[id_small,]
+
+    cx = st_coordinates(c_norm)[,1]
+    cy = st_coordinates(c_norm)[,2]
+
+    v <- st_sf(geometry=st_cast(st_voronoi(st_union(c_norm), bbx_poly)))
 
     rco <- as.data.frame(coordinates(raster))
     dfsf <- st_as_sf(rco, coords = c("x", "y"), crs = st_crs(cp))
 
-    # recover order
-    tmp <- st_intersects(cp2, v)
+    tmp <- st_intersects(c_norm, v)
+    stopifnot(all(sapply(tmp, length) == 1L))
+
     v <- v[unlist(tmp),]
 
     res <- st_intersects(v, dfsf)
-
-
     dts <- mapply(function(rs, id) {
         data.table(rid = rs, cellid = id)
-    }, res, 1L:nrow(res), SIMPLIFY = FALSE)
+    }, res, id_norm, SIMPLIFY = FALSE)
 
-    dt <- rbindlist(dts)
+    dt_norm <- rbindlist(dts)
+
+    # small cells
+    dist = units::drop_units(st_distance(c_small, dfsf))
+
+    dt_small = data.table(rid = apply(dist, MARGIN = 1, FUN = which.min), cellid = id_small)
+
+    dt = rbindlist(list(dt_norm[!(rid %in% dt_small$rid),],
+                        dt_small))
 
     dt[, cell:=factor(cp$cell[cellid], levels = cp$cell)][, list(cell, rid, pag = 1)] %>%
         attach_class("mobloc_llh")
