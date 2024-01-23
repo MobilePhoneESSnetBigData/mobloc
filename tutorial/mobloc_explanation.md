@@ -6,6 +6,21 @@ Explanation of mobloc
 This document is to explain the implementation of the methods provided
 in mobloc.
 
+## Installing mobloc and mobvis
+
+For reimplementing the methods, it could be useful to be able to run
+mobloc and mobvis. These can be installed by running these two lines of
+code in R:
+
+``` r
+devtools::install_github("MobilePhoneESSnetBigData/mobloc")
+devtools::install_github("MobilePhoneESSnetBigData/mobvis")
+```
+
+The other document
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/tutorial/mobloc_vignette.md>
+will explain mobloc and mobvis from a **user** persepective.
+
 ## Model parameters
 
 In the table below, the model parameters are listed.
