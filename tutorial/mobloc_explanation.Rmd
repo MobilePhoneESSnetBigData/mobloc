@@ -1,0 +1,103 @@
+---
+title: "Explanation of mobloc"
+output: github_document
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Introduction
+
+This document is to explain the implementation of the methods provided in mobloc.
+
+```{r echo=FALSE, message=FALSE}
+library(mobloc)
+library(kableExtra)
+#library(mobvis)
+```
+
+## Model parameters
+
+In the table below, the model parameters are listed.
+
+
+```{r echo=FALSE}
+ZL_param <- mobloc_param()
+params = data.frame(name = names(ZL_param), 
+                    default = unname(sapply(ZL_param, as.character)),
+                    description = c("default power in Watt of a normal cell (placed in a cell tower or rooftop site)",
+"default power in Watt of a small cell (omnidirectional)",
+"default path loss exponent",
+"path loss exponent for small cells",
+"path loss exponent for free space",
+"path loss exponent for dense environments",
+"midpoint of the logistic function used to map signal strength to signal dominance",
+"steepness of the logistic function used to map signal strength to signal dominance",
+"maximum range of normal cells",
+"maximum range of small cells",
+"default height of normal cells",
+"default height of small cells",
+"default (horizontal) tilt. Only applicable for directional cells",
+"default vertical beam width. Only applicable for directional cells",
+"default horizontal beam width. Only applicable for directional cells",
+"difference in signal strength between front and back",
+"difference in signal strength between front and back",
+"signal dominance threshold",
+"maximum number of cells that may overlap per raster tile. If the actual number exceeds this parameter, the max_overlapping_cells cells with the highest signal strength are selected",
+"meters that correspond to one Timing Advance (TA) step. This parameter depends on the network technology and psychical properties such as air pressure. In GSM networks it is approximately 554 meters, and LTE (4G) networks 78.12 meters.",
+"maximum Timing Advance (TA) value (integer). In other words, TA can have a value between 0 and TA_max. In GSM it is 63, and in LTE 1282.",
+"buffer to prevent artifacts in the TA to grid tile conversion. These artifacts occur when TA_step is similar or smaller than the width of a grid tile. TA_buffer is an integer that determines the number of TA steps that are added in front of behind the actual TA band."))
+knitr::kable(params, format = "html")
+```
+
+We explain how we use them below.
+
+## Imputation of input data
+
+Most of the parameters are used to impute missing physical properties.
+
+An example of the complete input dataset of the 'cell plan' (cell locations with physical properties) is the following:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+ZL_cellplan_validated = validate_cellplan(ZL_cellplan, param = ZL_param, elevation = ZL_elevation)
+knitr::kable(head(ZL_cellplan_validated), format = "html") %>%
+  kable_styling(font_size = 10)
+```
+
+By 'complete' we mean that all variables are used by mobloc to compute the signal strength. Variables that are relevant for the MNO data processing but not used by mobloc, in particular date/time, can of course be contained in this data, but will be ignored by mobloc.
+
+The x and y variables are the coordinates according to the used CRS. Latitude/longitude (WGS84) can be used, but for the calculation of distances it is recommended to use a CRS where distances can be directly derived from the CRS coordinates. (Distances can also be calculated directly from lat/lon coordinates but this may be computationally expensive.).
+
+For the z variable, we use the following formula: `z = elevation + height`. Elevation is the meters above sea level. Height is the height of the cell from the ground. Therefore, z is the meters of the cell above sea level. For the input data, either z or height is required. Elevation is taken from an additional data source, which contains all elevation values of the area of interest. 
+
+The only mandatory fields are "cell" (identifier), and "geometry" (the location). The default parameters above are used to impute missing variables/values. For instance, if the variable "direction" is missing, all cells are considered onmidirectional. The variable "small" is only used to select a different set of default values. These are the parameters with the postfix "_small".  
+
+To illustrate the imputation of missing values, consider this input data of 3 cells:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+example = sf::st_sf(cell = c("A", "B", "C"), small = c(FALSE, FALSE, TRUE), geometry = ZL_cellplan$geometry[1:3])
+knitr::kable(head(example), format = "html")
+```
+
+The imputed data would be:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+example_valid = validate_cellplan(example, param = ZL_param, elevation = ZL_elevation)
+knitr::kable(head(example_valid), format = "html") %>%
+  kable_styling(font_size = 10)
+```
+
+Note that the imputed height of A and B is 30 meters, but for C (labeled the small cell), it is 8.
+
+Important to note is that all default values listed in the table with parameters above, are loosely determined during one collaboration project with an MNO in the past. Other than face validity checks, these values have not been validated. Therefore, we strongly recommend to carefully check and if needed adjust the parameter values using the state-of-the-art knowledge of MNO data.
+
+
+
+
+
+
+
