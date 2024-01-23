@@ -875,8 +875,20 @@ Note that the imputed height of A and B is 30 meters, but for C (labeled
 the small cell), it is 8.
 
 Important to note is that all default values listed in the table with
-parameters above, are loosely determined during one collaboration
-project with an MNO in the past. Other than face validity checks, these
-values have not been validated. Therefore, we strongly recommend to
-carefully check and if needed adjust the parameter values using the
-state-of-the-art knowledge of MNO data.
+parameters above, are determined during one collaboration project with
+an MNO in the past. Other than face validity checks, these values have
+not been validated. Therefore, we strongly recommend to carefully check
+and if needed adjust the parameter values using the state-of-the-art
+knowledge of MNO data.
+
+The mobvis package contains an interactive tool (R-Shiny app) that can
+be used to experiment with parameter settings. In R, it can be started
+with:
+
+``` r
+ mobvis::setup_sig_strength_model()
+```
+
+<img src="images/setup_signal_strength.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()" width="700px">
+
+## Signal strength computation
