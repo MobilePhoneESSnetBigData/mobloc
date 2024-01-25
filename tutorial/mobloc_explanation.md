@@ -907,3 +907,335 @@ with:
 <img src="images/setup_signal_strength.jpg" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Note this is just a screenshot of the tool." onload="$(this).tooltip()" width="700px">
 
 ## Signal strength computation
+
+The signal strength is computed via the function `compute_sig_strength`.
+This function does the administrative part (e.g. checking input datasets
+and setting up parallel processes) around the core function
+`signal_strength`. This administrative part is R-specific so is less
+relevant when implementing in another language. Therefore, we focus on
+the function `signal_strength`.
+
+The source code should be easy to understand for people with an IT
+background:
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/R/signal_strength.R>
+. Some R-specific knowledge helpful to understand R scripts:
+
+- The \#’ block above each function is the documentation in roxygen2
+  format (see
+  <https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html>).
+  When an R package is build, it will be compiled to an HTML help page.
+  In R, `?signal_strength` will show this page.
+- The odd `<-` operator is the assignment, which is normally (in other
+  programming languages) the `=` operator.
+
+About content of the signal strength function. This function computes
+the signal strength for a set of grid tiles (for which the centroids are
+stored in the input argument `co`) for one specific cell, specified with
+the coordinates `cx`, `cy`, `cz` (as mentioned before, when using a
+projected CRS instead of lat/lon coordinates, the coordinates represent
+meters, which make distance calculations much easier/faster), and the
+physical properties `direction`, `tilt`, `beam_h`, `beam_v`, and `W`.
+
+The signal strength consists of three components (which can be turned on
+and off via the input argument `enabled`):
+
+### `"d"` Distance
+
+Signal strength decreases with distance. The path loss exponent (`ple`)
+determines to which extend. This is mainly determined by the environment
+of the cell: 2 can be used for free space, 4 for urban areas, and 6 for
+buildings. The function to compute this called in
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/R/signal_strength.R#L229>
+
+For omnidirectional cells only the `"d"` component is needed. For
+directional cells all three components.
+
+### `"h"` and `"v"` Radiation pattern
+
+Signal strength is also reduced if target location (where the device is)
+differs from propagation angle, which is composed of the azimuth angle
+(the hozinontal plane, `"h"`) and the elevation angle (the vertical
+plane, `"v"`). We model the radiation patterns as Gaussian
+distributions:
+
+<img src="images/radiation_plots2.png" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Radiation plots" onload="$(this).tooltip()" width="700px">
+
+There are two input parameters that are relevant here: `azim_dB_back`
+and `elev_dB_back`. These contain the dB difference between the
+propagation direction and opposite direction (the ‘back’) in both
+planes. By default both are -30dB, which mean that the signal strength
+is 30dB weaker in the opposite ‘back’ direction. This can be seen in the
+radiation plots. On the left hand side, (horizontal/azimuth plane) the
+main propagation direction is upwards where the black line crosses the
+radial axis at 0dB. In the downward direction, the black line crosses
+the radial axis at the -30dB gridline. On the right hand side, the main
+propagation is to the right (where the black line crosses 0dB) and the
+opposite direction is to the left (-30dB).
+
+The azimuth and elevation angles correspond to the angles in which the
+signal strength is reduced by 3dB. These angles are depicted above by
+the red lines.
+
+The implementation is here:
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/R/signal_strength.R#L235-L251>
+and
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/R/signal_strength.R#L255-L261>.
+It is hard to explain adnd understand this implementation line by line.
+Instead, it is easier to explain this implementation with the following
+picture:
+
+<img src="images/radiation.png" alt="sigma" data-toggle="tooltip" data-placement="right" title="" data-original-title="Mapping a Gaussian distribution" onload="$(this).tooltip()" width="399px">
+
+The aim is to fit this Gaussian curve twice, so once for the
+azimuth/horizontal plane and once for the elevation/vertical plane. The
+x-axis stands for propagation angle, where 0 means the main propagation
+angle and (-)180 the opposite. The y-axis stands for dB difference with
+respect to the main angle. There is no difference with x=0, so that is
+the y=0dB point. The fit of the Gaussian curve depends on on two
+variables, namely the (azimuth or elevation) angle (vertical red lines)
+and the `dB_back` parameter (bottom horizontal dashed line).
+
+There are several ways how this can be implemented. In the R
+implementation, the function `attach_mapping` creates a lookup-table
+that calculates the required standard deviations given the `db_back`
+parameter, for each (azimuth/elevation) degree:
+
+<table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;">
+deg
+</th>
+<th style="text-align:right;">
+sd
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.98
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+4.14
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+6.30
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+8.46
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+10.80
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+12.96
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+15.12
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+17.28
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+19.44
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+21.60
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+deg
+</th>
+<th style="text-align:right;">
+sd
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+171
+</td>
+<td style="text-align:right;">
+171
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+172
+</td>
+<td style="text-align:right;">
+172
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+173
+</td>
+<td style="text-align:right;">
+173
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+174
+</td>
+<td style="text-align:right;">
+174
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+175
+</td>
+<td style="text-align:right;">
+175
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+176
+</td>
+<td style="text-align:right;">
+176
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+177
+</td>
+<td style="text-align:right;">
+177
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+178
+</td>
+<td style="text-align:right;">
+178
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+179
+</td>
+<td style="text-align:right;">
+179
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+180
+</td>
+<td style="text-align:right;">
+180
+</td>
+<td style="text-align:right;">
+179.1
+</td>
+</tr>
+</tbody>
+</table>
+
+This is a one-time operation (provided that `dB_back` is fixed). The
+function `find_sd` will find the standard deviation for which the
+(amimuth/elevation) angle is closest to `deg` in this lookup-table.
+
+## Calculation of signal dominance
+
+The logistic function to compute the signal dominance is `db2s`
+(<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/R/signal_strength.R#L169>).
+
+## Calculation of cell connection (in mobloc called ‘likelihood’) probabilities
+
+This is straightforward. The implementation is very R-specific, so not
+usable for other programming languages.
+
+## Calculation of posterior probabilities
+
+This is straightforward. The implementation is very R-specific, so not
+usable for other programming languages.
