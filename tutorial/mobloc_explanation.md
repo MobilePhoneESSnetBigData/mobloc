@@ -1239,3 +1239,406 @@ usable for other programming languages.
 
 This is straightforward. The implementation is very R-specific, so not
 usable for other programming languages.
+
+## Preparing landuse data
+
+In mobloc, we use landuse for two purposes. One is to calculate the path
+loss exponent, which is used to model the propagation. The second is to
+compute a prior distribution, which is used to compute the posterior
+distribution. The preparation for the landues data using OpenStreetMap
+(OSM) is the same process, and will be explained here.
+
+For each grid tile we compute the fraction of main land use categories.
+We distinguish between:
+
+- Built-up
+- Forest
+- Water
+- (Rail)roads
+
+Note: in mobloc we split built-up between residential and
+(non-residential) buildings, but eventually, we did not use buildings
+differently from residential areas.
+
+How to process OSM data depends on the quality of OSM data, which can
+vary between countries. For the Dutch example data in mobloc, the
+processing script is here:
+<https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/data_generation/ZL_landuse.R>
+
+The applied process is the following. First we obtain the OSM polygons
+per category. The used OSM key-value pairs are listed in the following
+table, along with the applied categorie.
+
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+key
+</th>
+<th style="text-align:left;">
+value
+</th>
+<th style="text-align:left;">
+category
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+commercial
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+construction
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+industrial
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+retail
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+depot
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+farmyard
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+forest
+</td>
+<td style="text-align:left;">
+forest
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+garages
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+greenhouse_horticulture
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+landfill
+</td>
+<td style="text-align:left;">
+built-up
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+orchard
+</td>
+<td style="text-align:left;">
+forest
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+plant_nursery
+</td>
+<td style="text-align:left;">
+forest
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+landuse
+</td>
+<td style="text-align:left;">
+vineyard
+</td>
+<td style="text-align:left;">
+forest
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+natural
+</td>
+<td style="text-align:left;">
+water
+</td>
+<td style="text-align:left;">
+water
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+waterway
+</td>
+<td style="text-align:left;">
+canal
+</td>
+<td style="text-align:left;">
+water
+</td>
+</tr>
+</tbody>
+</table>
+
+Next, we use the OSM polylines to compute the (rail)roads. We use the
+key-value pairs in the following table. The third column indicated the
+used width in meters. For each polyline, we apply a spatial buffer of
+this width in order to obtain a polygon.
+
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+key
+</th>
+<th style="text-align:left;">
+value
+</th>
+<th style="text-align:right;">
+width
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+motorway
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+trunk
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+primary
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+secondary
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+motorway_link
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+trunk_link
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+primary_link
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+highway
+</td>
+<td style="text-align:left;">
+secondary_link
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+</tbody>
+</table>
+
+The spatial difference is computed between the OSM polygons and buffered
+OSM polygons. So from the OSM polygons in the categories built-up,
+forest and water, the buffered OSM polylines are subtracted. When we
+prepared the polygons per category, the next preparation step is to
+compute the fraciton between each grid tile and each category. In mobloc
+the result is the following:
+
+    ## Loading required package: tmap
+
+    ## Breaking News: tmap 3.x is retiring. Please test v4, e.g. with
+    ## remotes::install_github('r-tmap/tmap')
+
+![](mobloc_explanation_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+### Path loss exponent
+
+For the path loss exponent, we combine these raster into one raster
+which is called the ‘environment’ raster. This is done by a weighted sum
+where the four categories get the following weights: built-up = 1,
+forest = 1, water = 0, (rail)roads = 0. The weights are open for
+discussion, but these should reflect to which extend the area contains
+buildings or trees that have a big influence on the propagation.
+
+In obtain this environment raster is the following.
+
+![](mobloc_explanation_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+We have two path loss exponent parameters, one for open area (`ple_0`,
+which is by default 3.5) and one for built-up/forest area (`ple_1`,
+which is by default 4). For indoor cells, we have a different parameter
+called `ple_small`, by default 6. Whether a cell is indoor or not should
+be determined in another source (e.g. network typology data) rather than
+OSM data.
+
+In order to obtain the path loss exponent of a certain (outdoor) cell,
+it is not sufficient to obtain the computed environment value, because
+the coverage area of a cell can be much larger.
+
+Therefore, we take a couple of geographic points near the cell. The mean
+value of environment raster are computed, and linearly transformed from
+the range \[0, 1\] to the range \[, \].
+
+The method to select the sample points is the following. For
+omnidirectional cells, points are taken at 0, 90, 180 and 270 degrees.
+For directional cells, points are taken at the propatation direction
+plus -1, -.5, -.25, 0, .25, .5, and 1 times the horizontal beam width.
+For each direction, points are taken at 50, 150, 250, 500, and 1000
+meter distance.
+
+### Land use prior
+
+The land use prior is just the the environment raster, also obtained by
+combining the categories using different weights. However, this weights
+have a different purpose than the path loss exponent application
+described in the previous section. Instead, they reflect how many people
+are expected to be in each area.
+
+In mobloc we used the weights built-up = 1, forest = 0.1, water = 0,
+(rail)roads = 0.5. These weights are open for discussion, and also
+depend on the country of study: e.g. in Finland less people are expected
+in forests than Spain.
+
+For each grid tile, these values are summed and normalized to 1: so the
+total value of the whole grid should be 1.
+
+In the example of mobloc, the land use prior is the following:
+
+![](mobloc_explanation_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
