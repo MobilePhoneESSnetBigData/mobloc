@@ -1,6 +1,22 @@
 Explanation of mobloc
 ================
 
+- [Introduction](#introduction)
+- [Installing mobloc and mobvis](#installing-mobloc-and-mobvis)
+- [Model parameters](#model-parameters)
+- [Imputation of input data](#imputation-of-input-data)
+- [Signal strength computation](#signal-strength-computation)
+  - [`"d"` Distance](#d-distance)
+  - [`"h"` and `"v"` Radiation pattern](#h-and-v-radiation-pattern)
+- [Calculation of signal dominance](#calculation-of-signal-dominance)
+- [Calculation of cell connection (in mobloc called ‘likelihood’)
+  probabilities](#calculation-of-cell-connection-in-mobloc-called-likelihood-probabilities)
+- [Calculation of posterior
+  probabilities](#calculation-of-posterior-probabilities)
+- [Preparing landuse data](#preparing-landuse-data)
+  - [Path loss exponent](#path-loss-exponent)
+  - [Land use prior](#land-use-prior)
+
 ## Introduction
 
 This document is to explain the implementation of the methods provided
@@ -1248,26 +1264,36 @@ compute a prior distribution, which is used to compute the posterior
 distribution. The preparation for the landues data using OpenStreetMap
 (OSM) is the same process, and will be explained here.
 
-For each grid tile we compute the fraction of main land use categories.
-We distinguish between:
+For each grid tile we compute the fraction of land use for each of the
+following main categories:
 
 - Built-up
 - Forest
 - Water
 - (Rail)roads
 
-Note: in mobloc we split built-up between residential and
+(Note: in mobloc we split built-up between residential and
 (non-residential) buildings, but eventually, we did not use buildings
-differently from residential areas.
+differently from residential areas.)
 
-How to process OSM data depends on the quality of OSM data, which can
-vary between countries. For the Dutch example data in mobloc, the
-processing script is here:
+Each part of land is assigned to at most one of these categories, so
+they are non-overlapping. In other words to total fraction of each grid
+tile should be at most one. The fraction that is not assigned to one of
+these categories is considered the ’rest category\`, which is assumed to
+be open-area land (e.g. grass lands).
+
+How to process OSM data depends on the quality of OSM data and how these
+OSM key-value pairs are used in practice, which can vary between
+countries. For the Dutch example data in mobloc, the processing script
+is here:
 <https://github.com/MobilePhoneESSnetBigData/mobloc/blob/master/data_generation/ZL_landuse.R>
 
 The applied process is the following. First we obtain the OSM polygons
 per category. The used OSM key-value pairs are listed in the following
-table, along with the applied categorie.
+table, along with the applied categorie. Note that the categorization is
+open for discussion and could also depend on the country of study. For
+instance, it could be better to omit the label for farmyard, making it
+‘open-area’.
 
 <table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
 <thead>
@@ -1464,9 +1490,10 @@ water
 </table>
 
 Next, we use the OSM polylines to compute the (rail)roads. We use the
-key-value pairs in the following table. The third column indicated the
-used width in meters. For each polyline, we apply a spatial buffer of
-this width in order to obtain a polygon.
+key-value pairs in the following table. For each polyline, we apply a
+spatial buffer in order to obtain a polygon. The third column indicates
+the used buffer width in meters. These settings are are also open for
+discussion and are country-dependent.
 
 <table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
 <thead>
@@ -1578,8 +1605,8 @@ The spatial difference is computed between the OSM polygons and buffered
 OSM polygons. So from the OSM polygons in the categories built-up,
 forest and water, the buffered OSM polylines are subtracted. When we
 prepared the polygons per category, the next preparation step is to
-compute the fraciton between each grid tile and each category. In mobloc
-the result is the following:
+compute the fraction of each category in each grid tile. In mobloc the
+result is the following:
 
     ## Loading required package: tmap
 
@@ -1608,20 +1635,26 @@ called `ple_small`, by default 6. Whether a cell is indoor or not should
 be determined in another source (e.g. network typology data) rather than
 OSM data.
 
-In order to obtain the path loss exponent of a certain (outdoor) cell,
-it is not sufficient to obtain the computed environment value, because
-the coverage area of a cell can be much larger.
+In order to obtain the path loss exponent of a certain outdoor cell, it
+is not sufficient to extract the value from the environment raster tile
+at the physical location of that cell, because the coverage area of a
+cell is usually much larger than can be much larger that that tile.
 
-Therefore, we take a couple of geographic points near the cell. The mean
-value of environment raster are computed, and linearly transformed from
-the range \[0, 1\] to the range \[, \].
+Therefore, we take a sample of couple of geographic points near the
+cell, and compute the path loss exponent using that sample. In detail:
 
-The method to select the sample points is the following. For
-omnidirectional cells, points are taken at 0, 90, 180 and 270 degrees.
-For directional cells, points are taken at the propatation direction
-plus -1, -.5, -.25, 0, .25, .5, and 1 times the horizontal beam width.
-For each direction, points are taken at 50, 150, 250, 500, and 1000
-meter distance.
+- The method to select the sample points is the following. For
+  omnidirectional cells, points are taken at 0, 90, 180 and 270 degrees.
+  For directional cells, points are taken at the propatation direction
+  plus -1, -.5, -.25, 0, .25, .5, and 1 times the horizontal beam width.
+  For each direction, points are taken at 50, 150, 250, 500, and 1000
+  meter distance.
+- We extract the values of the corresponding environment raster tiles,
+  and compute the mean value.
+- This mean value is linearly transformed from the range \[0, 1\] to the
+  range \[, \] with this formula. Say the mean value is `x`. Then the
+  computed path loss exponent value is
+  `y = ple_0 + x * (ple_1 - ple_0)`.
 
 ### Land use prior
 
@@ -1634,10 +1667,11 @@ are expected to be in each area.
 In mobloc we used the weights built-up = 1, forest = 0.1, water = 0,
 (rail)roads = 0.5. These weights are open for discussion, and also
 depend on the country of study: e.g. in Finland less people are expected
-in forests than Spain.
+in forests than in Spain.
 
 For each grid tile, these values are summed and normalized to 1: so the
-total value of the whole grid should be 1.
+total value of the whole grid should be 1. Note that normalization also
+takes place when computing the posterior distribution.
 
 In the example of mobloc, the land use prior is the following:
 
