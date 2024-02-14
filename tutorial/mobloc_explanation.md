@@ -1651,10 +1651,9 @@ cell, and compute the path loss exponent using that sample. In detail:
   meter distance.
 - We extract the values of the corresponding environment raster tiles,
   and compute the mean value.
-- This mean value is linearly transformed from the range \[0, 1\] to the
-  range \[, \] with this formula. Say the mean value is `x`. Then the
-  computed path loss exponent value is
-  `y = ple_0 + x * (ple_1 - ple_0)`.
+- This mean value is linearly transformed with the following formula.
+  Say the mean value is `x`. Then the computed path loss exponent value
+  is `y = ple_0 + x * (ple_1 - ple_0)`.
 
 ### Land use prior
 

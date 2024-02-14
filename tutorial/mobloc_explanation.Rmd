@@ -247,7 +247,7 @@ Therefore, we take a sample of couple of geographic points near the cell, and co
 
 * The method to select the sample points is the following. For omnidirectional cells, points are taken at 0, 90, 180 and 270 degrees. For directional cells, points are taken at the propatation direction plus -1, -.5, -.25, 0, .25, .5, and 1 times the horizontal beam width. For each direction, points are taken at 50, 150, 250, 500, and 1000 meter distance.
 * We extract the values of the corresponding environment raster tiles, and compute the mean value. 
-* This mean value is linearly transformed from the range [0, 1] to the range [\code{ple_0}, \code{ple_1}] with this formula. Say the mean value is `x`. Then the computed path loss exponent value is `y = ple_0 + x * (ple_1 - ple_0)`.
+* This mean value is linearly transformed with the following formula. Say the mean value is `x`. Then the computed path loss exponent value is `y = ple_0 + x * (ple_1 - ple_0)`.
 
 
 
